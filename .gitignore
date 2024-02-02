@@ -1,0 +1,13 @@
+#folders
+icons/
+.idea/
+__pychache__/
+
+# files
+credits.txt
+gazebo ve ardupilot çalıştırma.txt
+startardupilot.sh
+startgazeboarducopter.sh
+map.html
+quickstart.py
+connection.py
