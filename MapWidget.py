@@ -3,13 +3,18 @@ from PySide6 import QtWebEngineWidgets
 from PySide6.QtWebEngineCore import QWebEnginePage
 from PySide6.QtWidgets import QApplication
 import folium
+from folium.plugins import MousePosition
 
 # Make Icon
 import base64
 from PIL import Image
+
+
 def image_to_base64(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
+
+
 uav_icon_base64 = image_to_base64('/home/esad/Desktop/Coding/GroundControlStation/icons/uav.png')
 
 
@@ -22,11 +27,12 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
         self.fmap = folium.Map(location=center_coord,
                                zoom_start=starting_zoom)
 
-        # folium features
-        folium.LatLngPopup().add_to(self.fmap)
+        # Show mouse position in bottom right
+        MousePosition().add_to(self.fmap)
 
         # store the map to a file
         data = io.BytesIO()
+        self.fmap.save('map.html')
         self.fmap.save(data, close_file=False)
 
         # reading the folium file
@@ -34,14 +40,12 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
 
         # find variable names
         self.map_variable_name = self.find_variable_name(html, "map_")
-        self.popup_variable_name = self.find_variable_name(html, "lat_lng_popup_")
 
-        # determine popup function indicies
-        pstart, pend = self.find_popup_slice(html)
+        # determine scripts indices
+        endi = html.rfind("</script>")
 
         # inject code
-        html = html[:pstart] + self.custom_code(self.popup_variable_name, self.map_variable_name) + html[pend:]
-
+        html = html[:endi - 1] + self.custom_code(self.map_variable_name) + html[endi:]
         data.seek(0)
         data.write(html.encode())
 
@@ -49,67 +53,34 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
         self.map_page = self.WebEnginePage(self)
         self.setPage(self.map_page)
 
-        # self.map_page.setHtml(data.getvalue().decode())
-
         # To Display the Map
         self.resize(800, 600)
         self.setHtml(data.getvalue().decode())
 
-        self.loadFinished.connect(self.onLoadFinished)
+        # self.loadFinished.connect(self.onLoadFinished)
 
     class WebEnginePage(QWebEnginePage):
         def javaScriptConsoleMessage(self, level, msg, line, sourceID):
             MapWidget.marker_coord = msg.split(",")
             print(MapWidget.marker_coord)
 
-    def onLoadFinished(self):
-        # add marker
-        self.page().runJavaScript("""
-                var uavIcon = L.icon({
-                    iconUrl: 'data:image/png;base64,%s', 
-                    iconSize: [40, 40],
-                });
-        
-                var uavMarker = L.marker(
-                            [41.27442, 28.727317],
-                            {icon: uavIcon,
-                            },
-                            
-                        ).addTo(%s);
-                uavMarker.setRotationAngle(-45)
-                """ % (uav_icon_base64, self.map_variable_name)
-                                          )
-
-    def find_popup_slice(self, html):
-        """
-        Find the starting and ending index of popup function
-        """
-
-        pattern = "function latLngPop(e)"
-
-        # starting index
-        starting_index = html.find(pattern)
-
-        #
-        tmp_html = html[starting_index:]
-
-        #
-        found = 0
-        index = 0
-        opening_found = False
-        while not opening_found or found > 0:
-            if tmp_html[index] == "{":
-                found += 1
-                opening_found = True
-            elif tmp_html[index] == "}":
-                found -= 1
-
-            index += 1
-
-        # determine the ending index of popup function
-        ending_index = starting_index + index
-
-        return starting_index, ending_index
+    # def onLoadFinished(self):
+    #     # add marker
+    #     self.page().runJavaScript("""
+    #             var uavIcon = L.icon({
+    #                 iconUrl: 'data:image/png;base64,%s',
+    #                 iconSize: [40, 40],
+    #             });
+    #
+    #             var uavMarker = L.marker(
+    #                         [41.27442, 28.727317],
+    #                         {icon: uavIcon,
+    #                         },
+    #
+    #                     ).addTo(%s);
+    #             uavMarker.setRotationAngle(-45)
+    #             """ % (uav_icon_base64, self.map_variable_name)
+    #                                       )
 
     def find_variable_name(self, html, name_start):
         variable_pattern = "var "
@@ -121,7 +92,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
 
         return html[starting_index:ending_index]
 
-    def custom_code(self, popup_variable_name, map_variable_name):
+    def custom_code(self, map_variable_name):
         return '''
                 // custom code
                 
@@ -186,18 +157,27 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 // Rotated Marker part is taken from this repo: https://github.com/bbecquet/Leaflet.RotatedMarker
                 // Huge thanks to its contributors
                 
-                
+                // Adding Marker
+            
                 var mymarker = L.marker(
                         [41.27442, 28.727317],
                         {}
                     ).addTo(%s);
                 
-                function latLngPop(e) {
+                function click(e) {
                     console.log(e.latlng.lat.toFixed(4) + "," +e.latlng.lng.toFixed(4));
                     mymarker.setLatLng([e.latlng.lat, e.latlng.lng])
                 }
+                
+                %s.on('click', click);
+                
+                var uavIcon = L.icon({
+                    iconUrl: 'data:image/png;base64,%s', 
+                    iconSize: [40, 40],
+                });
+                
                 // end custom code
-        ''' % (map_variable_name)
+        ''' % (map_variable_name, map_variable_name, uav_icon_base64)
 
 
 if __name__ == "__main__":
@@ -208,7 +188,5 @@ if __name__ == "__main__":
     app = QApplication([])
     widget = MapWidget(istanbulhavalimani)
     widget.show()
-
-
 
     sys.exit(app.exec())

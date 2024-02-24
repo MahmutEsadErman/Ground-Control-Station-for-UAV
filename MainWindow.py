@@ -1,0 +1,173 @@
+import sys
+
+from PySide6 import QtGui
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QSizePolicy, QSizeGrip, QLabel
+from PySide6.QtCore import QFile, QIODevice, Qt, QEvent, QSize, QTimer, QPropertyAnimation, QEasingCurve
+
+from ThreadingPart import *
+from HomePage import HomePage
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        # Frameless Window
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+        # Load the ui file
+        ui_file_name = "uifolder/BaseGUI.ui"
+        ui_file = QFile(ui_file_name)
+        # Control if file exists
+        if not ui_file.open(QIODevice.ReadOnly):
+            print(f"Cannot open {ui_file_name}: {ui_file.errorString()}")
+            sys.exit(-1)
+
+        self.ui = QUiLoader().load(ui_file)
+        ui_file.close()
+        self.setCentralWidget(self.ui)
+
+        # Set Window Title
+        self.setWindowTitle("Nebula GCS")
+
+        # Set initial windows size
+        self.state = 0 # maximized or not
+        self.screenSize = QApplication.primaryScreen().size()
+        windowRatio = 3/4
+        self.startSize = QSize(self.screenSize.width() * windowRatio, self.screenSize.height() * windowRatio)
+        self.resize(self.startSize)
+        self.setMinimumSize(self.startSize)
+        self.setMaximumSize(self.screenSize)
+        self.ui.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+
+        # Move Window to Center
+        self.move(self.screenSize.width() / 2 - self.startSize.width() / 2, self.screenSize.height() / 2 - self.startSize.height() / 2)
+
+        # Set Font
+        QtGui.QFontDatabase.addApplicationFont('fonts/segoeui.ttf')
+        QtGui.QFontDatabase.addApplicationFont('fonts/segoeuib.ttf')
+
+        # Sizegrip (To Resize Window)
+        self.sizegrip = QSizeGrip(self.ui.frame_size_grip)
+        self.sizegrip.setStyleSheet("background-image: url(icons/16x16/cil-size-grip.png);width: 20px; height: 20px; margin 0px; padding: 0px;")
+
+        # Setting Pages
+        self.homepage = HomePage()
+        self.ui.stackedWidget.addWidget(self.homepage)
+        self.ui.stackedWidget.setCurrentWidget(self.homepage)
+
+        # Set Buttons
+        self.ui.btn_close.setIcon(QtGui.QIcon('icons/16x16/cil-x.png'))
+        self.ui.btn_close.clicked.connect(lambda: sys.exit())
+        self.ui.btn_maximize_restore.setIcon(QtGui.QIcon('icons/16x16/cil-window-maximize.png'))
+        self.ui.btn_maximize_restore.clicked.connect(self.maximize_restore)
+        self.ui.btn_minimize.setIcon(QtGui.QIcon('icons/16x16/cil-window-minimize.png'))
+        self.ui.btn_minimize.clicked.connect(lambda: self.showMinimized())
+
+        self.ui.btn_home_page.setDisabled(True)
+        self.disabledbutton = self.ui.btn_home_page
+        self.setButton(self.ui.btn_toggle_menu, QtGui.QIcon('icons/24x24/cil-menu.png'))
+        self.setButton(self.ui.btn_home_page, QtGui.QIcon('icons/24x24/cil-home.png'))
+        self.setButton(self.ui.btn_indicators_page, QtGui.QIcon('icons/24x24/cil-speedometer.png'))
+        self.setButton(self.ui.btn_targets_page, QtGui.QIcon('icons/24x24/cil-user.png'))
+        self.ui.btn_connect.setIcon(QtGui.QIcon('icons/24x24/cil-link-broken.png'))
+        connectionThread = ConnectionThread("127.0.0.1:14550", self.ui.combobox_baudrate.currentText(), self.ui.btn_connect, self.homepage.mapwidget)
+        connectionThread.vehicleConnected.connect(handleConnectedVehicle)
+        connectionThread.updateData.connect(updateData)
+        connectionThread.connectionLost.connect(connectionLost)
+        self.ui.btn_connect.clicked.connect(lambda: connectionThread.start())
+
+        # To move the window only from top frame
+        self.ui.label_title_bar_top.installEventFilter(self)
+
+
+    def mousePressEvent(self, event):
+        self.dragPos = event.globalPosition().toPoint()
+
+    # To take events from child widgets
+    def eventFilter(self, obj, event):
+        if obj == self.ui.label_title_bar_top:
+            # Maximize and restore when double click
+            if event.type() == QEvent.MouseButtonDblClick:
+                QTimer.singleShot(250, lambda: self.maximize_restore())
+            # Drag move window
+            if event.type() == QEvent.MouseMove:
+                if event.buttons() == Qt.LeftButton:
+                    self.setCursor(Qt.SizeAllCursor)
+                    self.move(self.pos() + event.globalPosition().toPoint() - self.dragPos)
+                    self.dragPos = event.globalPosition().toPoint()
+                    return True
+            if event.type() == QEvent.MouseButtonRelease:
+                self.setCursor(Qt.ArrowCursor)
+        return super().eventFilter(obj, event)
+
+    def setButton(self, button, icon):
+        sizePolicy3 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(button.sizePolicy().hasHeightForWidth())
+        button.setSizePolicy(sizePolicy3)
+        button.setMinimumSize(QSize(0, 70))
+        button.setLayoutDirection(Qt.LeftToRight)
+        button.setIcon(icon)
+        button.clicked.connect(self.buttonFunctions)
+
+    def maximize_restore(self):
+        if self.state == 1:
+            self.ui.btn_maximize_restore.setToolTip("Maximize")
+            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"icons/16x16/cil-window-maximize.png"))
+            self.showNormal()
+            self.state = 0
+        else:
+            self.ui.btn_maximize_restore.setToolTip("Restore")
+            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"icons/16x16/cil-window-restore.png"))
+            self.showMaximized()
+            self.state = 1
+
+    def buttonFunctions(self):
+        button = self.sender()
+        # Toggle Button
+        if button.objectName() == "btn_toggle_menu":
+            width = self.ui.frame_left_menu.width()
+            maxWidth = 220
+            standard = 70
+            # SET MAX WIDTH
+            if width == standard:
+                widthExtended = maxWidth
+            else:
+                widthExtended = standard
+            # ANIMATION
+            self.animation = QPropertyAnimation(self.ui.frame_left_menu, b"minimumWidth")
+            self.animation.setDuration(300)
+            self.animation.setStartValue(width)
+            self.animation.setEndValue(widthExtended)
+            self.animation.setEasingCurve(QEasingCurve.InOutQuart)
+            self.animation.start()
+        else:
+            self.disabledbutton.setDisabled(False)
+            self.disabledbutton = button
+            self.disabledbutton.setDisabled(True)
+
+        # PAGE HOME
+        if button.objectName() == "btn_home_page":
+            self.ui.stackedWidget.setCurrentWidget(self.homepage)
+            self.ui.label_top_info_2.setText("| HOME")
+
+        # PAGE NEW USER
+        if button.objectName() == "btn_indicators_page":
+            self.ui.stackedWidget.setCurrentWidget(self.ui.page_indicators)
+            self.ui.label_top_info_2.setText("| Indicators")
+
+        # PAGE WIDGETS
+        if button.objectName() == "btn_targets_page":
+            self.ui.stackedWidget.setCurrentWidget(self.homepage)
+            self.ui.label_top_info_2.setText("| Targets")
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())

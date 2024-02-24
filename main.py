@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QThread, Signal
 from dronekit import connect, Vehicle, VehicleMode, LocationGlobalRelative
 
-from DisplayInfo import DisplayWindow
+from MainWindow import MainWindow
 from MapWidget import MapWidget
 
 # Connect to the Vehicle.
@@ -14,17 +14,15 @@ if vehicle is not None:
 
 
 class VehicleThread(QThread):
-    def __init__(self, mapwidget):
+    updateData = Signal(Vehicle, MapWidget)
+    def __init__(self, map_widget):
         super().__init__()
-        self.widget = mapwidget
+        self.widget = map_widget
 
     def run(self):
         while True:
-
             self.updateData.emit(vehicle, self.widget)
             self.sleep(1)
-
-    updateData = Signal(Vehicle, MapWidget)
 
 
 def takeoff(height=10):
@@ -65,16 +63,13 @@ def go(coords):
 if __name__ == "__main__":
     app = QApplication([])
 
-    # Set up the main window
-    mainwindow = DisplayWindow()
-    initial_location = vehicle.location.global_relative_frame
-    mainwindow.infoWidget.takeoffButton.clicked.connect(lambda: takeoff(10))
-    mainwindow.infoWidget.goButton.clicked.connect(lambda: go(mapwidget.marker_coord))
-    mainwindow.infoWidget.returnButton.clicked.connect(lambda: go(initial_location))
-    mainwindow.infoWidget.stopButton.clicked.connect(lambda: go(vehicle.location.global_relative_frame))
-
     # Set up the Map Widget
     mapwidget = MapWidget([vehicle.location.global_relative_frame.lat, vehicle.location.global_relative_frame.lon])
+
+    # Set up the main window
+    mainwindow = MainWindow()
+    initial_location = vehicle.location.global_relative_frame
+    mainwindow.ui.btn_connect.clicked.connect(lambda: takeoff(10))
 
     # Start the thread
     thread = VehicleThread(mapwidget)
