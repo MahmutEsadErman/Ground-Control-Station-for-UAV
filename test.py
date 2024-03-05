@@ -20,7 +20,6 @@ class VehicleThread(QThread):
 
     def run(self):
         while True:
-
             self.updateData.emit(vehicle, self.widget)
             self.sleep(1)
 
@@ -35,7 +34,7 @@ def takeoff(height=10):
         print(" Waiting for vehicle to initialise...")
         QThread.sleep(1)
 
-    print ("Arming motors")
+    print("Arming motors")
     # Copter should arm in GUIDED mode
     vehicle.mode = VehicleMode("GUIDED")
     vehicle.armed = True

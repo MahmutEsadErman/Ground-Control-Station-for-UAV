@@ -7,9 +7,13 @@ import folium
 # Make Icon
 import base64
 from PIL import Image
+
+
 def image_to_base64(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
+
+
 uav_icon_base64 = image_to_base64('/home/esad/Desktop/Coding/GroundControlStation/icons/uav.png')
 
 
@@ -78,7 +82,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         ).addTo(%s);
                 uavMarker.setRotationAngle(-45)
                 """ % (uav_icon_base64, self.map_variable_name)
-                                          )
+                                  )
 
     def find_popup_slice(self, html):
         """
@@ -208,7 +212,5 @@ if __name__ == "__main__":
     app = QApplication([])
     widget = MapWidget(istanbulhavalimani)
     widget.show()
-
-
 
     sys.exit(app.exec())
