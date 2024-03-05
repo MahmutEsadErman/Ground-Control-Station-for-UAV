@@ -32,10 +32,15 @@ class DisplayWindow(QWidget):
         self.infoWidget.positionLabel.setText(str(position))
         self.infoWidget.velocity.setText(str(vehicle.velocity))
         self.infoWidget.altitude.setText(str(vehicle.location.global_relative_frame.alt))
+<<<<<<< HEAD
         mapwidget.page().runJavaScript(
             f"uavMarker.setLatLng({str(position)});")  # to set position of uav marker in the map
         mapwidget.page().runJavaScript(f"uavMarker.setRotationAngle({vehicle.heading - 45});")
 
+=======
+        mapwidget.page().runJavaScript(f"uavMarker.setLatLng({str(position)});")  # to set position of uav marker
+        mapwidget.page().runJavaScript(f"uavMarker.setRotationAngle({vehicle.heading - 45});")  # to set rotation of uav
+>>>>>>> c34234fac2ad10a553262cf1ac6aa59860328cad
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
