@@ -1,4 +1,5 @@
 from PySide6.QtCore import QThread, Signal
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QPushButton
 from dronekit import Vehicle, connect
 
@@ -36,6 +37,7 @@ class ConnectionThread(QThread):
 def handleConnectedVehicle(vehicle, mapwidget, connectbutton):
     # Set connect button disable
     connectbutton.setText('Connected')
+    connectbutton.setIcon(QIcon('icons/24x24/cil-link.png'))
     connectbutton.setDisabled(True)
 
     # Fly to UAV's position
@@ -68,4 +70,5 @@ def updateData(vehicle, mapwidget):
 
 def connectionLost(connectbutton):
     connectbutton.setText('Connect')
+    connectbutton.setIcon(QIcon('icons/24x24/cil-link-broken.png'))
     connectbutton.setDisabled(False)
