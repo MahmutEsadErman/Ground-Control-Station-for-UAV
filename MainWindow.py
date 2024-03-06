@@ -2,7 +2,7 @@ import sys
 
 from PySide6 import QtGui
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QLabel
+from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QLabel, QComboBox
 from PySide6.QtCore import QFile, Qt, QEvent, QSize, QTimer, QPropertyAnimation, QEasingCurve
 
 from ThreadingPart import *
@@ -53,6 +53,12 @@ class MainWindow(QMainWindow):
         self.ui.stackedWidget.addWidget(self.homepage)
         self.ui.stackedWidget.setCurrentWidget(self.homepage)
 
+        # Connection Thread
+        self.connectionThread = ConnectionThread(self.ui.btn_connect, self.homepage.mapwidget)
+        self.connectionThread.vehicleConnected.connect(handleConnectedVehicle)
+        self.connectionThread.updateData.connect(updateData)
+        self.connectionThread.connectionLost.connect(connectionLost)
+
         #  SET BUTTONS
         #  Main Window buttons
         self.ui.btn_close.setIcon(QtGui.QIcon('icons/16x16/cil-x.png'))
@@ -69,11 +75,8 @@ class MainWindow(QMainWindow):
         self.setButton(self.ui.btn_indicators_page, 'icons/24x24/cil-speedometer.png')
         self.setButton(self.ui.btn_targets_page, 'icons/24x24/cil-user.png')
         self.ui.btn_connect.setIcon(QtGui.QIcon('icons/24x24/cil-link-broken.png'))
-        connectionThread = ConnectionThread("127.0.0.1:14550", self.ui.combobox_baudrate.currentText(), self.ui.btn_connect, self.homepage.mapwidget)
-        connectionThread.vehicleConnected.connect(handleConnectedVehicle)
-        connectionThread.updateData.connect(updateData)
-        connectionThread.connectionLost.connect(connectionLost)
-        self.ui.btn_connect.clicked.connect(lambda: connectionThread.start())
+
+        self.ui.btn_connect.clicked.connect(self.connectToVehicle)
 
         # To move the window only from top frame
         self.ui.label_title_bar_top.installEventFilter(self)
@@ -169,6 +172,10 @@ class MainWindow(QMainWindow):
             self.ui.stackedWidget.setCurrentWidget(self.homepage)
             self.ui.label_top_info_2.setText("| Targets")
 
+    def connectToVehicle(self):
+        self.connectionThread.setBaudRate(int(self.ui.combobox_baudrate.currentText()))
+        self.connectionThread.setConnectionString(self.ui.combobox_connectionstring.currentText())
+        self.connectionThread.start()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

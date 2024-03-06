@@ -1450,12 +1450,17 @@ background-color: rgb(33, 37, 43);
                      </property>
                      <item>
                       <property name="text">
-                       <string>com1</string>
+                       <string>USB</string>
                       </property>
                      </item>
                      <item>
                       <property name="text">
-                       <string>com2</string>
+                       <string>SITL (UDP)</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>SITL (TCP)</string>
                       </property>
                      </item>
                      <item>
@@ -2134,7 +2139,7 @@ QPushButton:disabled {
                 <item>
                  <widget class="QStackedWidget" name="stackedWidget">
                   <property name="styleSheet">
-                   <string notr="true">background: transparent;</string>
+                   <string notr="true"/>
                   </property>
                   <property name="currentIndex">
                    <number>0</number>

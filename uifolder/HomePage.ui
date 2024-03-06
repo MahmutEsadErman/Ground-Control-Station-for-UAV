@@ -29,7 +29,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QFrame" name="frame">
+    <widget class="QFrame" name="frame_right">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -40,8 +40,7 @@
       <item>
        <widget class="QWidget" name="cameraFrame" native="true">
         <property name="styleSheet">
-         <string notr="true">border: 2px solid;
-border-radius: 10px;</string>
+         <string notr="true"/>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_3"/>
        </widget>
@@ -49,8 +48,7 @@ border-radius: 10px;</string>
       <item>
        <widget class="QFrame" name="frame_2">
         <property name="styleSheet">
-         <string notr="true">border: 2px solid;
-border-radius: 10px;</string>
+         <string notr="true"/>
         </property>
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
