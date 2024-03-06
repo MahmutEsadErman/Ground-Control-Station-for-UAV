@@ -10,5 +10,8 @@ map.html
 quickstart.py
 connection.py
 /deneme.py
-DisplayInfo.py
+/DisplayInfo.py
 /uifolder/BaseGUI (copy).ui
+/uifolder/displayinfo.ui
+yapılacaklar.txt
+/main.py

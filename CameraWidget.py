@@ -21,6 +21,7 @@ class CameraWidget(QWidget):
 
         # Add Label
         self.FeedLabel = QLabel()
+        self.FeedLabel.setStyleSheet("border: 1px solid black;;")
         self.FeedLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # Set size policy
         self.FeedLabel.setScaledContents(True)  # Enable scaling of contents
         self.QVBLayout.addWidget(self.FeedLabel)
