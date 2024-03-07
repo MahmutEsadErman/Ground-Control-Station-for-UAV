@@ -1,7 +1,9 @@
 import io, sys
 from PySide6 import QtWebEngineWidgets
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWebEngineCore import QWebEnginePage
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QPushButton
 import folium
 from folium.plugins import MousePosition
 
@@ -15,7 +17,7 @@ def image_to_base64(image_path):
         return base64.b64encode(image_file.read()).decode()
 
 
-uav_icon_base64 = image_to_base64('/home/esad/Desktop/Coding/GroundControlStation/icons/uav.png')
+uav_icon_base64 = image_to_base64('icons/uav.png')
 
 
 class MapWidget(QtWebEngineWidgets.QWebEngineView):
@@ -57,7 +59,19 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
         self.resize(800, 600)
         self.setHtml(data.getvalue().decode())
 
+        # Add buttons
+        self.btn_AllocateWidget = QPushButton(icon=QIcon("icons/16x16/cil-arrow-top.png"), parent=self)
+        self.btn_AllocateWidget.setCursor(Qt.PointingHandCursor)
+        self.btn_AllocateWidget.resize(25, 25)
+
+        # A variable that holds if the widget is child of the main window or not
+        self.isAttached = True
+
         # self.loadFinished.connect(self.onLoadFinished)
+
+    def resizeEvent(self, event):
+        self.btn_AllocateWidget.move(self.width() - self.btn_AllocateWidget.width(), 0)
+        super().resizeEvent(event)
 
     class WebEnginePage(QWebEnginePage):
         def javaScriptConsoleMessage(self, level, msg, line, sourceID):

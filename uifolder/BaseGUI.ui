@@ -888,7 +888,7 @@ QSlider::handle:vertical:pressed {
                <property name="styleSheet">
                 <string notr="true">QPushButton {
 	background-position: center;
-	background-repeat: no-reperat;
+	background-repeat: no-repeat;
 	border: none;
 	background-color: rgb(27, 29, 35);
 }
@@ -1450,12 +1450,17 @@ background-color: rgb(33, 37, 43);
                      </property>
                      <item>
                       <property name="text">
-                       <string>com1</string>
+                       <string>USB</string>
                       </property>
                      </item>
                      <item>
                       <property name="text">
-                       <string>com2</string>
+                       <string>SITL (UDP)</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>SITL (TCP)</string>
                       </property>
                      </item>
                      <item>
@@ -1491,7 +1496,7 @@ background-color: rgb(33, 37, 43);
                       <string notr="true"/>
                      </property>
                      <property name="currentText">
-                      <string>57600</string>
+                      <string>128000</string>
                      </property>
                      <item>
                       <property name="text">
@@ -1950,16 +1955,28 @@ QPushButton:pressed {
                 <property name="bottomMargin">
                  <number>0</number>
                 </property>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_home_page">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Home&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton {	
+                <item>
+                 <widget class="QPushButton" name="btn_home_page">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Home&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="layoutDirection">
+                   <enum>Qt::LeftToRight</enum>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">
+QPushButton {	
 	border: none;
 	background-color: transparent;
 }
@@ -1972,25 +1989,30 @@ QPushButton:pressed {
 QPushButton:disabled {	
 	border-right: 6px solid rgb(85, 170, 255);
 }</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>32</width>
-                 <height>32</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_indicators_page">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Indicators&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton {	
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>32</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_indicators_page">
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Indicators&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton {	
 	border: none;
 	background-color: transparent;
 }
@@ -2003,25 +2025,36 @@ QPushButton:pressed {
 QPushButton:disabled {	
 	border-right: 6px solid rgb(85, 170, 255);
 }</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>32</width>
-                 <height>32</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_targets_page">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Targets&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton {	
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>32</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_targets_page">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>14</pointsize>
+                   </font>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Targets&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">QPushButton {	
 	border: none;
 	background-color: transparent;
 }
@@ -2034,64 +2067,18 @@ QPushButton:pressed {
 QPushButton:disabled {	
 	border-right: 6px solid rgb(85, 170, 255);
 }</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>32</width>
-                 <height>32</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Expanding</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item alignment="Qt::AlignBottom">
-              <widget class="QFrame" name="frame_extra_menus">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-               <layout class="QVBoxLayout" name="layout_menu_bottom">
-                <property name="spacing">
-                 <number>10</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>25</number>
-                </property>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>32</width>
+                    <height>32</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>
@@ -2152,7 +2139,7 @@ QPushButton:disabled {
                 <item>
                  <widget class="QStackedWidget" name="stackedWidget">
                   <property name="styleSheet">
-                   <string notr="true">background: transparent;</string>
+                   <string notr="true"/>
                   </property>
                   <property name="currentIndex">
                    <number>0</number>

@@ -1,5 +1,6 @@
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtWidgets import QPushButton
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QPushButton, QInputDialog, QMessageBox
 from dronekit import Vehicle, connect
 
 from MapWidget import MapWidget
@@ -10,10 +11,10 @@ class ConnectionThread(QThread):
     updateData = Signal(Vehicle, MapWidget)
     connectionLost = Signal(QPushButton)
 
-    def __init__(self, connection_string, baudrate, ConnectButton, mapwidget):
+    def __init__(self, ConnectButton, mapwidget):
         super().__init__()
-        self.connection_string = connection_string
-        self.baudrate = baudrate
+        self.connection_string = None
+        self.baudrate = None
         self.connectButton = ConnectButton
         self.mapwidget = mapwidget
 
@@ -32,10 +33,32 @@ class ConnectionThread(QThread):
 
         self.connectionLost.emit(self.connectButton)
 
+    def setBaudRate(self, baud):
+        self.baudrate = baud
+
+    def setConnectionString(self, connectionstring):
+        if connectionstring == 'USB':
+            self.connection_string = '/dev/ttyUSB0'
+        elif connectionstring == 'SITL (UDP)':
+            self.connection_string = '127.0.0.1:14550'
+        elif connectionstring == 'SITL (TCP)':
+            self.connection_string = 'tcp:127.0.0.1:5760'
+        elif connectionstring == 'UDP':
+            text, ok = QInputDialog.getText(None, "Input Dialog", "Enter an IP:")
+            if ok and text:
+                self.connection_string = text+":14550"
+        elif connectionstring == 'TCP':
+            text, ok = QInputDialog.getText(None, "Input Dialog", "Enter an IP:")
+            if ok and text:
+                self.connection_string = "tcp:"+text+":5760"
+                # msgBox = QMessageBox()
+                # msgBox.setText("This is a message.")
+                # msgBox.exec()
 
 def handleConnectedVehicle(vehicle, mapwidget, connectbutton):
     # Set connect button disable
     connectbutton.setText('Connected')
+    connectbutton.setIcon(QIcon('icons/24x24/cil-link.png'))
     connectbutton.setDisabled(True)
 
     # Fly to UAV's position
@@ -47,10 +70,7 @@ def handleConnectedVehicle(vehicle, mapwidget, connectbutton):
     mapwidget.page().runJavaScript("""
                 var uavMarker = L.marker(
                             %s,
-                            {icon: uavIcon,
-                            },
-
-                        ).addTo(%s);
+                            {icon: uavIcon,},).addTo(%s);
                 """ % (position, mapwidget.map_variable_name)
                                    )
 
@@ -68,4 +88,5 @@ def updateData(vehicle, mapwidget):
 
 def connectionLost(connectbutton):
     connectbutton.setText('Connect')
+    connectbutton.setIcon(QIcon('icons/24x24/cil-link-broken.png'))
     connectbutton.setDisabled(False)
