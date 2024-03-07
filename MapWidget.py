@@ -17,7 +17,7 @@ def image_to_base64(image_path):
         return base64.b64encode(image_file.read()).decode()
 
 
-uav_icon_base64 = image_to_base64('icons/uav.png')
+uav_icon_base64 = image_to_base64('assets/icons/uav.png')
 
 
 class MapWidget(QtWebEngineWidgets.QWebEngineView):
@@ -78,7 +78,6 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
             MapWidget.marker_coord = msg.split(",")
             print(MapWidget.marker_coord)
 
-<<<<<<< HEAD
     def onLoadFinished(self):
         # add marker
         self.page().runJavaScript("""
@@ -127,25 +126,6 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
         ending_index = starting_index + index
 
         return starting_index, ending_index
-=======
-    # def onLoadFinished(self):
-    #     # add marker
-    #     self.page().runJavaScript("""
-    #             var uavIcon = L.icon({
-    #                 iconUrl: 'data:image/png;base64,%s',
-    #                 iconSize: [40, 40],
-    #             });
-    #
-    #             var uavMarker = L.marker(
-    #                         [41.27442, 28.727317],
-    #                         {icon: uavIcon,
-    #                         },
-    #
-    #                     ).addTo(%s);
-    #             uavMarker.setRotationAngle(-45)
-    #             """ % (uav_icon_base64, self.map_variable_name)
-    #                                       )
->>>>>>> c34234fac2ad10a553262cf1ac6aa59860328cad
 
     def find_variable_name(self, html, name_start):
         variable_pattern = "var "
