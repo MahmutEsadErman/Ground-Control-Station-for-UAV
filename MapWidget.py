@@ -17,7 +17,7 @@ def image_to_base64(image_path):
         return base64.b64encode(image_file.read()).decode()
 
 
-uav_icon_base64 = image_to_base64('icons/uav.png')
+uav_icon_base64 = image_to_base64('assets/icons/uav.png')
 
 
 class MapWidget(QtWebEngineWidgets.QWebEngineView):
@@ -78,23 +78,54 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
             MapWidget.marker_coord = msg.split(",")
             print(MapWidget.marker_coord)
 
-    # def onLoadFinished(self):
-    #     # add marker
-    #     self.page().runJavaScript("""
-    #             var uavIcon = L.icon({
-    #                 iconUrl: 'data:image/png;base64,%s',
-    #                 iconSize: [40, 40],
-    #             });
-    #
-    #             var uavMarker = L.marker(
-    #                         [41.27442, 28.727317],
-    #                         {icon: uavIcon,
-    #                         },
-    #
-    #                     ).addTo(%s);
-    #             uavMarker.setRotationAngle(-45)
-    #             """ % (uav_icon_base64, self.map_variable_name)
-    #                                       )
+    def onLoadFinished(self):
+        # add marker
+        self.page().runJavaScript("""
+                var uavIcon = L.icon({
+                    iconUrl: 'data:image/png;base64,%s', 
+                    iconSize: [40, 40],
+                });
+        
+                var uavMarker = L.marker(
+                            [41.27442, 28.727317],
+                            {icon: uavIcon,
+                            },
+                            
+                        ).addTo(%s);
+                uavMarker.setRotationAngle(-45)
+                """ % (uav_icon_base64, self.map_variable_name)
+                                  )
+
+    def find_popup_slice(self, html):
+        """
+        Find the starting and ending index of popup function
+        """
+
+        pattern = "function latLngPop(e)"
+
+        # starting index
+        starting_index = html.find(pattern)
+
+        #
+        tmp_html = html[starting_index:]
+
+        #
+        found = 0
+        index = 0
+        opening_found = False
+        while not opening_found or found > 0:
+            if tmp_html[index] == "{":
+                found += 1
+                opening_found = True
+            elif tmp_html[index] == "}":
+                found -= 1
+
+            index += 1
+
+        # determine the ending index of popup function
+        ending_index = starting_index + index
+
+        return starting_index, ending_index
 
     def find_variable_name(self, html, name_start):
         variable_pattern = "var "
