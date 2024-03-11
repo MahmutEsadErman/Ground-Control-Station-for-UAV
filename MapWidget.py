@@ -17,7 +17,7 @@ def image_to_base64(image_path):
         return base64.b64encode(image_file.read()).decode()
 
 
-uav_icon_base64 = image_to_base64('icons/uav.png')
+uav_icon_base64 = image_to_base64('assets/icons/uav.png')
 
 
 class MapWidget(QtWebEngineWidgets.QWebEngineView):
@@ -60,7 +60,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
         self.setHtml(data.getvalue().decode())
 
         # Add buttons
-        self.btn_AllocateWidget = QPushButton(icon=QIcon("icons/16x16/cil-arrow-top.png"), parent=self)
+        self.btn_AllocateWidget = QPushButton(icon=QIcon("assets/icons/16x16/cil-arrow-top.png"), parent=self)
         self.btn_AllocateWidget.setCursor(Qt.PointingHandCursor)
         self.btn_AllocateWidget.setStyleSheet("background-color: rgb(44, 49, 60);")
         self.btn_AllocateWidget.resize(25, 25)
