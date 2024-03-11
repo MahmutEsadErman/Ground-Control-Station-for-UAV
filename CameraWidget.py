@@ -34,11 +34,11 @@ class CameraWidget(QWidget):
         self.btn_Cancel = QPushButton("Cancel")
         self.btn_Cancel.clicked.connect(self.CancelFeed)
         self.QVBLayout.addWidget(self.btn_Cancel)
-
         self.setLayout(self.QVBLayout)
 
-        self.btn_AllocateWidget = QPushButton(icon=QIcon("icons/16x16/cil-arrow-top.png"), parent=self)
+        self.btn_AllocateWidget = QPushButton(icon=QIcon("assets/icons/16x16/cil-arrow-top.png"), parent=self)
         self.btn_AllocateWidget.setCursor(Qt.PointingHandCursor)
+        self.btn_AllocateWidget.setStyleSheet("background-color: rgb(44, 49, 60);")
         self.btn_AllocateWidget.resize(25, 25)
 
         # A variable that holds if the widget is child of the main window or not

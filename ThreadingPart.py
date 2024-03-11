@@ -58,7 +58,7 @@ class ConnectionThread(QThread):
 def handleConnectedVehicle(vehicle, mapwidget, connectbutton):
     # Set connect button disable
     connectbutton.setText('Connected')
-    connectbutton.setIcon(QIcon('icons/24x24/cil-link.png'))
+    connectbutton.setIcon(QIcon('assets/icons/24x24/cil-link.png'))
     connectbutton.setDisabled(True)
 
     # Fly to UAV's position
@@ -88,5 +88,5 @@ def updateData(vehicle, mapwidget):
 
 def connectionLost(connectbutton):
     connectbutton.setText('Connect')
-    connectbutton.setIcon(QIcon('icons/24x24/cil-link-broken.png'))
+    connectbutton.setIcon(QIcon('assets/icons/24x24/cil-link-broken.png'))
     connectbutton.setDisabled(False)
