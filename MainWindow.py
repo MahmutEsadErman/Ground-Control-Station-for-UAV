@@ -41,8 +41,8 @@ class MainWindow(QMainWindow):
         self.move(self.screenSize.width() / 2 - self.startSize.width() / 2, self.screenSize.height() / 2 - self.startSize.height() / 2)
 
         # Set Font
-        QtGui.QFontDatabase.addApplicationFont('fonts/segoeui.ttf')
-        QtGui.QFontDatabase.addApplicationFont('fonts/segoeuib.ttf')
+        QtGui.QFontDatabase.addApplicationFont('assets/fonts/segoeui.ttf')
+        QtGui.QFontDatabase.addApplicationFont('assets/fonts/segoeuib.ttf')
 
         # Sizegrip (To Resize Window)
         self.sizegrip = QSizeGrip(self.ui.frame_size_grip)
