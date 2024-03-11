@@ -61,11 +61,11 @@ class MainWindow(QMainWindow):
 
         #  SET BUTTONS
         #  Main Window buttons
-        self.ui.btn_close.setIcon(QtGui.QIcon('icons/16x16/cil-x.png'))
+        self.ui.btn_close.setIcon(QtGui.QIcon('assets/icons/16x16/cil-x.png'))
         self.ui.btn_close.clicked.connect(lambda: sys.exit())
-        self.ui.btn_maximize_restore.setIcon(QtGui.QIcon('icons/16x16/cil-window-maximize.png'))
+        self.ui.btn_maximize_restore.setIcon(QtGui.QIcon('assets/icons/16x16/cil-window-maximize.png'))
         self.ui.btn_maximize_restore.clicked.connect(self.maximize_restore)
-        self.ui.btn_minimize.setIcon(QtGui.QIcon('icons/16x16/cil-window-minimize.png'))
+        self.ui.btn_minimize.setIcon(QtGui.QIcon('assets/icons/16x16/cil-window-minimize.png'))
         self.ui.btn_minimize.clicked.connect(lambda: self.showMinimized())
 
         self.ui.btn_home_page.setDisabled(True)
@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
         self.setButton(self.ui.btn_home_page, 'icons/24x24/cil-home.png')
         self.setButton(self.ui.btn_indicators_page, 'icons/24x24/cil-speedometer.png')
         self.setButton(self.ui.btn_targets_page, 'icons/24x24/cil-user.png')
-        self.ui.btn_connect.setIcon(QtGui.QIcon('icons/24x24/cil-link-broken.png'))
+        self.ui.btn_connect.setIcon(QtGui.QIcon('assets/icons/24x24/cil-link-broken.png'))
 
         self.ui.btn_connect.clicked.connect(self.connectToVehicle)
 
@@ -116,12 +116,12 @@ class MainWindow(QMainWindow):
     def maximize_restore(self):
         if self.state == 1:
             self.ui.btn_maximize_restore.setToolTip("Maximize")
-            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"icons/16x16/cil-window-maximize.png"))
+            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"assets/icons/16x16/cil-window-maximize.png"))
             self.showNormal()
             self.state = 0
         else:
             self.ui.btn_maximize_restore.setToolTip("Restore")
-            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"icons/16x16/cil-window-restore.png"))
+            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"assets/icons/16x16/cil-window-restore.png"))
             self.showMaximized()
             self.state = 1
 
