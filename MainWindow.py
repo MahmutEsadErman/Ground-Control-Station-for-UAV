@@ -7,6 +7,7 @@ from PySide6.QtCore import QFile, Qt, QEvent, QSize, QTimer, QPropertyAnimation,
 
 from ThreadingPart import *
 from HomePage import HomePage
+from IndicatorsPage import IndicatorsPage
 
 
 class MainWindow(QMainWindow):
@@ -50,7 +51,9 @@ class MainWindow(QMainWindow):
 
         # Setting Pages
         self.homepage = HomePage()
+        self.indicatorspage = IndicatorsPage()
         self.ui.stackedWidget.addWidget(self.homepage)
+        self.ui.stackedWidget.addWidget(self.indicatorspage)
         self.ui.stackedWidget.setCurrentWidget(self.homepage)
 
         # Connection Thread
@@ -164,7 +167,7 @@ class MainWindow(QMainWindow):
 
         # PAGE NEW USER
         if button.objectName() == "btn_indicators_page":
-            self.ui.stackedWidget.setCurrentWidget(self.ui.page_indicators)
+            self.ui.stackedWidget.setCurrentWidget(self.indicatorspage)
             self.ui.label_top_info_2.setText("| Indicators")
 
         # PAGE WIDGETS
