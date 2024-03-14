@@ -18,8 +18,8 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
         self.setupUi(self)
         self.setWindowTitle("Indicators")
         self.needle_image = Image.open(u"assets/needle.png")
-        self.needle_gs_image = Image.open(u"assets/needle_gs.png")
-        self.needle_plane_image = Image.open(u"assets/plane.png")
+        self.needle_gs_image = Image.open(u"assets/Needle_gs.png")
+        self.needle_plane_image = Image.open(u"assets/Plane.png")
 
         # frame width: 296, height: 272
 
