@@ -5,6 +5,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QLabel, QComboBox
 from PySide6.QtCore import QFile, Qt, QEvent, QSize, QTimer, QPropertyAnimation, QEasingCurve
 
+from TargetsPage import TargetsPage
 from ThreadingPart import *
 from HomePage import HomePage
 from IndicatorsPage import IndicatorsPage
@@ -47,11 +48,14 @@ class MainWindow(QMainWindow):
 
         # Sizegrip (To Resize Window)
         self.sizegrip = QSizeGrip(self.ui.frame_size_grip)
-        self.sizegrip.setStyleSheet("background-image: url(icons/16x16/cil-size-grip.png);width: 20px; height: 20px; margin 0px; padding: 0px;")
+        self.sizegrip.setStyleSheet("background-image: url(assets/icons/16x16/cil-size-grip.png);width: 20px; height: 20px; margin 0px; padding: 0px;")
 
         # Setting Pages
         self.homepage = HomePage()
         self.indicatorspage = IndicatorsPage()
+        self.targetspage = TargetsPage()
+        self.ui.stackedWidget.addWidget(self.homepage)
+        self.ui.stackedWidget.addWidget(self.targetspage)
         self.ui.stackedWidget.addWidget(self.homepage)
         self.ui.stackedWidget.addWidget(self.indicatorspage)
         self.ui.stackedWidget.setCurrentWidget(self.homepage)
@@ -73,10 +77,10 @@ class MainWindow(QMainWindow):
 
         self.ui.btn_home_page.setDisabled(True)
         self.disabledbutton = self.ui.btn_home_page
-        self.setButton(self.ui.btn_toggle_menu, 'icons/24x24/cil-menu.png')
-        self.setButton(self.ui.btn_home_page, 'icons/24x24/cil-home.png')
-        self.setButton(self.ui.btn_indicators_page, 'icons/24x24/cil-speedometer.png')
-        self.setButton(self.ui.btn_targets_page, 'icons/24x24/cil-user.png')
+        self.setButton(self.ui.btn_toggle_menu, 'assets/icons/24x24/cil-menu.png')
+        self.setButton(self.ui.btn_home_page, 'assets/icons/24x24/cil-home.png')
+        self.setButton(self.ui.btn_indicators_page, 'assets/icons/24x24/cil-speedometer.png')
+        self.setButton(self.ui.btn_targets_page, 'assets/icons/24x24/cil-user.png')
         self.ui.btn_connect.setIcon(QtGui.QIcon('assets/icons/24x24/cil-link-broken.png'))
 
         self.ui.btn_connect.clicked.connect(self.connectToVehicle)
@@ -93,7 +97,7 @@ class MainWindow(QMainWindow):
         if obj == self.ui.label_title_bar_top:
             # Maximize and restore when double click
             if event.type() == QEvent.MouseButtonDblClick:
-                QTimer.singleShot(250, lambda: self.maximize_restore())
+                self.maximize_restore()
             # Drag move window
             if event.type() == QEvent.MouseMove:
                 if event.buttons() == Qt.LeftButton:
@@ -172,7 +176,7 @@ class MainWindow(QMainWindow):
 
         # PAGE WIDGETS
         if button.objectName() == "btn_targets_page":
-            self.ui.stackedWidget.setCurrentWidget(self.homepage)
+            self.ui.stackedWidget.setCurrentWidget(self.targetspage)
             self.ui.label_top_info_2.setText("| Targets")
 
     def connectToVehicle(self):
