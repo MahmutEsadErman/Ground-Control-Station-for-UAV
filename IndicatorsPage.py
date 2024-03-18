@@ -1,9 +1,7 @@
-import io
+import sys
 
 from PySide6 import QtGui
-from PySide6.QtCore import Qt, QThread, Signal, QPoint, QBuffer
-from PySide6.QtGui import QTransform, QImage, QPainter, QPixmap
-from PySide6.QtWidgets import QWidget, QLabel
+from PySide6.QtWidgets import QWidget, QLabel, QApplication
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
@@ -16,10 +14,13 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.setWindowTitle("Indicators")
         self.needle_image = Image.open(u"assets/needle.png")
         self.needle_gs_image = Image.open(u"assets/Needle_gs.png")
         self.needle_plane_image = Image.open(u"assets/Plane.png")
+
+        # Indicators' values
+        self.maxSpeed = 22
+        self.maxVerticalSpeed = 12
 
         # frame width: 296, height: 272
 
@@ -37,39 +38,38 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
     def gyrometer(self, degree):
         self.rotate_needle(degree, self.gyro_needle)
 
-    def speedometer(self, degree):
-
-        if 0 > degree:
-            degree = 0
-
-        elif degree > 360:
-            degree -= 360
+    def setSpeed(self, speed):
+        if speed < self.maxSpeed:
+            degree = speed*360/self.maxSpeed
+        else:
+            degree = 360
 
         degree = 280 / 360 * degree + 125
         self.rotate_needle(degree, self.speed_needle)
 
-    def vspeedometer(self, degree):
-        if degree < 0:
+    def setVerticalSpeed(self, speed):
+        if self.maxVerticalSpeed > speed > -self.maxVerticalSpeed:
+            degree = speed*180/self.maxVerticalSpeed + 180
+        else:
             degree = 0
 
-        elif degree > 360:
-            degree = 360
-        degree = 1 / 2 * degree + 180
         self.rotate_needle(degree, self.vspeed_needle)
 
-    def headingmeter(self, degree):
+    def setHeading(self, degree):
         self.rotate_needle(degree, self.direction_needle)
 
-    def altimeter(self, altitude):
-
-        altitude = 120
+    def setAltitude(self, altitude):
         if altitude < 0:
             altitude = 0
         elif altitude > 120:
             altitude = -altitude
-
         altitude = -500 / 126 * altitude + 510
-
-        print(self.altitude_needle.y())
         self.altitude_needle.setGeometry(self.altitude_needle.x(), altitude, self.altitude_needle.width(),
                                          self.altitude_needle.height())
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = IndicatorsPage()
+    window.show()
+    sys.exit(app.exec())

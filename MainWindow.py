@@ -2,8 +2,8 @@ import sys
 
 from PySide6 import QtGui
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QLabel, QComboBox
-from PySide6.QtCore import QFile, Qt, QEvent, QSize, QTimer, QPropertyAnimation, QEasingCurve
+from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip
+from PySide6.QtCore import QFile, Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
 
 from TargetsPage import TargetsPage
 from ThreadingPart import *
@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         self.ui.stackedWidget.setCurrentWidget(self.homepage)
 
         # Connection Thread
-        self.connectionThread = ConnectionThread(self.ui.btn_connect, self.homepage.mapwidget)
+        self.connectionThread = ConnectionThread(self.ui.btn_connect, self.homepage.mapwidget, self.indicatorspage)
         self.connectionThread.vehicleConnected.connect(handleConnectedVehicle)
         self.connectionThread.updateData.connect(updateData)
         self.connectionThread.connectionLost.connect(connectionLost)
@@ -150,7 +150,6 @@ class MainWindow(QMainWindow):
                 self.ui.btn_home_page.setText("")
                 self.ui.btn_indicators_page.setText("")
                 self.ui.btn_targets_page.setText("")
-
 
             # ANIMATION
             self.animation = QPropertyAnimation(self.ui.frame_left_menu, b"minimumWidth")

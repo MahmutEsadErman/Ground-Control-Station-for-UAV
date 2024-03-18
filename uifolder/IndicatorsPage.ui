@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>700</width>
-    <height>650</height>
+    <width>885</width>
+    <height>651</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -20,10 +20,12 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QFrame{background-color: qlineargradient(spread:pad, x1:0.477, y1:1, x2:0.488, y2:0, stop:0 rgba(27, 42, 45, 255), stop:0.741294 rgba(66, 78, 76, 255));
+   <string notr="true">QFrame{background-color: qlineargradient(spread:pad, x1:0.5, y1:1, x2:0.542, y2:0.0283636, stop:0.133663 rgba(30, 33, 31, 255), stop:0.816832 rgba(40, 44, 52, 255));
 border-radius: 20px;
 border: 0px, solid, black;
-}</string>
+color: #ffffff;
+}
+QLabel{background-color: transparent;}</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -47,7 +49,7 @@ border: 0px, solid, black;
       <item row="1" column="0">
        <widget class="QFrame" name="Direction">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -164,7 +166,7 @@ border: 0px, solid, black;
       <item row="0" column="0">
        <widget class="QFrame" name="Speedometer">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -173,6 +175,12 @@ border: 0px, solid, black;
          <size>
           <width>272</width>
           <height>272</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>16777215</height>
          </size>
         </property>
         <property name="frameShape">
@@ -272,7 +280,7 @@ border: 0px, solid, black;
       <item row="1" column="1">
        <widget class="QFrame" name="Vspeedometer">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -281,6 +289,12 @@ border: 0px, solid, black;
          <size>
           <width>272</width>
           <height>272</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>16777215</height>
          </size>
         </property>
         <property name="frameShape">
@@ -380,7 +394,7 @@ border: 0px, solid, black;
       <item row="0" column="1">
        <widget class="QFrame" name="Gyrometer">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -389,6 +403,12 @@ border: 0px, solid, black;
          <size>
           <width>272</width>
           <height>272</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>16777215</height>
          </size>
         </property>
         <property name="frameShape">
@@ -485,7 +505,7 @@ border: 0px, solid, black;
       <item row="0" column="2" rowspan="2">
        <widget class="QFrame" name="Altitude">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -493,7 +513,7 @@ border: 0px, solid, black;
         <property name="minimumSize">
          <size>
           <width>60</width>
-          <height>0</height>
+          <height>550</height>
          </size>
         </property>
         <property name="frameShape">
