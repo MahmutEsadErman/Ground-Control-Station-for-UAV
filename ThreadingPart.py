@@ -34,7 +34,7 @@ class ConnectionThread(QThread):
         self.connectionLost.emit(self.connectButton)
 
     def setBaudRate(self, baud):
-        self.baudrate = baud
+        self.baudrate = baud  # 115200 on USB or 57600 on Radio/Telemetry
 
     def setConnectionString(self, connectionstring):
         if connectionstring == 'USB':
@@ -42,7 +42,7 @@ class ConnectionThread(QThread):
         elif connectionstring == 'SITL (UDP)':
             self.connection_string = '127.0.0.1:14550'
         elif connectionstring == 'SITL (TCP)':
-            self.connection_string = 'tcp:127.0.0.1:5760'
+            self.connection_string = '127.0.0.1:5760'
         elif connectionstring == 'UDP':
             text, ok = QInputDialog.getText(None, "Input Dialog", "Enter an IP:")
             if ok and text:

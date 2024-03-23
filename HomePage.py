@@ -35,6 +35,28 @@ class HomePage(QWidget):
         self.mapwidget.btn_AllocateWidget.clicked.connect(lambda: self.AllocateWidget(self.ui.mapFrame, self.mapwidget))
         self.cameraWidget.btn_AllocateWidget.clicked.connect(lambda: self.AllocateWidget(self.ui.cameraFrame, self.cameraWidget))
 
+        # Buttons
+        self.ui.btn_waypoints.clicked.connect(self.buttonFunctions)
+        self.ui.btn_movemarker.clicked.connect(self.buttonFunctions)
+        self.ui.btn_undo.clicked.connect(self.buttonFunctions)
+        self.ui.btn_setMission.clicked.connect(self.buttonFunctions)
+
+    def buttonFunctions(self):
+        button = self.sender()
+
+        if button.objectName() == "btn_waypoints":
+            self.mapwidget.page().runJavaScript(f"map.off('click', moveMarkerByClick);")
+            self.mapwidget.page().runJavaScript(f"map.on('click', putWaypoint);")
+        if button.objectName() == "btn_movemarker":
+            self.mapwidget.page().runJavaScript(f"map.off('click', putWaypoint);")
+            self.mapwidget.page().runJavaScript(f"map.on('click', moveMarkerByClick);")
+        if button.objectName() == "btn_undo":
+            self.mapwidget.page().runJavaScript("undoWaypoint();")
+        if button.objectName() == "btn_setMission":
+            self.mapwidget.page().runJavaScript("setMission();")
+            print("mission: "+str(self.mapwidget.mission))
+
+
     def AllocateWidget(self, parent, child):
         if child.isAttached:
             parent.layout().removeWidget(child)
