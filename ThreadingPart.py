@@ -27,6 +27,7 @@ class ConnectionThread(QThread):
         vehicle = connect(self.connection_string, wait_ready=True, baud=self.baudrate, heartbeat_timeout=timeout + 1)
         print("Connected")
         self.vehicleConnected.emit(vehicle, self.mapwidget, self.connectButton)
+        # If uav is not reached for timeout second disconnect
         while vehicle.last_heartbeat < timeout:
             self.updateData.emit(vehicle, self.mapwidget, self.indicators)
             self.sleep(1)
