@@ -2,7 +2,7 @@ import sys
 
 from PySide6 import QtGui
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip
+from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QComboBox
 from PySide6.QtCore import QFile, Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
 
 from TargetsPage import TargetsPage
@@ -49,6 +49,9 @@ class MainWindow(QMainWindow):
         # Sizegrip (To Resize Window)
         self.sizegrip = QSizeGrip(self.ui.frame_size_grip)
         self.sizegrip.setStyleSheet("background-image: url(assets/icons/16x16/cil-size-grip.png);width: 20px; height: 20px; margin 0px; padding: 0px;")
+
+        # Set Initial Baud Rate to Combobox
+        self.ui.combobox_baudrate.setCurrentText('115200')
 
         # Setting Pages
         self.homepage = HomePage()

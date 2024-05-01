@@ -21,7 +21,7 @@ uav_icon_base64 = image_to_base64('assets/icons/uav.png')
 
 
 class MapWidget(QtWebEngineWidgets.QWebEngineView):
-    marker_coord = None
+    mission = []
 
     def __init__(self, center_coord, starting_zoom=13, parent=None):
         super().__init__(parent)
@@ -76,8 +76,14 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
 
     class WebEnginePage(QWebEnginePage):
         def javaScriptConsoleMessage(self, level, msg, line, sourceID):
-            MapWidget.marker_coord = msg.split(",")
-            print(MapWidget.marker_coord)
+            if msg[0] == 'm':
+                MapWidget.mission = []
+                pairs = msg[1:].split('-')
+                for pair in pairs:
+                    MapWidget.mission.append(pair.split(','))
+                print(MapWidget.mission)
+            else:
+                print(msg)
 
     def onLoadFinished(self):
         # add marker
@@ -203,27 +209,64 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 // Rotated Marker part is taken from this repo: https://github.com/bbecquet/Leaflet.RotatedMarker
                 // Huge thanks to its contributors
                 
-                // Adding Marker
-            
+                // Take the generated map variable from folium
+                var map = %s;
+                
+                // Adding First Marker
                 var mymarker = L.marker(
                         [41.27442, 28.727317],
                         {}
-                    ).addTo(%s);
+                    ).addTo(map);
                 
-                function click(e) {
+                // Some Functions To Make Map Interactive
+                function moveMarkerByClick(e) {
                     console.log(e.latlng.lat.toFixed(4) + "," +e.latlng.lng.toFixed(4));
                     mymarker.setLatLng([e.latlng.lat, e.latlng.lng])
                 }
                 
-                %s.on('click', click);
+                function undoWaypoint() {
+                    if(waypoints.length >0)
+                        waypoints.pop().remove();
+                    if(lines.length > 0)
+                        lines.pop().remove();
+                }
                 
-                var uavIcon = L.icon({
-                    iconUrl: 'data:image/png;base64,%s', 
-                    iconSize: [40, 40],
-                });
+                // To plan a mission putting waypoints to the places that we want uav to go
+                var waypointNumber = 0;
+                var waypoints = [];
+                var lines = [];
+                function putWaypoint(e) {
+                    var marker = L.marker(
+                        [e.latlng.lat.toFixed(4), e.latlng.lng.toFixed(4)],
+                        {}
+                    ).addTo(map);
+                    
+                    // Add lines between last to waypoints
+                    if(waypoints.length > 0){
+                        points = [waypoints[waypoints.length-1].getLatLng(), marker.getLatLng()];
+                        line = L.polyline(points, {color: 'red'}).addTo(map);
+                        lines.push(line);
+                    }
+                    
+                    waypoints.push(marker);
+                    console.log("New waypoint added to "+e.latlng.lat + "," +e.latlng.lng);
+                }
+                
+                function setMission() {
+                    var msg = "m";
+                    for(let i = 0; i < waypoints.length; i++){
+                        msg += waypoints[i].getLatLng().lat+","+waypoints[i].getLatLng().lng;
+                        if(i != waypoints.length-1)
+                            msg += "-";
+                    }
+                    console.log(msg);
+                }
+                
+                // Initial mode for clicking on the map
+                map.on('click', moveMarkerByClick);
                 
                 // end custom code
-        ''' % (map_variable_name, map_variable_name, uav_icon_base64)
+        ''' % map_variable_name
 
 
 if __name__ == "__main__":

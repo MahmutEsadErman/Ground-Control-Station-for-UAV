@@ -73,31 +73,10 @@
             <enum>QFrame::Raised</enum>
            </property>
            <layout class="QGridLayout" name="gridLayout">
-            <item row="3" column="1">
-             <widget class="QPushButton" name="pushButton">
-              <property name="text">
-               <string>PushButton</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="0">
-             <widget class="QPushButton" name="pushButton_3">
+             <widget class="QPushButton" name="btn_waypoints">
               <property name="text">
-               <string>PushButton</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QPushButton" name="pushButton_2">
-              <property name="text">
-               <string>PushButton</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QPushButton" name="pushButton_6">
-              <property name="text">
-               <string>PushButton</string>
+               <string>Put Waypoints</string>
               </property>
              </widget>
             </item>
@@ -108,10 +87,31 @@
               </property>
              </widget>
             </item>
+            <item row="2" column="1">
+             <widget class="QPushButton" name="btn_movemarker">
+              <property name="text">
+               <string>Move Marker</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QPushButton" name="btn_undo">
+              <property name="text">
+               <string>Undo</string>
+              </property>
+             </widget>
+            </item>
             <item row="4" column="1">
              <widget class="QPushButton" name="pushButton_5">
               <property name="text">
                <string>PushButton</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QPushButton" name="btn_setMission">
+              <property name="text">
+               <string>Set Mission</string>
               </property>
              </widget>
             </item>
