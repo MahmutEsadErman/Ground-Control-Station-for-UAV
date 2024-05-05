@@ -1,7 +1,7 @@
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QPushButton, QInputDialog, QMessageBox
-from dronekit import Vehicle, connect
+from dronekit import Vehicle, connect, LocationGlobalRelative, VehicleMode
 
 from IndicatorsPage import IndicatorsPage
 from MapWidget import MapWidget
@@ -14,23 +14,25 @@ class ConnectionThread(QThread):
 
     def __init__(self, ConnectButton, mapwidget, indicators):
         super().__init__()
+        self.vehicle = None
         self.connection_string = None
         self.baudrate = None
         self.connectButton = ConnectButton
         self.mapwidget = mapwidget
         self.indicators = indicators
 
+    # This method is called when the thread is started
     def run(self):
         timeout = 7
         # Connect to the Vehicle
         print("Connecting to vehicle on: %s" % self.connection_string)
-        vehicle = connect(self.connection_string, wait_ready=True, baud=self.baudrate, heartbeat_timeout=timeout + 1)
+        self.vehicle = connect(self.connection_string, wait_ready=True, baud=self.baudrate, heartbeat_timeout=timeout + 1)
         print("Connected")
-        self.vehicleConnected.emit(vehicle, self.mapwidget, self.connectButton)
+        self.vehicleConnected.emit(self.vehicle, self.mapwidget, self.connectButton)
         # If uav is not reached for timeout second disconnect
-        while vehicle.last_heartbeat < timeout:
-            self.updateData.emit(vehicle, self.mapwidget, self.indicators)
-            self.sleep(1)
+        while self.vehicle.last_heartbeat < timeout:
+            self.updateData.emit(self.vehicle, self.mapwidget, self.indicators)
+            self.msleep(100)
 
         self.connectionLost.emit(self.connectButton)
 
@@ -55,6 +57,31 @@ class ConnectionThread(QThread):
                 # msgBox = QMessageBox()
                 # msgBox.setText("This is a message.")
                 # msgBox.exec()
+
+    def goto_markers_pos(self):
+        lat = float(self.mapwidget.map_page.markers_pos[0])
+        lon = float(self.mapwidget.map_page.markers_pos[1])
+        alt = self.vehicle.location.global_relative_frame.alt
+        location = LocationGlobalRelative(lat, lon, alt)
+        self.vehicle.simple_goto(location)
+
+    def takeoff(self, target_altitude):
+        # Set the vehicle mode to GUIDED
+        self.vehicle.mode = VehicleMode("GUIDED")
+
+        # Arm the vehicle
+        self.vehicle.armed = True
+
+        # Wait for the vehicle to be armed
+        while not self.vehicle.armed:
+            self.sleep(1)
+
+        # Take off to target altitude
+        self.vehicle.simple_takeoff(target_altitude)
+
+        # Wait until the vehicle reaches the target altitude
+        while self.vehicle.location.global_relative_frame.alt < target_altitude * 0.95:
+            self.sleep(1)
 
 
 def handleConnectedVehicle(vehicle, mapwidget, connectbutton):
@@ -93,3 +120,4 @@ def connectionLost(connectbutton):
     connectbutton.setText('Connect')
     connectbutton.setIcon(QIcon('assets/icons/24x24/cil-link-broken.png'))
     connectbutton.setDisabled(False)
+

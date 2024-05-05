@@ -16,13 +16,9 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
         self.setupUi(self)
 
         #Testing
-        # self.needle_image = Image.open(u"assets/needle.png")
-        # self.needle_gs_image = Image.open(u"assets/Needle_gs.png")
-        # self.needle_plane_image = Image.open(u"assets/Plane.png")
-
-        self.needle_image = Image.open(u"../assets/needle.png")
-        self.needle_gs_image = Image.open(u"../assets/Needle_gs.png")
-        self.needle_plane_image = Image.open(u"../assets/Plane.png")
+        self.needle_image = Image.open(u"assets/needle.png")
+        self.needle_gs_image = Image.open(u"assets/Needle_gs.png")
+        self.needle_plane_image = Image.open(u"assets/Plane.png")
 
         # Indicators' values
         self.maxSpeed = 22
