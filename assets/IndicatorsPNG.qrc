@@ -7,9 +7,11 @@
     <file>Vertical_Speed.png</file>
   </qresource>
   <qresource prefix="needles">
+    <file>gyrocircle.png</file>
     <file>Rectangle.png</file>
     <file>needle.png</file>
     <file>Needle_gs.png</file>
     <file>Plane.png</file>
   </qresource>
+  <qresource prefix="newPrefix"/>
 </RCC>

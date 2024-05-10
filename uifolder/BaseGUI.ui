@@ -1805,7 +1805,7 @@ QPushButton:pressed {
                    <string notr="true">color: rgb(98, 103, 111); </string>
                   </property>
                   <property name="text">
-                   <string>write something to here</string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -2247,7 +2247,7 @@ QPushButton:disabled {
                       <string notr="true">color: rgb(98, 103, 111);</string>
                      </property>
                      <property name="text">
-                      <string>v0.3</string>
+                      <string>v0.4</string>
                      </property>
                      <property name="alignment">
                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
