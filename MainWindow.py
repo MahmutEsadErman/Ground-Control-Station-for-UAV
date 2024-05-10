@@ -86,7 +86,10 @@ class MainWindow(QMainWindow):
         self.setButton(self.ui.btn_targets_page, 'assets/icons/24x24/cil-user.png')
         self.ui.btn_connect.setIcon(QtGui.QIcon('assets/icons/24x24/cil-link-broken.png'))
 
+        # Buttons to give orders to vehicle
         self.ui.btn_connect.clicked.connect(self.connectToVehicle)
+        self.homepage.ui.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
+        self.homepage.ui.btn_takeoff.clicked.connect(lambda: self.connectionThread.takeoff(10))
 
         # To move the window only from top frame
         self.ui.label_title_bar_top.installEventFilter(self)

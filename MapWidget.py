@@ -23,8 +23,8 @@ uav_icon_base64 = image_to_base64('assets/icons/uav.png')
 class MapWidget(QtWebEngineWidgets.QWebEngineView):
     mission = []
 
-    def __init__(self, center_coord, starting_zoom=13, parent=None):
-        super().__init__(parent)
+    def __init__(self, center_coord, starting_zoom=13):
+        super().__init__()
         MapWidget.marker_coord = center_coord
         self.fmap = folium.Map(location=center_coord,
                                zoom_start=starting_zoom)
@@ -52,7 +52,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
         data.write(html.encode())
 
         # To Get Java Script Console Messages
-        self.map_page = self.WebEnginePage(self)
+        self.map_page = self.WebEnginePage()
         self.setPage(self.map_page)
 
         # To Display the Map
@@ -75,6 +75,10 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
         super().resizeEvent(event)
 
     class WebEnginePage(QWebEnginePage):
+        def __init__(self):
+            super().__init__()
+            self.markers_pos = []
+
         def javaScriptConsoleMessage(self, level, msg, line, sourceID):
             if msg[0] == 'm':
                 MapWidget.mission = []
@@ -83,56 +87,26 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     MapWidget.mission.append(pair.split(','))
                 print(MapWidget.mission)
             else:
+                self.markers_pos = msg.split(',')
                 print(msg)
 
-    def onLoadFinished(self):
-        # add marker
-        self.page().runJavaScript("""
-                var uavIcon = L.icon({
-                    iconUrl: 'data:image/png;base64,%s', 
-                    iconSize: [40, 40],
-                });
-        
-                var uavMarker = L.marker(
-                            [41.27442, 28.727317],
-                            {icon: uavIcon,
-                            },
-                            
-                        ).addTo(%s);
-                uavMarker.setRotationAngle(-45)
-                """ % (uav_icon_base64, self.map_variable_name)
-                                  )
-
-    def find_popup_slice(self, html):
-        """
-        Find the starting and ending index of popup function
-        """
-
-        pattern = "function latLngPop(e)"
-
-        # starting index
-        starting_index = html.find(pattern)
-
-        #
-        tmp_html = html[starting_index:]
-
-        #
-        found = 0
-        index = 0
-        opening_found = False
-        while not opening_found or found > 0:
-            if tmp_html[index] == "{":
-                found += 1
-                opening_found = True
-            elif tmp_html[index] == "}":
-                found -= 1
-
-            index += 1
-
-        # determine the ending index of popup function
-        ending_index = starting_index + index
-
-        return starting_index, ending_index
+    # def onLoadFinished(self):
+    #     # add marker
+    #     self.page().runJavaScript("""
+    #             var uavIcon = L.icon({
+    #                 iconUrl: 'data:image/png;base64,%s',
+    #                 iconSize: [40, 40],
+    #             });
+    #
+    #             var uavMarker = L.marker(
+    #                         [41.27442, 28.727317],
+    #                         {icon: uavIcon,
+    #                         },
+    #
+    #                     ).addTo(%s);
+    #             uavMarker.setRotationAngle(-45)
+    #             """ % (uav_icon_base64, self.map_variable_name)
+    #                               )
 
     def find_variable_name(self, html, name_start):
         variable_pattern = "var "
@@ -212,6 +186,12 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 // Take the generated map variable from folium
                 var map = %s;
                 
+                
+                var uavIcon = L.icon({
+                    iconUrl: 'data:image/png;base64,%s', 
+                    iconSize: [40, 40],
+                    });
+                    
                 // Adding First Marker
                 var mymarker = L.marker(
                         [41.27442, 28.727317],
@@ -266,7 +246,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 map.on('click', moveMarkerByClick);
                 
                 // end custom code
-        ''' % map_variable_name
+        ''' % (map_variable_name, uav_icon_base64)
 
 
 if __name__ == "__main__":
