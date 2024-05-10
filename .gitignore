@@ -16,3 +16,4 @@ connection.py
 yapılacaklar.txt
 /main.py
 /__pycache__
+*.pyc
