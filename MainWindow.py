@@ -43,8 +43,8 @@ class MainWindow(QMainWindow):
         self.move(self.screenSize.width() / 2 - self.startSize.width() / 2, self.screenSize.height() / 2 - self.startSize.height() / 2)
 
         # Set Font
-        QtGui.QFontDatabase.addApplicationFont('assets/fonts/segoeui.ttf')
-        QtGui.QFontDatabase.addApplicationFont('assets/fonts/segoeuib.ttf')
+        QtGui.QFontDatabase.addApplicationFont('uifolder/assets/fonts/segoeui.ttf')
+        QtGui.QFontDatabase.addApplicationFont('uifolder/assets/fonts/segoeuib.ttf')
 
         # Sizegrip (To Resize Window)
         self.sizegrip = QSizeGrip(self.ui.frame_size_grip)
@@ -71,11 +71,11 @@ class MainWindow(QMainWindow):
 
         #  SET BUTTONS
         #  Main Window buttons
-        self.ui.btn_close.setIcon(QtGui.QIcon('assets/icons/16x16/cil-x.png'))
+        self.ui.btn_close.setIcon(QtGui.QIcon('uifolder/assets/icons/16x16/cil-x.png'))
         self.ui.btn_close.clicked.connect(lambda: sys.exit())
-        self.ui.btn_maximize_restore.setIcon(QtGui.QIcon('assets/icons/16x16/cil-window-maximize.png'))
+        self.ui.btn_maximize_restore.setIcon(QtGui.QIcon('uifolder/assets/icons/16x16/cil-window-maximize.png'))
         self.ui.btn_maximize_restore.clicked.connect(self.maximize_restore)
-        self.ui.btn_minimize.setIcon(QtGui.QIcon('assets/icons/16x16/cil-window-minimize.png'))
+        self.ui.btn_minimize.setIcon(QtGui.QIcon('uifolder/assets/icons/16x16/cil-window-minimize.png'))
         self.ui.btn_minimize.clicked.connect(lambda: self.showMinimized())
 
         self.ui.btn_home_page.setDisabled(True)
@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
         self.setButton(self.ui.btn_home_page, 'assets/icons/24x24/cil-home.png')
         self.setButton(self.ui.btn_indicators_page, 'assets/icons/24x24/cil-speedometer.png')
         self.setButton(self.ui.btn_targets_page, 'assets/icons/24x24/cil-user.png')
-        self.ui.btn_connect.setIcon(QtGui.QIcon('assets/icons/24x24/cil-link-broken.png'))
+        self.ui.btn_connect.setIcon(QtGui.QIcon('uifolder/assets/icons/24x24/cil-link-broken.png'))
 
         # Buttons to give orders to vehicle
         self.ui.btn_connect.clicked.connect(self.connectToVehicle)
@@ -129,12 +129,12 @@ class MainWindow(QMainWindow):
     def maximize_restore(self):
         if self.state == 1:
             self.ui.btn_maximize_restore.setToolTip("Maximize")
-            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"assets/icons/16x16/cil-window-maximize.png"))
+            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"uifolder/assets/icons/16x16/cil-window-maximize.png"))
             self.showNormal()
             self.state = 0
         else:
             self.ui.btn_maximize_restore.setToolTip("Restore")
-            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"assets/icons/16x16/cil-window-restore.png"))
+            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"uifolder/assets/icons/16x16/cil-window-restore.png"))
             self.showMaximized()
             self.state = 1
 

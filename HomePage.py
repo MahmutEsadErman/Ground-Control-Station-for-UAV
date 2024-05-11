@@ -62,7 +62,7 @@ class HomePage(QWidget):
             parent.layout().removeWidget(child)
             self.new_window = QMainWindow()
             self.new_window.setWindowFlags(Qt.Window | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
-            child.btn_AllocateWidget.setIcon(QIcon("assets/icons/16x16/cil-arrow-bottom.png"))
+            child.btn_AllocateWidget.setIcon(QIcon("uifolder/assets/icons/16x16/cil-arrow-bottom.png"))
             self.new_window.setCentralWidget(child)
             self.new_window.show()
             child.isAttached = False
@@ -70,7 +70,7 @@ class HomePage(QWidget):
             parent.layout().addWidget(child)
             self.new_window.setCentralWidget(None)
             self.new_window.close()
-            child.btn_AllocateWidget.setIcon(QIcon("assets/icons/16x16/cil-arrow-top.png"))
+            child.btn_AllocateWidget.setIcon(QIcon("uifolder/assets/icons/16x16/cil-arrow-top.png"))
             child.isAttached = True
 
 

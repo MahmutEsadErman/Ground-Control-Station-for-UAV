@@ -36,7 +36,7 @@ class CameraWidget(QWidget):
         self.QVBLayout.addWidget(self.btn_Cancel)
         self.setLayout(self.QVBLayout)
 
-        self.btn_AllocateWidget = QPushButton(icon=QIcon("assets/icons/16x16/cil-arrow-top.png"), parent=self)
+        self.btn_AllocateWidget = QPushButton(icon=QIcon("uifolder/assets/icons/16x16/cil-arrow-top.png"), parent=self)
         self.btn_AllocateWidget.setCursor(Qt.PointingHandCursor)
         self.btn_AllocateWidget.setStyleSheet("background-color: rgb(44, 49, 60);")
         self.btn_AllocateWidget.resize(25, 25)
