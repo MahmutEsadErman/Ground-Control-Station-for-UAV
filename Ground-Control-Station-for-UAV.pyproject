@@ -1,0 +1,32 @@
+{
+    "files": [
+        "HomePage.py",
+        "IndicatorsPage.py",
+        "MainWindow.py",
+        "assets/Altitude.png",
+        "assets/Gyrometre.png",
+        "assets/Gyroscope.png",
+        "assets/GyroscopeOLD.png",
+        "assets/IndicatorsPNG.qrc",
+        "assets/IndicatorsPNG_rc.py",
+        "assets/Rectangle.png",
+        "assets/Speedometer.png",
+        "assets/Vertical_Speed.png",
+        "assets/fir-demo-31f2b-firebase-adminsdk-75i4b-a17ad191f3.json",
+        "assets/gyrocircle.png",
+        "assets/hız-speed.svg",
+        "assets/ilkdeneme-5656-firebase-adminsdk-10hg3-741e03da89.json",
+        "assets/needle.png",
+        "assets/needle_gs.png",
+        "assets/plane.png",
+        "main.py",
+        "uifolder/BaseGUI.ui",
+        "uifolder/HomePage.ui",
+        "uifolder/IndicatorsPage.ui",
+        "uifolder/TargetsPage.ui",
+        "uifolder/__init__.py",
+        "uifolder/displayinfo.ui",
+        "uifolder/main.py",
+        "uifolder/ui_IndicatorsPage.py"
+    ]
+}
