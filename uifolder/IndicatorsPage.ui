@@ -121,7 +121,7 @@ QLabel{background-color: transparent;}</string>
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/IndicatorsPNG.qrc">:/meters/Vertical_Speed.png</pixmap>
+          <pixmap resource="indicators.qrc">:/meters/assets/Vertical_Speed.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -149,7 +149,7 @@ QLabel{background-color: transparent;}</string>
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/IndicatorsPNG.qrc">:/needles/needle.png</pixmap>
+          <pixmap resource="indicators.qrc">:/needles/assets/needle.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>false</bool>
@@ -230,7 +230,7 @@ QLabel{background-color: transparent;}</string>
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/IndicatorsPNG.qrc">:/meters/Altitude.png</pixmap>
+          <pixmap resource="indicators.qrc">:/meters/assets/Altitude.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -252,7 +252,7 @@ QLabel{background-color: transparent;}</string>
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/IndicatorsPNG.qrc">:/needles/Rectangle.png</pixmap>
+          <pixmap resource="indicators.qrc">:/needles/assets/Rectangle.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -302,7 +302,7 @@ QLabel{background-color: transparent;}</string>
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/IndicatorsPNG.qrc">:/needles/gyrocircle.png</pixmap>
+          <pixmap resource="indicators.qrc">:/needles/assets/gyrocircle.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>false</bool>
@@ -354,7 +354,7 @@ QLabel{background-color: transparent;}</string>
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/IndicatorsPNG.qrc">:/meters/Gyroscope.png</pixmap>
+          <pixmap resource="indicators.qrc">:/meters/assets/Gyroscope.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -449,7 +449,7 @@ QLabel{background-color: transparent;}</string>
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/IndicatorsPNG.qrc">:/meters/Gyrometre.png</pixmap>
+          <pixmap resource="indicators.qrc">:/meters/assets/Gyrometre.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -477,7 +477,7 @@ QLabel{background-color: transparent;}</string>
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/IndicatorsPNG.qrc">:/needles/Plane.png</pixmap>
+          <pixmap resource="indicators.qrc">:/needles/assets/plane.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>false</bool>
@@ -563,7 +563,7 @@ QLabel{background-color: transparent;}</string>
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/IndicatorsPNG.qrc">:/meters/Speedometer.png</pixmap>
+          <pixmap resource="indicators.qrc">:/meters/assets/Speedometer.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -591,7 +591,7 @@ QLabel{background-color: transparent;}</string>
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../assets/IndicatorsPNG.qrc">:/needles/needle.png</pixmap>
+          <pixmap resource="indicators.qrc">:/needles/assets/needle.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>false</bool>
@@ -755,7 +755,7 @@ QLabel{background-color: transparent;}</string>
   </layout>
  </widget>
  <resources>
-  <include location="../assets/IndicatorsPNG.qrc"/>
+  <include location="indicators.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -5,18 +5,15 @@ import firebase_admin
 from firebase_admin import credentials, db, storage
 
 
-class Firebase:
+class firebase_db:
     def __init__(self):
         cred = credentials.Certificate(r"uifolder/assets/fir-demo-31f2b-firebase-adminsdk-75i4b-a17ad191f3.json")
 
         firebase_admin.initialize_app(cred, {
             'databaseURL': 'https://fir-demo-31f2b-default-rtdb.firebaseio.com/',
-            'storageBucket': 'fir-demo-31f2b.appspot.com'
         })
         self.ref = db.reference("/Users")
         self.users = self.ref.get()
-
-        self.bucket = storage.bucket()
 
     def add_user_to_database(self, name, image, activity, coordinates):
         # Connect to the SQLite database
@@ -40,17 +37,34 @@ class Firebase:
         conn.commit()
         conn.close()
 
-    def download_image_from_storage(self, image_path_in_storage, destination_folder):
+    # # Example usage:
+    # user_name = "John Doe"
+    # user_image = "profile_pic.jpg"
+    # user_activity = True
+    # user_coordinates = {'x': 10, 'y': 20}
+    #
+    # add_user_to_database(user_name, user_image, user_activity, user_coordinates)
+
+
+class firebase_st:
+    def __init__(self):
+        cred = credentials.Certificate(r"uifolder/assets/fir-demo-31f2b-firebase-adminsdk-75i4b-a17ad191f3.json")
+        name = "storageBucket"
+        app = firebase_admin.initialize_app(cred, {
+            'storageBucket': 'gs://fir-demo-31f2b.appspot.com/', },
+                                             name)
+
+        self.bucket = storage.bucket( "profileImgs",app = app)
+
+    def download_image_from_firebase_storage(self, image_path_in_storage, destination_folder):
         # Download the image from Firebase Storage
         blob = self.bucket.blob(image_path_in_storage)
         blob.download_to_filename(destination_folder)
 
-    def upload_image_to_storage(self, path_of_image):
-        blob = self.bucket.blob("3.jpg")
-        blob.upload_from_filename(path_of_image)
 
-
-fb = Firebase()
-
-# fb.upload_image_to_storage("data/3.jpg")
-# fb.download_image_from_storage("1.jpg","1.jpg")
+dbase = firebase_db()
+st = firebase_st()
+for user in dbase.users:
+    print(user)
+    if user is not None:
+        st.download_image_from_firebase_storage("siyahprofilfoto.jpg", "data/image.jpg")
