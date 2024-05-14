@@ -8,8 +8,6 @@ from PIL.ImageQt import ImageQt
 
 from uifolder import Ui_IndicatorsPage
 
-
-
 class IndicatorsPage(QWidget, Ui_IndicatorsPage):
 
     def __init__(self):

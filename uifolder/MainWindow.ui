@@ -8,12 +8,12 @@
     <x>0</x>
     <y>0</y>
     <width>1152</width>
-    <height>806</height>
+    <height>720</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>100</width>
+    <width>1152</width>
     <height>720</height>
    </size>
   </property>
@@ -550,7 +550,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Nebula GCS</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QMainWindow {background: transparent; }
@@ -1216,7 +1216,6 @@ background-color: rgb(33, 37, 43);
                       <font>
                        <family>Segoe UI</family>
                        <pointsize>10</pointsize>
-                       <weight>75</weight>
                        <bold>true</bold>
                       </font>
                      </property>
@@ -1826,7 +1825,6 @@ QPushButton:pressed {
                   <property name="font">
                    <font>
                     <family>Segoe UI</family>
-                    <weight>75</weight>
                     <bold>true</bold>
                    </font>
                   </property>
@@ -2070,6 +2068,9 @@ QPushButton:disabled {
                   </property>
                   <property name="text">
                    <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset theme="emblem-photos"/>
                   </property>
                   <property name="iconSize">
                    <size>

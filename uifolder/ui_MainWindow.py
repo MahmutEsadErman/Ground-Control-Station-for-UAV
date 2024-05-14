@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'BaseGUI.ui'
+## Form generated from reading UI file 'MainWindow.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.5.3
 ##
@@ -23,8 +23,8 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1152, 806)
-        MainWindow.setMinimumSize(QSize(100, 720))
+        MainWindow.resize(1152, 720)
+        MainWindow.setMinimumSize(QSize(1152, 720))
         palette = QPalette()
         brush = QBrush(QColor(255, 255, 255, 255))
         brush.setStyle(Qt.SolidPattern)
@@ -785,6 +785,8 @@ class Ui_MainWindow(object):
 "QPushButton:disabled {	\n"
 "	border-right: 6px solid rgb(85, 170, 255);\n"
 "}")
+        icon = QIcon(QIcon.fromTheme(u"emblem-photos"))
+        self.btn_targets_page.setIcon(icon)
         self.btn_targets_page.setIconSize(QSize(32, 32))
 
         self.layout_menus.addWidget(self.btn_targets_page)
@@ -906,7 +908,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Nebula GCS", None))
         self.btn_toggle_menu.setText("")
         self.label_title_bar_top.setText(QCoreApplication.translate("MainWindow", u"Nebula UAV Ground Control Station", None))
         self.combobox_connectionstring.setItemText(0, QCoreApplication.translate("MainWindow", u"USB", None))

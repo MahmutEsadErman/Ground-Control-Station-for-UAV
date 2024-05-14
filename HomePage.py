@@ -7,39 +7,31 @@ from PySide6.QtCore import QFile, Qt
 
 from CameraWidget import CameraWidget
 from MapWidget import MapWidget
+from uifolder import Ui_HomePage
 
-
-class HomePage(QWidget):
+class HomePage(QWidget, Ui_HomePage):
     def __init__(self):
         super().__init__()
-
-        # Load the ui file
-        ui_file_name = "uifolder/HomePage.ui"
-        ui_file = QFile(ui_file_name)
-        self.ui = QUiLoader().load(ui_file)
-        ui_file.close()
-        layout = QVBoxLayout()
-        layout.addWidget(self.ui)
-        self.setLayout(layout)
+        self.setupUi(self)
 
         # Set Map Widget
         istanbulhavalimani = [41.27442, 28.727317]
         self.mapwidget = MapWidget(istanbulhavalimani)
-        self.ui.mapFrame.layout().addWidget(self.mapwidget)
+        self.mapFrame.layout().addWidget(self.mapwidget)
 
         # Set Camera Widget
         self.cameraWidget = CameraWidget()
-        self.ui.cameraFrame.layout().addWidget(self.cameraWidget)
+        self.cameraFrame.layout().addWidget(self.cameraWidget)
 
         # Show in another window buttons
-        self.mapwidget.btn_AllocateWidget.clicked.connect(lambda: self.AllocateWidget(self.ui.mapFrame, self.mapwidget))
-        self.cameraWidget.btn_AllocateWidget.clicked.connect(lambda: self.AllocateWidget(self.ui.cameraFrame, self.cameraWidget))
+        self.mapwidget.btn_AllocateWidget.clicked.connect(lambda: self.AllocateWidget(self.mapFrame, self.mapwidget))
+        self.cameraWidget.btn_AllocateWidget.clicked.connect(lambda: self.AllocateWidget(self.cameraFrame, self.cameraWidget))
 
         # Buttons
-        self.ui.btn_waypoints.clicked.connect(self.buttonFunctions)
-        self.ui.btn_movemarker.clicked.connect(self.buttonFunctions)
-        self.ui.btn_undo.clicked.connect(self.buttonFunctions)
-        self.ui.btn_setMission.clicked.connect(self.buttonFunctions)
+        self.btn_waypoints.clicked.connect(self.buttonFunctions)
+        self.btn_movemarker.clicked.connect(self.buttonFunctions)
+        self.btn_undo.clicked.connect(self.buttonFunctions)
+        self.btn_setMission.clicked.connect(self.buttonFunctions)
 
     def buttonFunctions(self):
         button = self.sender()
