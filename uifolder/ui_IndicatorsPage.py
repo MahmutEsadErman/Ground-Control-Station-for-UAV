@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHBoxLayout,
     QLabel, QSizePolicy, QVBoxLayout, QWidget)
-import rc_indicators
+from . import rc_indicators
 
 class Ui_IndicatorsPage(object):
     def setupUi(self, IndicatorsPage):

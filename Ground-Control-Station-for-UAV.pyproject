@@ -9,12 +9,11 @@
         "uifolder/IndicatorsPage.ui",
         "uifolder/TargetsPage.ui",
         "uifolder/__init__.py",
-        "uifolder/assets/indicators.qrc",
         "uifolder/displayinfo.ui",
+        "uifolder/indicators.qrc",
         "uifolder/main.py",
         "uifolder/ui_BaseGUI.py",
         "uifolder/ui_HomePage.py",
-        "uifolder/ui_IndicatorsPage.py",
         "uifolder/ui_TargetsPage.py",
         "uifolder/ui_displayinfo.py"
     ]
