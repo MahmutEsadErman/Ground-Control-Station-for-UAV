@@ -8,17 +8,22 @@ from PIL.ImageQt import ImageQt
 
 from uifolder import Ui_IndicatorsPage
 
-
 class IndicatorsPage(QWidget, Ui_IndicatorsPage):
 
     def __init__(self):
         super().__init__()
         self.setupUi(self)
 
-        #Testing
-        self.needle_image = Image.open(u"assets/needle.png")
-        self.needle_gs_image = Image.open(u"assets/Needle_gs.png")
-        self.needle_plane_image = Image.open(u"assets/Plane.png")
+        # Testing
+        self.needle_image = Image.open(u"uifolder/assets/needle.png")
+        self.needle_gs_image = Image.open(u"uifolder/assets/Needle_gs.png")
+        self.needle_plane_image = Image.open(u"uifolder/assets/Plane.png")
+
+
+        # self.needle_image = Image.open(u"../assets/needle.png")
+        # self.needle_gs_image = Image.open(u"../assets/Needle_gs.png")
+        # self.needle_plane_image = Image.open(u"../assets/Plane.png")
+
 
         # Indicators' values
         self.maxSpeed = 22

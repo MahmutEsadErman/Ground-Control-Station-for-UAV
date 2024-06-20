@@ -16,3 +16,13 @@ connection.py
 yapılacaklar.txt
 /main.py
 /video.mp4
+/__pycache__
+*.pyc
+__pycache__/HomePage.cpython-37.pyc
+__pycache__/IndicatorsPage.cpython-37.pyc
+__pycache__/MapWidget.cpython-37.pyc
+__pycache__/ThreadingPart.cpython-37.pyc
+/untitled
+/__pycache__
+/__pycache__
+/__pycache__

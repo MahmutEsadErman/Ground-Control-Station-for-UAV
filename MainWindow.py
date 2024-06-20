@@ -9,90 +9,77 @@ from TargetsPage import TargetsPage
 from ThreadingPart import *
 from HomePage import HomePage
 from IndicatorsPage import IndicatorsPage
+from uifolder import Ui_MainWindow
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
+        self.setupUi(self)
 
         # Frameless Window
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
-        # Load the ui file
-        ui_file_name = "uifolder/BaseGUI.ui"
-        ui_file = QFile(ui_file_name)
-        self.ui = QUiLoader().load(ui_file)
-        ui_file.close()
-        self.setCentralWidget(self.ui)
-
-        # Set Window Title
-        self.setWindowTitle("Nebula GCS")
-
         # Set initial windows size
         self.state = 0 # maximized or not
         self.screenSize = QApplication.primaryScreen().size()
-        windowRatio = 3/4
-        self.startSize = QSize(self.screenSize.width() * windowRatio, self.screenSize.height() * windowRatio)
-        self.resize(self.startSize)
-        self.setMinimumSize(self.startSize)
-        self.setMaximumSize(self.screenSize)
-        self.ui.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
 
         # Move Window to Center
-        self.move(self.screenSize.width() / 2 - self.startSize.width() / 2, self.screenSize.height() / 2 - self.startSize.height() / 2)
+        self.move(self.screenSize.width() / 2 - self.width() / 2, self.screenSize.height() / 2 - self.height() / 2)
 
         # Set Font
-        QtGui.QFontDatabase.addApplicationFont('assets/fonts/segoeui.ttf')
-        QtGui.QFontDatabase.addApplicationFont('assets/fonts/segoeuib.ttf')
+        QtGui.QFontDatabase.addApplicationFont('uifolder/assets/fonts/segoeui.ttf')
+        QtGui.QFontDatabase.addApplicationFont('uifolder/assets/fonts/segoeuib.ttf')
 
         # Sizegrip (To Resize Window)
-        self.sizegrip = QSizeGrip(self.ui.frame_size_grip)
+        self.sizegrip = QSizeGrip(self.frame_size_grip)
         self.sizegrip.setStyleSheet("background-image: url(assets/icons/16x16/cil-size-grip.png);width: 20px; height: 20px; margin 0px; padding: 0px;")
 
         # Set Initial Baud Rate to Combobox
-        self.ui.combobox_baudrate.setCurrentText('115200')
+        self.combobox_baudrate.setCurrentText('115200')
 
         # Setting Pages
         self.homepage = HomePage()
         self.indicatorspage = IndicatorsPage()
         self.targetspage = TargetsPage()
-        self.ui.stackedWidget.addWidget(self.homepage)
-        self.ui.stackedWidget.addWidget(self.targetspage)
-        self.ui.stackedWidget.addWidget(self.homepage)
-        self.ui.stackedWidget.addWidget(self.indicatorspage)
-        self.ui.stackedWidget.setCurrentWidget(self.homepage)
+        self.stackedWidget.addWidget(self.homepage)
+        self.stackedWidget.addWidget(self.targetspage)
+        self.stackedWidget.addWidget(self.homepage)
+        self.stackedWidget.addWidget(self.indicatorspage)
+        self.stackedWidget.setCurrentWidget(self.homepage)
 
         # Connection Thread
-        self.connectionThread = ConnectionThread(self.ui.btn_connect, self.homepage.mapwidget, self.indicatorspage)
+        self.connectionThread = ConnectionThread(self.btn_connect, self.homepage.mapwidget, self.indicatorspage)
         self.connectionThread.vehicleConnected.connect(handleConnectedVehicle)
         self.connectionThread.updateData.connect(updateData)
         self.connectionThread.connectionLost.connect(connectionLost)
 
         #  SET BUTTONS
         #  Main Window buttons
-        self.ui.btn_close.setIcon(QtGui.QIcon('assets/icons/16x16/cil-x.png'))
-        self.ui.btn_close.clicked.connect(lambda: sys.exit())
-        self.ui.btn_maximize_restore.setIcon(QtGui.QIcon('assets/icons/16x16/cil-window-maximize.png'))
-        self.ui.btn_maximize_restore.clicked.connect(self.maximize_restore)
-        self.ui.btn_minimize.setIcon(QtGui.QIcon('assets/icons/16x16/cil-window-minimize.png'))
-        self.ui.btn_minimize.clicked.connect(lambda: self.showMinimized())
+        self.btn_close.setIcon(QtGui.QIcon('uifolder/assets/icons/16x16/cil-x.png'))
+        self.btn_close.clicked.connect(lambda: sys.exit())
+        self.btn_maximize_restore.setIcon(QtGui.QIcon('uifolder/assets/icons/16x16/cil-window-maximize.png'))
+        self.btn_maximize_restore.clicked.connect(self.maximize_restore)
+        self.btn_minimize.setIcon(QtGui.QIcon('uifolder/assets/icons/16x16/cil-window-minimize.png'))
+        self.btn_minimize.clicked.connect(lambda: self.showMinimized())
 
-        self.ui.btn_home_page.setDisabled(True)
-        self.disabledbutton = self.ui.btn_home_page
-        self.setButton(self.ui.btn_toggle_menu, 'assets/icons/24x24/cil-menu.png')
-        self.setButton(self.ui.btn_home_page, 'assets/icons/24x24/cil-home.png')
-        self.setButton(self.ui.btn_indicators_page, 'assets/icons/24x24/cil-speedometer.png')
-        self.setButton(self.ui.btn_targets_page, 'assets/icons/24x24/cil-user.png')
-        self.ui.btn_connect.setIcon(QtGui.QIcon('assets/icons/24x24/cil-link-broken.png'))
+        self.btn_home_page.setDisabled(True)
+        self.disabledbutton = self.btn_home_page
+        self.setButton(self.btn_toggle_menu, 'assets/icons/24x24/cil-menu.png')
+        self.setButton(self.btn_home_page, 'assets/icons/24x24/cil-home.png')
+        self.setButton(self.btn_indicators_page, 'assets/icons/24x24/cil-speedometer.png')
+        self.setButton(self.btn_targets_page, 'assets/icons/24x24/cil-user.png')
+        self.btn_connect.setIcon(QtGui.QIcon('uifolder/assets/icons/24x24/cil-link-broken.png'))
 
         # Buttons to give orders to vehicle
-        self.ui.btn_connect.clicked.connect(self.connectToVehicle)
-        self.homepage.ui.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
-        self.homepage.ui.btn_takeoff.clicked.connect(lambda: self.connectionThread.takeoff(10))
+        self.btn_connect.clicked.connect(self.connectToVehicle)
+        self.homepage.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
+        self.homepage.btn_takeoff.clicked.connect(lambda: self.connectionThread.takeoff(10))
 
         # To move the window only from top frame
-        self.ui.label_title_bar_top.installEventFilter(self)
+        self.label_title_bar_top.installEventFilter(self)
 
 
     def mousePressEvent(self, event):
@@ -100,7 +87,7 @@ class MainWindow(QMainWindow):
 
     # To take events from child widgets
     def eventFilter(self, obj, event):
-        if obj == self.ui.label_title_bar_top:
+        if obj == self.label_title_bar_top:
             # Maximize and restore when double click
             if event.type() == QEvent.MouseButtonDblClick:
                 self.maximize_restore()
@@ -128,13 +115,13 @@ class MainWindow(QMainWindow):
 
     def maximize_restore(self):
         if self.state == 1:
-            self.ui.btn_maximize_restore.setToolTip("Maximize")
-            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"assets/icons/16x16/cil-window-maximize.png"))
+            self.btn_maximize_restore.setToolTip("Maximize")
+            self.btn_maximize_restore.setIcon(QtGui.QIcon(u"uifolder/assets/icons/16x16/cil-window-maximize.png"))
             self.showNormal()
             self.state = 0
         else:
-            self.ui.btn_maximize_restore.setToolTip("Restore")
-            self.ui.btn_maximize_restore.setIcon(QtGui.QIcon(u"assets/icons/16x16/cil-window-restore.png"))
+            self.btn_maximize_restore.setToolTip("Restore")
+            self.btn_maximize_restore.setIcon(QtGui.QIcon(u"uifolder/assets/icons/16x16/cil-window-restore.png"))
             self.showMaximized()
             self.state = 1
 
@@ -142,23 +129,23 @@ class MainWindow(QMainWindow):
         button = self.sender()
         # Toggle Button
         if button.objectName() == "btn_toggle_menu":
-            width = self.ui.frame_left_menu.width()
+            width = self.frame_left_menu.width()
             maxWidth = 220
             standard = 70
             # SET MAX WIDTH
             if width == standard:
                 widthExtended = maxWidth
-                self.ui.btn_home_page.setText("    Home")
-                self.ui.btn_indicators_page.setText("   Indicators")
-                self.ui.btn_targets_page.setText("     Targets")
+                self.btn_home_page.setText("    Home")
+                self.btn_indicators_page.setText("   Indicators")
+                self.btn_targets_page.setText("     Targets")
             else:
                 widthExtended = standard
-                self.ui.btn_home_page.setText("")
-                self.ui.btn_indicators_page.setText("")
-                self.ui.btn_targets_page.setText("")
+                self.btn_home_page.setText("")
+                self.btn_indicators_page.setText("")
+                self.btn_targets_page.setText("")
 
             # ANIMATION
-            self.animation = QPropertyAnimation(self.ui.frame_left_menu, b"minimumWidth")
+            self.animation = QPropertyAnimation(self.frame_left_menu, b"minimumWidth")
             self.animation.setDuration(200)
             self.animation.setStartValue(width)
             self.animation.setEndValue(widthExtended)
@@ -171,22 +158,22 @@ class MainWindow(QMainWindow):
 
         # PAGE HOME
         if button.objectName() == "btn_home_page":
-            self.ui.stackedWidget.setCurrentWidget(self.homepage)
-            self.ui.label_top_info_2.setText("| HOME")
+            self.stackedWidget.setCurrentWidget(self.homepage)
+            self.label_top_info_2.setText("| HOME")
 
         # PAGE NEW USER
         if button.objectName() == "btn_indicators_page":
-            self.ui.stackedWidget.setCurrentWidget(self.indicatorspage)
-            self.ui.label_top_info_2.setText("| Indicators")
+            self.stackedWidget.setCurrentWidget(self.indicatorspage)
+            self.label_top_info_2.setText("| Indicators")
 
         # PAGE WIDGETS
         if button.objectName() == "btn_targets_page":
-            self.ui.stackedWidget.setCurrentWidget(self.targetspage)
-            self.ui.label_top_info_2.setText("| Targets")
+            self.stackedWidget.setCurrentWidget(self.targetspage)
+            self.label_top_info_2.setText("| Targets")
 
     def connectToVehicle(self):
-        self.connectionThread.setBaudRate(int(self.ui.combobox_baudrate.currentText()))
-        self.connectionThread.setConnectionString(self.ui.combobox_connectionstring.currentText())
+        self.connectionThread.setBaudRate(int(self.combobox_baudrate.currentText()))
+        self.connectionThread.setConnectionString(self.combobox_connectionstring.currentText())
         self.connectionThread.start()
 
 if __name__ == "__main__":

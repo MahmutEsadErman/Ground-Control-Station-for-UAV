@@ -53,7 +53,7 @@ class TargetsPage(QWidget):
 
         # Create the pixmap label
         pixmap_label = QLabel()
-        pixmap_label.setPixmap(QPixmap("assets/example_images/a0.png"))
+        pixmap_label.setPixmap(QPixmap("data/1.jpg"))
         pixmap_label.setAlignment(Qt.AlignCenter | Qt.AlignCenter)
         layout.addWidget(pixmap_label)
 
