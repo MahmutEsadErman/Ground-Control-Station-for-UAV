@@ -15,6 +15,7 @@ connection.py
 /uifolder/displayinfo.ui
 yapılacaklar.txt
 /main.py
+/video.mp4
 /__pycache__
 *.pyc
 __pycache__/HomePage.cpython-37.pyc

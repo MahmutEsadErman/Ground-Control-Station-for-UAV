@@ -3,6 +3,8 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QPushButton, QInputDialog, QMessageBox
 from dronekit import Vehicle, connect, LocationGlobalRelative, VehicleMode
 
+from pymavlink import mavutil
+
 from IndicatorsPage import IndicatorsPage
 from MapWidget import MapWidget
 
