@@ -69,6 +69,8 @@ class VideoThread(QThread):
     def run(self):
         capture = cv2.VideoCapture(0)
         self.ThreadActive = True
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')  # video codec
+        out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 480))
         while self.ThreadActive:
             ret, frame = capture.read()
             if ret:
@@ -76,7 +78,8 @@ class VideoThread(QThread):
                 FlippedImage = cv2.flip(Image, 1)
                 cv2.putText(FlippedImage, str(capture.get(cv2.CAP_PROP_FPS)), (0, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (15,160,60), 2)
                 ConvertToQtFormat = QImage(FlippedImage.data, FlippedImage.shape[1], FlippedImage.shape[0], QImage.Format_RGB888)
-                Pic = ConvertToQtFormat.scaled(320, 240, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                Pic = ConvertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                out.write(frame) # Video recording
                 self.ImageUpdate.emit(Pic)
 
     def stop(self):

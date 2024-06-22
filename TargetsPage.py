@@ -1,14 +1,11 @@
 import sys
 
-from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtUiTools import QUiLoader
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMainWindow, QScrollArea, QLabel, QGridLayout, \
     QPushButton
-from PySide6.QtCore import QFile, Qt, QEvent
+from PySide6.QtCore import Qt, QEvent
 
-from CameraWidget import CameraWidget
-from MapWidget import MapWidget
-
+from MediaPlayer import MediaPlayerWindow
 
 class TargetsPage(QWidget):
     def __init__(self):
@@ -78,7 +75,7 @@ class TargetsPage(QWidget):
         if obj.objectName() == "target":
             # When double clicked open a new window
             if event.type() == QEvent.MouseButtonDblClick:
-                self.newWindow = QMainWindow()
+                self.newWindow = MediaPlayerWindow()
                 self.newWindow.show()
             # Drag move window
             if event.type() == QEvent.MouseButtonPress:
