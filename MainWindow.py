@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip,
 from PySide6.QtCore import QFile, Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
 
 from TargetsPage import TargetsPage
-from ThreadingPart import *
+from Connection import *
 from HomePage import HomePage
 from IndicatorsPage import IndicatorsPage
 

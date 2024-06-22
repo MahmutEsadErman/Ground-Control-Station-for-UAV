@@ -37,9 +37,13 @@ class MediaPlayerWindow(QMainWindow):
         self.videoframe.setAutoFillBackground(True)
 
         # Create a slider for video position
-        self.positionslider = CustomSlider(Qt.Orientation.Horizontal, self.set_position, self)
-        self.positionslider.setMaximum(1000)
-        self.positionslider.sliderMoved.connect(self.set_position)
+        self.hdurationbox = QHBoxLayout()
+        self.duration_label = QLabel("00:00:00")
+        self.duration_slider = CustomSlider(Qt.Orientation.Horizontal, self.set_position, self)
+        self.duration_slider.setMaximum(1000)
+        self.duration_slider.sliderMoved.connect(self.set_position)
+        self.hdurationbox.addWidget(self.duration_label)
+        self.hdurationbox.addWidget(self.duration_slider)
 
         # Create a horizontal box layout
         self.hbuttonbox = QHBoxLayout()
@@ -86,7 +90,7 @@ class MediaPlayerWindow(QMainWindow):
 
         self.vboxlayout = QVBoxLayout()
         self.vboxlayout.addWidget(self.videoframe)
-        self.vboxlayout.addWidget(self.positionslider)
+        self.vboxlayout.addLayout(self.hdurationbox)
         self.vboxlayout.addLayout(self.hbuttonbox)
 
         self.widget.setLayout(self.vboxlayout)
@@ -129,9 +133,13 @@ class MediaPlayerWindow(QMainWindow):
 
     def forward_backward(self, which):
         if which == 1:
-            self.set_position(self.positionslider.value() -10)
+            self.set_position(self.duration_slider.value() - self.ten_seconds)
+            self.duration_slider.setValue(self.duration_slider.value() - self.ten_seconds)
         else:
-            self.set_position(self.positionslider.value()+10)
+            self.set_position(self.duration_slider.value() + self.ten_seconds)
+            self.duration_slider.setValue(self.duration_slider.value() + self.ten_seconds)
+        watched_second = self.mediaplayer.get_position() * self.video_length_in_seconds
+        self.duration_label.setText("%02d:%02d:%02d" % (watched_second // 3600, (watched_second // 60) % 60, watched_second % 60))
 
     def open_file(self):
         dialog_txt = "Choose Media File"
@@ -143,6 +151,9 @@ class MediaPlayerWindow(QMainWindow):
         self.mediaplayer.set_media(self.media)
 
         self.media.parse()
+
+        self.video_length_in_seconds = 0
+        self.ten_seconds = 50
 
         self.setWindowTitle(self.media.get_meta(vlc.Meta.Title))
 
@@ -157,8 +168,14 @@ class MediaPlayerWindow(QMainWindow):
         self.mediaplayer.audio_set_volume(volume)
 
     def set_position(self, position):
+        if position < 0:
+            position = 0
+        elif position > 1000:
+            position = 1000
         pos = position / 1000.0
         self.mediaplayer.set_position(pos)
+        watched_second = self.mediaplayer.get_position() * self.video_length_in_seconds
+        self.duration_label.setText("%02d:%02d:%02d" % (watched_second // 3600, (watched_second // 60) % 60, watched_second % 60))
 
     def set_speed(self, speed):
         speed = self.findClosest(self.speedList, speed)
@@ -168,10 +185,17 @@ class MediaPlayerWindow(QMainWindow):
 
     def update_ui(self):
         media_pos = int(self.mediaplayer.get_position() * 1000)
-        self.positionslider.setValue(media_pos)
+        self.duration_slider.setValue(media_pos)
+        print("Position: ", self.mediaplayer.get_position(), "Duration: ", self.media.get_duration())
+        watched_second = self.mediaplayer.get_position() * self.media.get_duration() / 1000
+        self.duration_label.setText("%02d:%02d:%02d" % (watched_second // 3600, (watched_second // 60) % 60, watched_second % 60))
 
         if not self.mediaplayer.is_playing():
             self.timer.stop()
+            if not self.is_paused:
+                self.is_paused = True
+                self.playbutton.setText("Play")
+                self.mediaplayer.stop()
 
     def findClosest(self, array, value):
         array = sorted(array)
@@ -184,11 +208,17 @@ class MediaPlayerWindow(QMainWindow):
                 else:
                     return array[x - 1]
 
+    def closeEvent(self, event):
+        self.mediaplayer.stop()
+        event.accept()
+
 
 class CustomSlider(QSlider):
     def __init__(self, orientation, pressFunction, parent=None):
         super().__init__(orientation, parent)
         self.pressFunction = pressFunction
+        self.prnt = parent
+
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -200,8 +230,9 @@ class CustomSlider(QSlider):
 
     def mouseMoveEvent(self, event):
         pos = event.pos()
-        value = self.minimum() + (self.maximum()-self.minimum()) * pos.x() / self.width()
-        QToolTip.showText(event.globalPos(), str(int(value)))
+        second = (self.minimum() + (self.maximum()-self.minimum()) * pos.x() / self.width()) * self.prnt.media.get_duration() / (1000*1000)
+        time = "%02d:%02d:%02d" % (second // 3600, (second // 60) % 60, second % 60)
+        QToolTip.showText(event.globalPos(), time)
         super().mouseMoveEvent(event)
 
 
