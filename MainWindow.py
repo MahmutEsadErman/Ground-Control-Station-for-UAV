@@ -35,7 +35,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Sizegrip (To Resize Window)
         self.sizegrip = QSizeGrip(self.frame_size_grip)
-        self.sizegrip.setStyleSheet("background-image: url(assets/icons/16x16/cil-size-grip.png);width: 20px; height: 20px; margin 0px; padding: 0px;")
+        self.sizegrip.setStyleSheet("background-image: url(uifolder/assets/icons/16x16/cil-size-grip.png);width: 20px; height: 20px; margin 0px; padding: 0px;")
 
         # Set Initial Baud Rate to Combobox
         self.combobox_baudrate.setCurrentText('115200')
@@ -67,10 +67,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.btn_home_page.setDisabled(True)
         self.disabledbutton = self.btn_home_page
-        self.setButton(self.btn_toggle_menu, 'assets/icons/24x24/cil-menu.png')
-        self.setButton(self.btn_home_page, 'assets/icons/24x24/cil-home.png')
-        self.setButton(self.btn_indicators_page, 'assets/icons/24x24/cil-speedometer.png')
-        self.setButton(self.btn_targets_page, 'assets/icons/24x24/cil-user.png')
+        self.setButton(self.btn_toggle_menu, 'uifolder/assets/icons/24x24/cil-menu.png')
+        self.setButton(self.btn_home_page, 'uifolder/assets/icons/24x24/cil-home.png')
+        self.setButton(self.btn_indicators_page, 'uifolder/assets/icons/24x24/cil-speedometer.png')
+        self.setButton(self.btn_targets_page, 'uifolder/assets/icons/24x24/cil-user.png')
         self.btn_connect.setIcon(QtGui.QIcon('uifolder/assets/icons/24x24/cil-link-broken.png'))
 
         # Buttons to give orders to vehicle

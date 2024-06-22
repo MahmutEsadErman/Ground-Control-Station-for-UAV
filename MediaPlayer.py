@@ -30,6 +30,7 @@ class MediaPlayerWindow(QMainWindow):
         self.setCentralWidget(self.widget)
 
         self.videoframe = QFrame()
+        self.resize(640, 480)
 
         self.palette = self.videoframe.palette()
         self.palette.setColor(QPalette.Window, QColor(0, 0, 0))
