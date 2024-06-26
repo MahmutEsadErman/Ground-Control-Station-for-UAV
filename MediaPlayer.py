@@ -273,7 +273,7 @@ class CustomSlider(QSlider):
         pos = (self.minimum() + (self.maximum() - self.minimum()) * event.pos().x() / self.width())
 
         if self.type == SliderTypes.POSITION:
-            second = (pos * self.prnt.media.get_duration() / (1000 * 1000))
+            second = pos * self.prnt.video_length / (1000 * 1000)
             time = "%02d:%02d:%02d" % (second // 3600, (second // 60) % 60, second % 60)
             QToolTip.showText(event.globalPos(), time)
         elif self.type == SliderTypes.VOLUME:
