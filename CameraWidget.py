@@ -1,4 +1,5 @@
 import sys
+import time
 
 import cv2
 from PySide6.QtCore import Qt, QThread, Signal
@@ -48,6 +49,7 @@ class CameraWidget(QWidget):
         self.FeedLabel.setPixmap(QPixmap.fromImage(Image))
 
     def StartFeed(self):
+        self.startingTime = time.time_ns() / 1000
         self.videothread.start()
 
     def CancelFeed(self):
