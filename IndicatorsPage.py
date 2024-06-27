@@ -1,29 +1,25 @@
 import sys
 
 from PySide6 import QtGui
-from PySide6.QtWidgets import QWidget, QLabel, QApplication
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QWidget, QLabel, QApplication, QPushButton
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
 
 from uifolder import Ui_IndicatorsPage
 
-class IndicatorsPage(QWidget, Ui_IndicatorsPage):
 
+class IndicatorsPage(QWidget, Ui_IndicatorsPage):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
 
-        # Testing
+        # Load images
         self.needle_image = Image.open(u"uifolder/assets/needle.png")
         self.needle_gs_image = Image.open(u"uifolder/assets/needle_gs.png")
         self.needle_plane_image = Image.open(u"uifolder/assets/plane.png")
-
-
-        # self.needle_image = Image.open(u"../assets/needle.png")
-        # self.needle_gs_image = Image.open(u"../assets/Needle_gs.png")
-        # self.needle_plane_image = Image.open(u"../assets/Plane.png")
-
 
         # Indicators' values
         self.maxSpeed = 22
@@ -31,8 +27,16 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
 
         # frame width: 296, height: 272
 
-    def rotate_needle(self, angle, needle: QLabel):
+        # Add buttons
+        self.btn_AllocateWidget = QPushButton(icon=QIcon("uifolder/assets/icons/16x16/cil-arrow-top.png"), parent=self)
+        self.btn_AllocateWidget.setCursor(Qt.PointingHandCursor)
+        self.btn_AllocateWidget.setStyleSheet("background-color: rgb(44, 49, 60);")
+        self.btn_AllocateWidget.resize(25, 25)
 
+        # A variable that holds if the widget is child of the main window or not
+        self.isAttached = True
+
+    def rotate_needle(self, angle, needle: QLabel):
         if needle == self.gyro_needle:
             image = self.needle_gs_image
         elif needle == self.direction_needle:
@@ -47,20 +51,22 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
 
     def setSpeed(self, speed):
         if speed < self.maxSpeed:
-            degree = speed*360/self.maxSpeed
+            degree = speed * 360 / self.maxSpeed
         else:
             degree = 360
 
-        degree = 280 / 360 * degree + 125
+        degree = 280 / 360 * degree + 140
         self.rotate_needle(degree, self.speed_needle)
+        self.speed_text.setText("%.2f" % speed)
 
     def setVerticalSpeed(self, speed):
         if self.maxVerticalSpeed > speed > -self.maxVerticalSpeed:
-            degree = speed*180/self.maxVerticalSpeed + 180
+            degree = speed * 180 / self.maxVerticalSpeed + 180
         else:
             degree = 0
 
         self.rotate_needle(degree, self.vspeed_needle)
+        self.speed_text_2.setText("%.2f" % speed)
 
     def setHeading(self, degree):
         self.rotate_needle(degree, self.direction_needle)
@@ -74,6 +80,9 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
         self.altitude_needle.setGeometry(self.altitude_needle.x(), altitude, self.altitude_needle.width(),
                                          self.altitude_needle.height())
 
+    def resizeEvent(self, event):
+        self.btn_AllocateWidget.move(self.width() - self.btn_AllocateWidget.width(), 0)
+        super().resizeEvent(event)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

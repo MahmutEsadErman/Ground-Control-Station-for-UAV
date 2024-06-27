@@ -12,6 +12,7 @@
         "uifolder/main.py",
         "uifolder/ui_BaseGUI.py",
         "uifolder/ui_HomePage.py",
-        "uifolder/ui_displayinfo.py"
+        "uifolder/ui_displayinfo.py",
+        "uifolder/IndicatorsPage.ui"
     ]
 }

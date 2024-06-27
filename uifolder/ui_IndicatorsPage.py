@@ -276,9 +276,9 @@ class Ui_IndicatorsPage(object):
         self.flightmode.setStyleSheet(u" color: #ffffff; font-family: 'Lato',sans-serif; font-size: 14px; font-weight: bold; text-align: center; text-transform: uppercase;")
         self.flightmode.setFrameShape(QFrame.StyledPanel)
         self.flightmode.setFrameShadow(QFrame.Raised)
-        self.xpos_label_4 = QLabel(self.flightmode)
-        self.xpos_label_4.setObjectName(u"xpos_label_4")
-        self.xpos_label_4.setGeometry(QRect(10, 5, 181, 31))
+        self.flight_mode_label = QLabel(self.flightmode)
+        self.flight_mode_label.setObjectName(u"flight_mode_label")
+        self.flight_mode_label.setGeometry(QRect(10, 5, 181, 31))
 
         self.horizontalLayout.addWidget(self.flightmode)
 
@@ -308,6 +308,6 @@ class Ui_IndicatorsPage(object):
         self.xpos_label.setText(QCoreApplication.translate("IndicatorsPage", u"X:", None))
         self.ypos_label.setText(QCoreApplication.translate("IndicatorsPage", u"Y:", None))
         self.battery_label.setText(QCoreApplication.translate("IndicatorsPage", u"Battery:", None))
-        self.xpos_label_4.setText(QCoreApplication.translate("IndicatorsPage", u"Flight Mode:", None))
+        self.flight_mode_label.setText(QCoreApplication.translate("IndicatorsPage", u"Flight Mode:", None))
     # retranslateUi
 

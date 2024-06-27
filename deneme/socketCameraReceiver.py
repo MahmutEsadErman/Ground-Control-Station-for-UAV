@@ -7,7 +7,7 @@ import collections
 
 HEADER = 64
 PORT = 5050
-IP = "192.168.11.1"  # "78.188.55.182" public ip
+IP = "172.16.0.161"  # "78.188.55.182" public ip
 ADDR = (IP, PORT)
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"

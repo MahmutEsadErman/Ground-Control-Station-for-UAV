@@ -8,6 +8,7 @@ HEADER = 64
 PORT = 5050
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(('10.254.254.254', 1))
+print(s.getsockname())
 IP = s.getsockname()[0]  # socket.gethostbyname(socket.gethostname())  # local ip , "78.188.55.182" public ip
 s.close()
 ADDR = (IP, PORT)

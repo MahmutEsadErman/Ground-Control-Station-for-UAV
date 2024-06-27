@@ -113,6 +113,11 @@ def updateData(vehicle, mapwidget, indicators):
     indicators.setVerticalSpeed(vehicle.groundspeed)
     indicators.setHeading(vehicle.heading)
     indicators.setAltitude(vehicle.location.global_relative_frame.alt)
+    indicators.xpos_label.setText("X: "+str(position[0]))
+    indicators.ypos_label.setText("Y: "+str(position[1]))
+    indicators.battery_label.setText("Battery: "+str(vehicle.battery.voltage))
+    indicators.flight_mode_label.setText("Flight Mode: "+str(vehicle.mode.name))
+
 
     mapwidget.page().runJavaScript(f"uavMarker.setLatLng({str(position)});")  # to set position of uav marker
     mapwidget.page().runJavaScript(f"uavMarker.setRotationAngle({vehicle.heading - 45});")  # to set rotation of uav

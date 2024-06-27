@@ -48,7 +48,6 @@ class HomePage(QWidget, Ui_HomePage):
             self.mapwidget.page().runJavaScript("setMission();")
             print("mission: "+str(self.mapwidget.mission))
 
-
     def AllocateWidget(self, parent, child):
         if child.isAttached:
             parent.layout().removeWidget(child)

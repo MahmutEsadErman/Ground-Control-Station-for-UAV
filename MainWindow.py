@@ -2,8 +2,8 @@ import sys
 
 from PySide6 import QtGui
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QComboBox
-from PySide6.QtCore import QFile, Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
+from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QComboBox, QFrame, QVBoxLayout, QWidget
+from PySide6.QtCore import QFile, Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve, QTimer
 
 from TargetsPage import TargetsPage
 from Connection import *
@@ -24,7 +24,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Set initial windows size
         self.state = 0 # maximized or not
         self.screenSize = QApplication.primaryScreen().size()
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.resize(1280, 800)
+        # self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
 
         # Move Window to Center
         self.move(self.screenSize.width() / 2 - self.width() / 2, self.screenSize.height() / 2 - self.height() / 2)
@@ -44,10 +45,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.homepage = HomePage()
         self.indicatorspage = IndicatorsPage()
         self.targetspage = TargetsPage()
+        self.indicatorswidget = QWidget(layout=QVBoxLayout())
+        self.indicatorswidget.layout().addWidget(self.indicatorspage)
         self.stackedWidget.addWidget(self.homepage)
         self.stackedWidget.addWidget(self.targetspage)
-        self.stackedWidget.addWidget(self.homepage)
-        self.stackedWidget.addWidget(self.indicatorspage)
+        self.stackedWidget.addWidget(self.indicatorswidget)
         self.stackedWidget.setCurrentWidget(self.homepage)
 
         # Connection Thread
@@ -76,7 +78,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Buttons to give orders to vehicle
         self.btn_connect.clicked.connect(self.connectToVehicle)
         self.homepage.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
-        self.homepage.btn_takeoff.clicked.connect(lambda: self.connectionThread.takeoff(10))
+        self.homepage.btn_takeoff.clicked.connect(lambda: QTimer.singleShot(1, self.connectionThread.takeoff(10)))
+
+        # Button to Allocate Windows
+        self.indicatorspage.btn_AllocateWidget.clicked.connect(lambda: self.AllocateWidget(self.indicatorswidget, self.indicatorspage))
 
         # To move the window only from top frame
         self.label_title_bar_top.installEventFilter(self)
@@ -163,7 +168,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # PAGE NEW USER
         if button.objectName() == "btn_indicators_page":
-            self.stackedWidget.setCurrentWidget(self.indicatorspage)
+            self.stackedWidget.setCurrentWidget(self.indicatorswidget)
             self.label_top_info_2.setText("| Indicators")
 
         # PAGE WIDGETS
@@ -175,6 +180,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.connectionThread.setBaudRate(int(self.combobox_baudrate.currentText()))
         self.connectionThread.setConnectionString(self.combobox_connectionstring.currentText())
         self.connectionThread.start()
+
+    def AllocateWidget(self, parent, child):
+        if child.isAttached:
+            parent.layout().removeWidget(child)
+            self.new_window = QMainWindow(styleSheet="background-color: rgb(44, 49, 60);" )
+            self.new_window.setWindowFlags(Qt.Window | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
+            child.btn_AllocateWidget.setIcon(QIcon("uifolder/assets/icons/16x16/cil-arrow-bottom.png"))
+            self.new_window.setCentralWidget(child)
+            self.new_window.show()
+            child.isAttached = False
+        else:
+            parent.layout().addWidget(child)
+            self.new_window.setCentralWidget(None)
+            self.new_window.close()
+            child.btn_AllocateWidget.setIcon(QIcon("uifolder/assets/icons/16x16/cil-arrow-top.png"))
+            child.isAttached = True
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

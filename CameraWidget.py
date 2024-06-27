@@ -27,16 +27,16 @@ class CameraWidget(QWidget):
         self.FeedLabel.setScaledContents(True)  # Enable scaling of contents
         self.QVBLayout.addWidget(self.FeedLabel)
 
-        # Add buttons
-        self.btn_Start = QPushButton("Start")
-        self.btn_Start.clicked.connect(self.StartFeed)
-        self.QVBLayout.addWidget(self.btn_Start)
+        # A variable that holds if the feed is on or off
+        self.on_off = False
 
-        self.btn_Cancel = QPushButton("Cancel")
-        self.btn_Cancel.clicked.connect(self.CancelFeed)
-        self.QVBLayout.addWidget(self.btn_Cancel)
+        # Add buttons
+        self.btn_start_cancel = QPushButton("Start")
+        self.btn_start_cancel.clicked.connect(self.StartCancelFeed)
+        self.QVBLayout.addWidget(self.btn_start_cancel)
         self.setLayout(self.QVBLayout)
 
+        # Allocate Widget Button
         self.btn_AllocateWidget = QPushButton(icon=QIcon("uifolder/assets/icons/16x16/cil-arrow-top.png"), parent=self)
         self.btn_AllocateWidget.setCursor(Qt.PointingHandCursor)
         self.btn_AllocateWidget.setStyleSheet("background-color: rgb(44, 49, 60);")
@@ -48,13 +48,17 @@ class CameraWidget(QWidget):
     def ImageUpdateSlot(self, Image):
         self.FeedLabel.setPixmap(QPixmap.fromImage(Image))
 
-    def StartFeed(self):
-        self.startingTime = time.time_ns() / 1000
-        self.videothread.start()
-
-    def CancelFeed(self):
-        self.videothread.stop()
-        self.videothread.finished.connect(lambda: self.FeedLabel.clear())
+    def StartCancelFeed(self):
+        if self.on_off:
+            self.videothread.stop()
+            self.videothread.finished.connect(lambda: self.FeedLabel.clear())
+            self.btn_start_cancel.setText("Start")
+            self.on_off = False
+        else:
+            self.startingTime = time.time_ns() / 1000
+            self.videothread.start()
+            self.btn_start_cancel.setText("Cancel")
+            self.on_off = True
 
     def resizeEvent(self, event):
         self.btn_AllocateWidget.move(self.width() - self.btn_AllocateWidget.width(), 0)
