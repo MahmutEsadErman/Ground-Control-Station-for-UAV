@@ -1,3 +1,4 @@
+import math
 import sys
 
 from PySide6 import QtGui
@@ -18,7 +19,7 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
 
         # Load images
         self.needle_image = Image.open(u"uifolder/assets/needle.png")
-        self.needle_gs_image = Image.open(u"uifolder/assets/needle_gs.png")
+        self.attitude_image = Image.open(u"uifolder/assets/gyrocircle.png")
         self.needle_plane_image = Image.open(u"uifolder/assets/plane.png")
 
         # Indicators' values
@@ -37,8 +38,8 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
         self.isAttached = True
 
     def rotate_needle(self, angle, needle: QLabel):
-        if needle == self.gyro_needle:
-            image = self.needle_gs_image
+        if needle == self.attitude_middle:
+            image = self.attitude_image
         elif needle == self.direction_needle:
             image = self.needle_plane_image
         else:
@@ -46,8 +47,9 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
         rotated_needle = QtGui.QPixmap.fromImage(ImageQt(image.rotate(-int(angle))))
         needle.setPixmap(rotated_needle)
 
-    def gyrometer(self, degree):
-        self.rotate_needle(degree, self.gyro_needle)
+    def setAttitude(self, pitch, roll):
+        self.attitude_middle.move(self.attitude_middle.x() + math.sin(roll)*pitch, self.attitude_middle.y() + math.cos(roll)*pitch)
+        self.rotate_needle(roll, self.attitude_middle)
 
     def setSpeed(self, speed):
         if speed < self.maxSpeed:

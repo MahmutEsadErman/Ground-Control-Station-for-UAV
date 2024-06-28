@@ -261,7 +261,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QFrame" name="Gyrometer">
+       <widget class="QFrame" name="AttitudeIndicator">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -286,7 +286,7 @@
         <property name="frameShadow">
          <enum>QFrame::Raised</enum>
         </property>
-        <widget class="QLabel" name="gyro_needle">
+        <widget class="QLabel" name="attitude_middle">
          <property name="geometry">
           <rect>
            <x>20</x>
@@ -317,7 +317,7 @@
           <number>0</number>
          </property>
         </widget>
-        <widget class="QLabel" name="gyro_label">
+        <widget class="QLabel" name="attitude_label">
          <property name="geometry">
           <rect>
            <x>20</x>
