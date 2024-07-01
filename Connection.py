@@ -1,3 +1,6 @@
+import math
+import time
+
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QPushButton, QInputDialog, QMessageBox
@@ -28,7 +31,8 @@ class ConnectionThread(QThread):
         timeout = 7
         # Connect to the Vehicle
         print("Connecting to vehicle on: %s" % self.connection_string)
-        self.vehicle = connect(self.connection_string, wait_ready=True, baud=self.baudrate, heartbeat_timeout=timeout + 1)
+        self.vehicle = connect(self.connection_string, wait_ready=True, baud=self.baudrate,
+                               heartbeat_timeout=timeout + 1)
         print("Connected")
         self.vehicleConnected.emit(self.vehicle, self.mapwidget, self.connectButton)
         # If uav is not reached for timeout second disconnect
@@ -76,7 +80,7 @@ class ConnectionThread(QThread):
 
         # Wait for the vehicle to be armed
         while not self.vehicle.armed:
-            self.sleep(1)
+            self.wait(1)
 
         # Take off to target altitude
         self.vehicle.simple_takeoff(target_altitude)
@@ -113,6 +117,11 @@ def updateData(vehicle, mapwidget, indicators):
     indicators.setVerticalSpeed(vehicle.groundspeed)
     indicators.setHeading(vehicle.heading)
     indicators.setAltitude(vehicle.location.global_relative_frame.alt)
+    indicators.setAttitude(math.degrees(vehicle.attitude.pitch), math.degrees(vehicle.attitude.roll))
+    indicators.xpos_label.setText("X: " + str(position[0]))
+    indicators.ypos_label.setText("Y: " + str(position[1]))
+    indicators.battery_label.setText("Battery: " + str(vehicle.battery.level))
+    indicators.flight_mode_label.setText("Flight Mode: " + str(vehicle.mode.name))
 
     mapwidget.page().runJavaScript(f"uavMarker.setLatLng({str(position)});")  # to set position of uav marker
     mapwidget.page().runJavaScript(f"uavMarker.setRotationAngle({vehicle.heading - 45});")  # to set rotation of uav
@@ -122,4 +131,3 @@ def connectionLost(connectbutton):
     connectbutton.setText('Connect')
     connectbutton.setIcon(QIcon('uifolder/assets/icons/24x24/cil-link-broken.png'))
     connectbutton.setDisabled(False)
-
