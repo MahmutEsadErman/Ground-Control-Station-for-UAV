@@ -9,7 +9,7 @@
    viewBox="0 0 900 900"
    xml:space="preserve"
    sodipodi:docname="hız-speed.svg"
-   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   inkscape:version="1.3.1 (9b9bdc1480, 2023-11-25, custom)"
    width="900"
    height="900"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -26,12 +26,12 @@
    inkscape:pagecheckerboard="0"
    inkscape:deskcolor="#d1d1d1"
    inkscape:zoom="2.8284271"
-   inkscape:cx="686.24713"
-   inkscape:cy="689.25234"
+   inkscape:cx="686.24714"
+   inkscape:cy="717.35984"
    inkscape:window-width="1920"
-   inkscape:window-height="991"
-   inkscape:window-x="-9"
-   inkscape:window-y="-9"
+   inkscape:window-height="1016"
+   inkscape:window-x="0"
+   inkscape:window-y="27"
    inkscape:window-maximized="1"
    inkscape:current-layer="Layer_1"
    inkscape:connector-spacing="0"
@@ -1652,11 +1652,11 @@
    xml:space="preserve"><tspan
      x="0"
      y="0"
-     id="tspan3"><tspan
+     id="tspan9"><tspan
        style="font-size:7.1255px;font-family:MyriadPro-BoldIt;fill:#ffffff"
-       id="tspan1">HIZ / </tspan><tspan
+       id="tspan7">HIZ / </tspan><tspan
        style="font-size:7.1255px;font-family:MyriadPro-BoldIt;fill:#009444"
-       id="tspan2">SPEED</tspan></tspan></text>
+       id="tspan8">SPEED</tspan></tspan></text>
 	<text
    transform="translate(72.9194,-8.3265)"
    id="text164"
@@ -3926,7 +3926,7 @@
      d="m 720.5,654 -14.55561,-0.0963 -14.55561,-0.0963 7.36122,-12.55737 7.36122,-12.55737 7.19439,12.65369 z"
      inkscape:transform-center-x="0.055607966"
      inkscape:transform-center-y="-4.1536842"
-     transform="matrix(0.47312501,0,0,0.47312501,-108.00628,-407.1402)"
+     transform="matrix(0.47312501,0,0,0.47312501,-108.00628,-399.5702)"
      inkscape:label="ucgen" /></g><g
    id="Vertical_Speed"
    transform="matrix(2.1383227,0,0,2.1383227,-269.36258,276.62451)"
@@ -4654,11 +4654,11 @@
    xml:space="preserve"><tspan
      x="359.89865"
      y="-33.003956"
-     id="tspan6"><tspan
+     id="tspan12"><tspan
        style="font-size:5.75086px;font-family:MyriadPro-BoldIt;fill:#ffffff"
-       id="tspan4">m / </tspan><tspan
+       id="tspan10">m / </tspan><tspan
        style="font-size:5.75086px;font-family:MyriadPro-BoldIt;fill:#009444"
-       id="tspan5">s</tspan></tspan></text>
+       id="tspan11">s</tspan></tspan></text>
 		<g
    id="g513">
 			

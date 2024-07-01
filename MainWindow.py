@@ -156,6 +156,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.animation.setEndValue(widthExtended)
             self.animation.setEasingCurve(QEasingCurve.InOutQuart)
             self.animation.start()
+
+            animation = QPropertyAnimation(button, b"geometry")
+            animation.setDuration(2000)
+            animation.setStartValue(button.geometry())
+            animation.setEndValue(button.geometry())
+            animation.setEasingCurve(QEasingCurve.InOutQuad)
+
+            # Start the animation
+            animation.start()
         else:
             self.disabledbutton.setDisabled(False)
             self.disabledbutton = button
@@ -183,6 +192,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def AllocateWidget(self, parent, child):
         if child.isAttached:
+            self.stackedWidget.setCurrentWidget(self.homepage)
             parent.layout().removeWidget(child)
             self.new_window = QMainWindow(styleSheet="background-color: rgb(44, 49, 60);" )
             self.new_window.setWindowFlags(Qt.Window | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
@@ -196,6 +206,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.new_window.close()
             child.btn_AllocateWidget.setIcon(QIcon("uifolder/assets/icons/16x16/cil-arrow-top.png"))
             child.isAttached = True
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

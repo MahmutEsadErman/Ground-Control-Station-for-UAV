@@ -9,8 +9,8 @@
 ################################################################################
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
+                            QMetaObject, QObject, QPoint, QRect,
+                            QSize, QTime, QUrl, Qt, Property)
 from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
@@ -74,7 +74,7 @@ class Ui_IndicatorsPage(object):
         self.vspeed_label.setScaledContents(True)
         self.vspeed_label.setAlignment(Qt.AlignCenter)
         self.vspeed_label.setIndent(-1)
-        self.vspeed_needle = QLabel(self.Vspeedometer)
+        self.vspeed_needle = RotatingLabel(u"uifolder/assets/needle.png", self.Vspeedometer)
         self.vspeed_needle.setObjectName(u"vspeed_needle")
         self.vspeed_needle.setGeometry(QRect(20, 8, 256, 256))
         self.vspeed_needle.setStyleSheet(u"background-color: transparent")
@@ -128,11 +128,10 @@ class Ui_IndicatorsPage(object):
         self.AttitudeIndicator.setMaximumSize(QSize(300, 16777215))
         self.AttitudeIndicator.setFrameShape(QFrame.StyledPanel)
         self.AttitudeIndicator.setFrameShadow(QFrame.Raised)
-        self.attitude_middle = QLabel(self.AttitudeIndicator)
+        self.attitude_middle = RotatingLabel(u"uifolder/assets/gyrocircle.png", self.AttitudeIndicator)
         self.attitude_middle.setObjectName(u"attitude_middle")
-        self.attitude_middle.setGeometry(QRect(20, 8, 256, 256))
+        self.attitude_middle.setGeometry(QRect(55, 41, 187, 187))
         self.attitude_middle.setStyleSheet(u"background-color: transparent")
-        self.attitude_middle.setPixmap(QPixmap(u":/needles/assets/gyrocircle.png"))
         self.attitude_middle.setScaledContents(False)
         self.attitude_middle.setAlignment(Qt.AlignCenter)
         self.attitude_middle.setWordWrap(False)
@@ -179,7 +178,7 @@ class Ui_IndicatorsPage(object):
         self.direction_label.setScaledContents(True)
         self.direction_label.setAlignment(Qt.AlignCenter)
         self.direction_label.setIndent(-1)
-        self.direction_needle = QLabel(self.Direction)
+        self.direction_needle = RotatingLabel(u"uifolder/assets/plane.png", self.Direction)
         self.direction_needle.setObjectName(u"direction_needle")
         self.direction_needle.setGeometry(QRect(20, 8, 252, 252))
         self.direction_needle.setStyleSheet(u"background-color: transparent")
@@ -213,7 +212,7 @@ class Ui_IndicatorsPage(object):
         self.speed_label.setScaledContents(True)
         self.speed_label.setAlignment(Qt.AlignCenter)
         self.speed_label.setIndent(-1)
-        self.speed_needle = QLabel(self.Speedometer)
+        self.speed_needle = RotatingLabel(u"uifolder/assets/needle.png", self.Speedometer)
         self.speed_needle.setObjectName(u"speed_needle")
         self.speed_needle.setGeometry(QRect(20, 8, 256, 256))
         self.speed_needle.setStyleSheet(u"background-color: transparent")
@@ -310,4 +309,28 @@ class Ui_IndicatorsPage(object):
         self.battery_label.setText(QCoreApplication.translate("IndicatorsPage", u"Battery:", None))
         self.flight_mode_label.setText(QCoreApplication.translate("IndicatorsPage", u"Flight Mode:", None))
     # retranslateUi
+
+class RotatingLabel(QLabel):
+        def __init__(self, image, parent=None):
+                super().__init__(parent)
+                self._angle = 0
+                self.image = image
+
+        def getAngle(self):
+                return self._angle
+
+        def setAngle(self, angle):
+                self._angle = angle
+                self.update()
+
+        angle = Property(int, getAngle, setAngle)
+
+        def paintEvent(self, event):
+                painter = QPainter(self)
+                painter.setRenderHint(QPainter.Antialiasing)
+                painter.setRenderHint(QPainter.SmoothPixmapTransform)
+                painter.translate(self.width() / 2, self.height()/2)
+                painter.rotate(self._angle)
+                pixmap = QPixmap(self.image).scaled(self.width(), self.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                painter.drawPixmap(-self.width()/2, -self.height()/2, pixmap)
 

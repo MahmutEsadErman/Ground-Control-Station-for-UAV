@@ -1,4 +1,5 @@
 import math
+import time
 
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIcon
@@ -79,7 +80,7 @@ class ConnectionThread(QThread):
 
         # Wait for the vehicle to be armed
         while not self.vehicle.armed:
-            self.sleep(1)
+            self.wait(1)
 
         # Take off to target altitude
         self.vehicle.simple_takeoff(target_altitude)
