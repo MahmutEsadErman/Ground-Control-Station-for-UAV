@@ -24,8 +24,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Set initial windows size
         self.state = 0 # maximized or not
         self.screenSize = QApplication.primaryScreen().size()
-        self.resize(1280, 800)
-        # self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        # self.resize(1280, 800)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
 
         # Move Window to Center
         self.move(self.screenSize.width() / 2 - self.width() / 2, self.screenSize.height() / 2 - self.height() / 2)
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.stackedWidget.setCurrentWidget(self.homepage)
 
         # Connection Thread
-        self.connectionThread = ConnectionThread(self.btn_connect, self.homepage.mapwidget, self.indicatorspage)
+        self.connectionThread = ConnectionThread(self)
         self.connectionThread.vehicleConnected.connect(handleConnectedVehicle)
         self.connectionThread.updateData.connect(updateData)
         self.connectionThread.connectionLost.connect(connectionLost)

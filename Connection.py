@@ -1,30 +1,29 @@
 import math
-import time
 
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QPushButton, QInputDialog, QMessageBox
+from PySide6.QtWidgets import QPushButton, QInputDialog
 from dronekit import Vehicle, connect, LocationGlobalRelative, VehicleMode
 
-from pymavlink import mavutil
-
+from CameraWidget import CameraWidget
 from IndicatorsPage import IndicatorsPage
 from MapWidget import MapWidget
 
 
 class ConnectionThread(QThread):
     vehicleConnected = Signal(Vehicle, MapWidget, QPushButton)
-    updateData = Signal(Vehicle, MapWidget, IndicatorsPage)
+    updateData = Signal(Vehicle, MapWidget, IndicatorsPage, CameraWidget)
     connectionLost = Signal(QPushButton)
 
-    def __init__(self, ConnectButton, mapwidget, indicators):
+    def __init__(self, parent=None):
         super().__init__()
+        self.parent = parent
         self.vehicle = None
         self.connection_string = None
         self.baudrate = None
-        self.connectButton = ConnectButton
-        self.mapwidget = mapwidget
-        self.indicators = indicators
+        self.connectButton = parent.btn_connect
+        self.mapwidget = parent.homepage.mapwidget
+        self.indicators = parent.indicatorspage
 
     # This method is called when the thread is started
     def run(self):
@@ -110,7 +109,7 @@ def handleConnectedVehicle(vehicle, mapwidget, connectbutton):
                                    )
 
 
-def updateData(vehicle, mapwidget, indicators):
+def updateData(vehicle, mapwidget, indicators, camerawidget):
     position = [vehicle.location.global_relative_frame.lat, vehicle.location.global_relative_frame.lon]
 
     indicators.setSpeed(vehicle.airspeed)
@@ -125,6 +124,8 @@ def updateData(vehicle, mapwidget, indicators):
 
     mapwidget.page().runJavaScript(f"uavMarker.setLatLng({str(position)});")  # to set position of uav marker
     mapwidget.page().runJavaScript(f"uavMarker.setRotationAngle({vehicle.heading - 45});")  # to set rotation of uav
+
+    camerawidget.videothread.setHorizon(vehicle.attitude.roll)
 
 
 def connectionLost(connectbutton):
