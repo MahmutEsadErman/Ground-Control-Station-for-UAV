@@ -164,18 +164,18 @@ class VideoStreamThread(QThread):
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
 
-                # if self.parent.hud_checkbox.isChecked():
-                # Put FPS
-                new_frame_time = time.time()
-                fps = 1 / (new_frame_time - prev_frame_time)
-                prev_frame_time = new_frame_time
-                fps_filter.append(fps)
-                avg_fps = sum(fps_filter) / len(fps_filter)
-                avg_fps = str(int(avg_fps))
-                cv2.putText(frame, avg_fps, (10, 40), font, 1.5, self.hudcolor, self.thickness, cv2.LINE_AA)
+                if self.parent.hud_checkbox.isChecked():
+                    # Put FPS
+                    new_frame_time = time.time()
+                    fps = 1 / (new_frame_time - prev_frame_time)
+                    prev_frame_time = new_frame_time
+                    fps_filter.append(fps)
+                    avg_fps = sum(fps_filter) / len(fps_filter)
+                    avg_fps = str(int(avg_fps))
+                    cv2.putText(frame, avg_fps, (10, 40), font, 1.5, self.hudcolor, self.thickness, cv2.LINE_AA)
 
-                # Put Horizon Line
-                cv2.line(frame, self.p1, self.p2, self.hudcolor, self.thickness)
+                    # Put Horizon Line
+                    cv2.line(frame, self.p1, self.p2, self.hudcolor, self.thickness)
 
 
                 # Convert frame to QImage

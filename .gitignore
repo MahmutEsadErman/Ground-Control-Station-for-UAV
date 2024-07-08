@@ -8,7 +8,7 @@ startardupilot.sh
 startgazeboarducopter.sh
 map.html
 quickstart.py
-connection.py
+oldConnection.py
 /deneme.py
 /DisplayInfo.py
 /uifolder/BaseGUI (copy).ui

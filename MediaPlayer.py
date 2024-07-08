@@ -2,8 +2,8 @@ import time
 import sys
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QApplication, QSlider, QPushButton, QFileDialog, \
     QHBoxLayout, QFrame, QLabel, QStyle, QToolTip
-from PySide6.QtGui import QAction, QPalette, QColor
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QAction, QPalette, QColor, QPixmap, QIcon
+from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
 import vlc
 
 
@@ -15,13 +15,13 @@ class SliderTypes:
 
 class MediaPlayerWindow(QMainWindow):
 
-    def __init__(self, startingTime = int((time.time_ns() / 1000000)-10000), firstEncounter=3000, lastEncounter=7000):
+    def __init__(self, pixmap, location, starting_time, time_interval):
         super().__init__()
-        # DENEME
-        self.firstEncounter = firstEncounter
-        self.lastEncounter = lastEncounter
-        self.startingTime = startingTime
-        self.video_length = (time.time_ns() / 1000000) - self.startingTime
+
+        self.first_encounter = time_interval[0]
+        self.last_encounter = time_interval[1]
+        self.starting_time = starting_time
+        self.video_length = (time.time_ns() / 1000000) - self.starting_time
 
 
         self.setWindowTitle("Media Player")
@@ -37,22 +37,19 @@ class MediaPlayerWindow(QMainWindow):
         # Create an empty vlc media player
         self.mediaplayer = self.instance.media_player_new()
 
-        self.create_ui()
+        self.create_ui(pixmap, location, time_interval)
         self.is_paused = False
 
         self.open_file()
 
-
-    def create_ui(self):
+    def create_ui(self, pixmap, location, time_interval):
         self.widget = QWidget(self)
         self.setCentralWidget(self.widget)
 
         self.videoframe = QFrame()
-        self.resize(640, 480)
+        self.videoframe.resize(640, 480)
 
-        self.palette = self.videoframe.palette()
-        self.palette.setColor(QPalette.Window, QColor(0, 0, 0))
-        self.videoframe.setPalette(self.palette)
+        self.videoframe.palette().setColor(QPalette.Window, QColor(0, 0, 0))
         self.videoframe.setAutoFillBackground(True)
 
         # Create a slider for video position
@@ -112,7 +109,11 @@ class MediaPlayerWindow(QMainWindow):
         self.vboxlayout.addLayout(self.hdurationbox)
         self.vboxlayout.addLayout(self.hbuttonbox)
 
-        self.widget.setLayout(self.vboxlayout)
+        # Add Button
+        self.open_menu_button = QPushButton(icon=QIcon("uifolder/assets/icons/16x16/cil-caret-right.png"), styleSheet="background-color: rgb(44, 49, 60);")
+        self.open_menu_button.clicked.connect(self.open_close_menu)
+        self.open_menu_button.setMaximumSize(25, 25)
+        self.hbuttonbox.addWidget(self.open_menu_button)
 
         menu_bar = self.menuBar()
 
@@ -134,6 +135,46 @@ class MediaPlayerWindow(QMainWindow):
 
         self.volumeslider.setValue(50)
         self.mediaplayer.audio_set_volume(50)
+
+        self.create_menu(pixmap, location, time_interval)
+        self.main_layout = QHBoxLayout()
+        self.main_layout.addLayout(self.vboxlayout)
+        self.main_layout.addWidget(self.menu)
+        self.widget.setLayout(self.main_layout)
+        self.menu.hide()
+
+    def create_menu(self, pixmap, location, time_interval):
+        self.menu = QFrame(self)
+        self.menu.setMaximumWidth(200)
+        self.menu.resize(200, self.height())
+        self.menu.setLayout(QVBoxLayout())
+
+        scaled_pixmap = pixmap.scaled(180, 180, Qt.AspectRatioMode.KeepAspectRatio, Qt.SmoothTransformation)
+        image_label = QLabel(pixmap=scaled_pixmap)
+        image_label.setAlignment(Qt.AlignCenter)
+        self.menu.layout().addWidget(image_label)
+
+        location_label = QLabel("Location: \n" + str(location))
+        location_label.setAlignment(Qt.AlignTop)
+        self.menu.layout().addWidget(location_label)
+
+        time_interval_label = QLabel("Time Interval: \n" + str(time_interval))
+        time_interval_label.setAlignment(Qt.AlignTop)
+        self.menu.layout().addWidget(time_interval_label)
+
+        button = QPushButton("Show on Map")
+        self.menu.layout().addWidget(button)
+
+    def open_close_menu(self):
+        width = self.menu.width()
+
+        # SET MAX WIDTH
+        if self.menu.isHidden():
+            self.resize(self.width() + width, self.height())
+            self.menu.show()
+        else:
+            self.resize(self.width() - width, self.height())
+            self.menu.hide()
 
     def play_pause(self):
         if self.mediaplayer.is_playing():
@@ -183,7 +224,7 @@ class MediaPlayerWindow(QMainWindow):
 
         self.play_pause()
 
-        self.set_position(self.firstEncounter/self.video_length * 1000)
+        self.set_position(self.first_encounter / self.video_length * 1000)
 
     def set_volume(self, volume):
         self.mediaplayer.audio_set_volume(volume)
@@ -205,7 +246,7 @@ class MediaPlayerWindow(QMainWindow):
         self.speedlabel.setText("%.2fx" % (speed / 100.0))
 
     def update_ui(self):
-        self.video_length = (time.time_ns() / 1000000) - self.startingTime
+        self.video_length = (time.time_ns() / 1000000) - self.starting_time
         media_pos = int(self.mediaplayer.get_position() * 1000)
         self.duration_slider.setValue(media_pos)
         watched_second = self.mediaplayer.get_position() * self.video_length / 1000
@@ -219,7 +260,7 @@ class MediaPlayerWindow(QMainWindow):
                 self.playbutton.setText("Play")
                 self.mediaplayer.stop()
 
-        if self.mediaplayer.get_position() < self.lastEncounter/self.video_length + 0.01 and self.mediaplayer.get_position() > self.lastEncounter/self.video_length - 0.01:
+        if self.mediaplayer.get_position() < self.last_encounter/self.video_length + 0.01 and self.mediaplayer.get_position() > self.last_encounter/self.video_length - 0.01:
             self.play_pause()
 
     def findClosest(self, array, value):
@@ -244,17 +285,17 @@ class CustomSlider(QSlider):
         self.pressFunction = pressFunction
         self.prnt = parent
         self.type = type
-        self.firstEncounter = self.prnt.firstEncounter
-        self.lastEncounter = self.prnt.lastEncounter
+        self.firstEncounter = self.prnt.first_encounter
+        self.lastEncounter = self.prnt.last_encounter
 
         if self.type == SliderTypes.POSITION:
-            self.firstEncounter_label = QLabel(parent=self)
-            self.firstEncounter_label.resize(10, 15)
-            self.firstEncounter_label.setStyleSheet("background-color: rgba(0, 0, 0, 155);")
+            self.first_encounter_label = QLabel(parent=self)
+            self.first_encounter_label.resize(10, 15)
+            self.first_encounter_label.setStyleSheet("background-color: rgba(0, 0, 0, 155);")
 
-            self.lastEncounter_label = QLabel(parent=self)
-            self.lastEncounter_label.resize(10, 15)
-            self.lastEncounter_label.setStyleSheet("background-color: rgba(0, 0, 0, 155);")
+            self.last_encounter_label = QLabel(parent=self)
+            self.last_encounter_label.resize(10, 15)
+            self.last_encounter_label.setStyleSheet("background-color: rgba(0, 0, 0, 155);")
 
         self.timer = QTimer(self)
         self.timer.setInterval(100)
@@ -284,9 +325,9 @@ class CustomSlider(QSlider):
 
     def mouseReleaseEvent(self, event):
         pos = (self.minimum() + (self.maximum() - self.minimum()) * event.pos().x() / self.width())
-        firstpos = (self.minimum() + (self.maximum() - self.minimum()) * self.first_pos / self.width())
         # If the mouse is on the first encounter label
         if self.type == SliderTypes.POSITION:
+            firstpos = (self.minimum() + (self.maximum() - self.minimum()) * self.first_pos / self.width())
             if (pos > firstpos - 40) and (pos < firstpos + 40):
                 self.prnt.set_position(firstpos)
                 self.prnt.duration_slider.setValue(firstpos)
@@ -297,17 +338,18 @@ class CustomSlider(QSlider):
 
     def update_ui(self):
         if self.type == SliderTypes.POSITION:
-            value = int(self.prnt.firstEncounter/self.prnt.video_length * 1000)
+            value = int(self.prnt.first_encounter / self.prnt.video_length * 1000)
             self.first_pos = QStyle.sliderPositionFromValue(self.minimum(), self.maximum(), value, self.width())
-            self.firstEncounter_label.move(self.first_pos, 0)
-            value = int(self.prnt.lastEncounter/self.prnt.video_length * 1000)
+            self.first_encounter_label.move(self.first_pos, 0)
+            value = int(self.prnt.last_encounter / self.prnt.video_length * 1000)
             pos = QStyle.sliderPositionFromValue(self.minimum(), self.maximum(), value, self.width())
-            self.lastEncounter_label.move(pos, 0)
+            self.last_encounter_label.move(pos, 0)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    player = MediaPlayerWindow()
+    sample_pixmap = QPixmap("data/2.jpg")
+    player = MediaPlayerWindow(sample_pixmap, (12.412345718, 15.1728378124), int((time.time_ns() / 1000000)-10000), (3000, 10000))
     player.show()
     player.resize(640, 480)
     sys.exit(app.exec())

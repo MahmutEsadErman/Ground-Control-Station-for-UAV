@@ -21,12 +21,16 @@ class TargetsPage(QWidget):
         self.layout().addWidget(self.scrollArea)
 
         # Set Widget inside Scroll Area
-        self.targets = QWidget()
-        self.targets.setLayout(QGridLayout())
-        self.targets.layout().setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.targetsWidget = QWidget()
+        self.targetsWidget.setLayout(QGridLayout())
+        self.targetsWidget.layout().setAlignment(Qt.AlignLeft | Qt.AlignTop)
         self.row = 0
         self.column = 0
-        self.scrollArea.setWidget(self.targets)
+        self.scrollArea.setWidget(self.targetsWidget)
+
+        # Targets Dictionary
+        self.targets = {}
+        self.number_of_targets = 0
 
         # Set Container stylesheet varible
         self.containerStyleSheet = """QWidget:hover{border: 2px solid rgb(64, 71, 88);} QLabel::hover{border: 0px;}"""
@@ -38,38 +42,40 @@ class TargetsPage(QWidget):
 
         self.oldtarget = QWidget()
 
-    def addTarget(self):
+    def addTarget(self, pixmap, location, time_interval):
+        # Create a new target
+        self.number_of_targets += 1
+        self.targets[self.number_of_targets] = {"pixmap": pixmap, "location": location, "time_interval": time_interval}
+
         # Create a QWidget to hold both labels
         container = QWidget()
-        container.setObjectName("target")
         layout = QVBoxLayout()
         container.setLayout(layout)
         container.setStyleSheet(self.containerStyleSheet)
-        container.setMinimumSize(80,80)
-        container.setMaximumSize(150,150)
+        container.setMinimumSize(80, 80)
+        container.setMaximumSize(150, 150)
 
-        # Create the pixmap label
-        pixmap_label = QLabel()
-        pixmap_label.setPixmap(QPixmap("data/1.jpg"))
-        pixmap_label.setAlignment(Qt.AlignCenter | Qt.AlignCenter)
-        layout.addWidget(pixmap_label)
+        # Create the image label
+        image_label = QLabel()
+        image_label.setPixmap(pixmap)
+        image_label.setAlignment(Qt.AlignCenter | Qt.AlignCenter)
+        layout.addWidget(image_label)
 
         # Create the text label
-        text_label = QLabel("deneme")
+        text_label = QLabel(str(self.number_of_targets))
         text_label.setAlignment(Qt.AlignCenter | Qt.AlignCenter)
         layout.addWidget(text_label)
 
-        # Set click event for container
-        container.installEventFilter(self)
-
         # Add the container widget to the grid layout
-        self.targets.layout().addWidget(container, self.row, self.column)
+        self.targetsWidget.layout().addWidget(container, self.row, self.column)
 
         self.column += 1
         if self.column > 4:  # Adjust this value to change the number of columns
             self.column = 0
             self.row += 1
 
+        # Set click event for container
+        container.installEventFilter(self)
 
     def eventFilter(self, obj, event):
         if obj.objectName() == "target":
@@ -77,7 +83,7 @@ class TargetsPage(QWidget):
             if event.type() == QEvent.MouseButtonDblClick:
                 self.newWindow = MediaPlayerWindow()
                 self.newWindow.show()
-            # Drag move window
+            # When clicked change the border color
             if event.type() == QEvent.MouseButtonPress:
                 if event.buttons() == Qt.LeftButton:
                     self.oldtarget.setStyleSheet(self.containerStyleSheet)
@@ -90,6 +96,7 @@ class TargetsPage(QWidget):
             if event.type() == QEvent.MouseButtonRelease:
                 self.setCursor(Qt.ArrowCursor)
         return super().eventFilter(obj, event)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
