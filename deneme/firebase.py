@@ -20,7 +20,7 @@ class Firebase:
 
     def add_user_to_database(self, name, image, activity, coordinates):
         # Connect to the SQLite database
-        conn = sqlite3.connect('data/users.db')
+        conn = sqlite3.connect('../data/users.db')
         c = conn.cursor()
 
         # Create the table if it doesn't exist
