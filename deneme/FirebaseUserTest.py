@@ -22,3 +22,20 @@ print(user.get_authority())
 print(user.get_mission())
 print(user.get_marker_latitude())
 print(user.get_marker_longitude())
+
+
+def on_mission_change(event):
+    # Get the updated data from the event
+
+    # Check if the "Mission" field has changed
+    if mission_value is not None:
+        # Perform your desired actions here
+        print(f"Mission changed to: {mission_value}")
+        # ... (Your custom logic)
+
+# Attach a listener to the reference
+user.ref.listen(on_mission_change)
+
+# Keep the script running to listen for changes
+while True:
+    pass
