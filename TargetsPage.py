@@ -7,6 +7,7 @@ from PySide6.QtCore import Qt, QEvent
 
 from uifolder import Ui_TargetsPage
 from MediaPlayer import MediaPlayerWindow
+from users_db import FirebaseUser as firebase
 
 
 class TargetsPage(QWidget, Ui_TargetsPage):
@@ -40,18 +41,18 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         self.usersWidget.layout().setAlignment(Qt.AlignLeft | Qt.AlignTop)
         self.users_scrollarea.setWidget(self.usersWidget)
 
-        # Targets Dictionary
-        self.users = {}
-        self.number_of_users = 0
+        # Users Dictionary
+        self.users = firebase().users
+        self.number_of_users = 3
 
-        #Test
+        # Test
         self.addTarget(QPixmap("data/1.jpg"), "Location 1", (10, 100))
         self.addTarget(QPixmap("data/2.jpg"), "Location 2", (20, 200))
         self.addTarget(QPixmap("data/3.jpg"), "Location 3", (30, 300))
 
-        self.addUser(QPixmap("data/1.jpg"), "Location 1")
-        self.addUser(QPixmap("data/2.jpg"), "Location 2")
-        self.addUser(QPixmap("data/3.jpg"), "Location 3")
+        self.addUser(1)
+        self.addUser(2)
+        self.addUser(3)
 
     def addTarget(self, pixmap, location, time_interval):
         # Create a new target
@@ -69,13 +70,13 @@ class TargetsPage(QWidget, Ui_TargetsPage):
             self.column = 0
             self.row += 1
 
-    def addUser(self, pixmap, location):
-        # Create a new user
-        self.number_of_users += 1
-        self.users[self.number_of_users] = {"pixmap": pixmap, "location": location}
-
+    def addUser(self, id):
+        #     # Create a new user
+        #     self.number_of_users += 1
+        #     self.users[self.number_of_users] = {"pixmap": pixmap, "location": location}
+        #
         # Create a container widget for the user
-        container = self.createContainer(f"user{self.number_of_users}", pixmap, self.number_of_users)
+        container = self.createContainer(f"user{self.number_of_users}", self.users[id]["image"], id)
 
         # Add the container widget to the grid layout
         self.usersWidget.layout().addWidget(container)
@@ -117,7 +118,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         elif obj.objectName()[:-1] == "user":
             if event.type() == QEvent.MouseButtonDblClick:
                 no = int(obj.objectName()[-1])
-                self.newWindow = UserMenu(self.users[no]["pixmap"], "Location")
+                self.newWindow = UserMenu(self.users[no]["image"], "Location")
                 self.newWindow.show()
 
         # When clicked change the border color

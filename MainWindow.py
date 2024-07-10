@@ -22,9 +22,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         # Set initial windows size
-        self.state = 0 # maximized or not
+        self.state = 0  # maximized or not
         self.screenSize = QApplication.primaryScreen().size()
-        # self.resize(1280, 800)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
 
         # Move Window to Center
@@ -36,7 +35,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Sizegrip (To Resize Window)
         self.sizegrip = QSizeGrip(self.frame_size_grip)
-        self.sizegrip.setStyleSheet("background-image: url(uifolder/assets/icons/16x16/cil-size-grip.png);width: 20px; height: 20px; margin 0px; padding: 0px;")
+        self.sizegrip.setStyleSheet("background-image: url(uifolder/assets/icons/16x16/cil-size-grip.png);"
+                                    "width: 20px; height: 20px; margin 0px; padding: 0px;")
 
         # Set Initial Baud Rate to Combobox
         self.combobox_baudrate.setCurrentText('115200')
@@ -78,11 +78,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.homepage.btn_takeoff.clicked.connect(lambda: self.connectionThread.takeoff(10))
 
         # Button to Allocate Windows
-        self.indicatorspage.btn_AllocateWidget.clicked.connect(lambda: self.AllocateWidget(self.indicatorswidget, self.indicatorspage))
+        self.indicatorspage.btn_AllocateWidget.clicked.connect(
+            lambda: self.AllocateWidget(self.indicatorswidget, self.indicatorspage))
 
         # To move the window only from top frame
         self.label_title_bar_top.installEventFilter(self)
 
+    #########################################################################################################################
 
     def mousePressEvent(self, event):
         self.dragPos = event.globalPosition().toPoint()
@@ -191,7 +193,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if child.isAttached:
             self.stackedWidget.setCurrentWidget(self.homepage)
             parent.layout().removeWidget(child)
-            self.new_window = QMainWindow(styleSheet="background-color: rgb(44, 49, 60);" )
+            self.new_window = QMainWindow(styleSheet="background-color: rgb(44, 49, 60);")
             self.new_window.setWindowFlags(Qt.Window | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint)
             child.btn_AllocateWidget.setIcon(QIcon("uifolder/assets/icons/16x16/cil-arrow-bottom.png"))
             self.new_window.setCentralWidget(child)
