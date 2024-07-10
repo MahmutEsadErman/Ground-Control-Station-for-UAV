@@ -7,12 +7,11 @@
         "uifolder/MainWindow.ui",
         "uifolder/HomePage.ui",
         "uifolder/__init__.py",
-        "uifolder/displayinfo.ui",
         "uifolder/indicators.qrc",
         "uifolder/main.py",
-        "uifolder/ui_BaseGUI.py",
         "uifolder/ui_HomePage.py",
-        "uifolder/ui_displayinfo.py",
-        "uifolder/IndicatorsPage.ui"
+        "uifolder/IndicatorsPage.ui",
+        "uifolder/TargetsPage.ui",
+        "uifolder/TargetsPage.ui"
     ]
 }

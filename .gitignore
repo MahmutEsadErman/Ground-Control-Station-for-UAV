@@ -7,10 +7,10 @@ credits.txt
 startardupilot.sh
 startgazeboarducopter.sh
 map.html
-quickstart.py
-oldConnection.py
+OldStuff/quickstart.py
+OldStuff/oldConnection.py
 /deneme.py
-/DisplayInfo.py
+/OldStuff/DisplayInfo.py
 /uifolder/BaseGUI (copy).ui
 /uifolder/displayinfo.ui
 yapılacaklar.txt

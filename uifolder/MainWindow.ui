@@ -710,7 +710,6 @@ QCheckBox::indicator:hover {
 QCheckBox::indicator:checked {
     background: 3px solid rgb(52, 59, 72);
 	border: 3px solid rgb(52, 59, 72);	
-	background-image: url(:/16x16/icons/16x16/cil-check-alt.png);
 }
 
 /* RADIO BUTTON */

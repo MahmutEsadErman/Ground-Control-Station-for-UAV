@@ -14,15 +14,14 @@ class SliderTypes:
 
 
 class MediaPlayerWindow(QMainWindow):
+    starting_time = 0
 
-    def __init__(self, pixmap, location, starting_time, time_interval):
+    def __init__(self, pixmap, location, time_interval):
         super().__init__()
 
         self.first_encounter = time_interval[0]
         self.last_encounter = time_interval[1]
-        self.starting_time = starting_time
         self.video_length = (time.time_ns() / 1000000) - self.starting_time
-
 
         self.setWindowTitle("Media Player")
 
@@ -110,7 +109,8 @@ class MediaPlayerWindow(QMainWindow):
         self.vboxlayout.addLayout(self.hbuttonbox)
 
         # Add Button
-        self.open_menu_button = QPushButton(icon=QIcon("uifolder/assets/icons/16x16/cil-caret-right.png"), styleSheet="background-color: rgb(44, 49, 60);")
+        self.open_menu_button = QPushButton(icon=QIcon("uifolder/assets/icons/16x16/cil-caret-right.png"),
+                                            styleSheet="background-color: rgb(44, 49, 60);")
         self.open_menu_button.clicked.connect(self.open_close_menu)
         self.open_menu_button.setMaximumSize(25, 25)
         self.hbuttonbox.addWidget(self.open_menu_button)
@@ -213,7 +213,7 @@ class MediaPlayerWindow(QMainWindow):
 
         self.media.parse()
 
-        self.ten_seconds = 10000/self.video_length
+        self.ten_seconds = 10000 / self.video_length
 
         self.setWindowTitle(self.media.get_meta(vlc.Meta.Title))
 
@@ -237,7 +237,8 @@ class MediaPlayerWindow(QMainWindow):
         pos = position / 1000.0
         self.mediaplayer.set_position(pos)
         watched_second = pos * self.video_length / 1000
-        self.duration_label.setText("%02d:%02d:%02d" % (watched_second // 3600, (watched_second // 60) % 60, watched_second % 60))
+        self.duration_label.setText(
+            "%02d:%02d:%02d" % (watched_second // 3600, (watched_second // 60) % 60, watched_second % 60))
 
     def set_speed(self, speed):
         speed = self.findClosest(self.speedList, speed)
@@ -260,7 +261,7 @@ class MediaPlayerWindow(QMainWindow):
                 self.playbutton.setText("Play")
                 self.mediaplayer.stop()
 
-        if self.mediaplayer.get_position() < self.last_encounter/self.video_length + 0.01 and self.mediaplayer.get_position() > self.last_encounter/self.video_length - 0.01:
+        if self.mediaplayer.get_position() < self.last_encounter / self.video_length + 0.01 and self.mediaplayer.get_position() > self.last_encounter / self.video_length - 0.01:
             self.play_pause()
 
     def findClosest(self, array, value):
@@ -273,6 +274,9 @@ class MediaPlayerWindow(QMainWindow):
                     return array[x]
                 else:
                     return array[x - 1]
+
+    def set_starting_time(self, time):
+        self.starting_time = time
 
     def closeEvent(self, event):
         self.mediaplayer.stop()
@@ -349,7 +353,8 @@ class CustomSlider(QSlider):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     sample_pixmap = QPixmap("data/2.jpg")
-    player = MediaPlayerWindow(sample_pixmap, (12.412345718, 15.1728378124), int((time.time_ns() / 1000000)-10000), (3000, 10000))
+    player = MediaPlayerWindow(sample_pixmap, (12.412345718, 15.1728378124),
+                               (3000, 10000))
     player.show()
     player.resize(640, 480)
     sys.exit(app.exec())
