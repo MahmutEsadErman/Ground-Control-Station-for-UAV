@@ -369,6 +369,25 @@
           <bool>false</bool>
          </property>
         </widget>
+        <widget class="QLabel" name="attitude_text">
+         <property name="geometry">
+          <rect>
+           <x>127</x>
+           <y>233</y>
+           <width>41</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true"> color: #ffffff; font-family: 'Lato',sans-serif; font-size: 18px; font-weight: bold; text-align: center; text-transform: uppercase;</string>
+         </property>
+         <property name="text">
+          <string>00</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
        </widget>
       </item>
       <item row="1" column="0">

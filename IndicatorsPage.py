@@ -15,7 +15,7 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
         self.setupUi(self)
 
         # Indicators' values
-        self.maxSpeed = 22
+        self.maxSpeed = 33
         self.maxVerticalSpeed = 12
 
         # frame width: 296, height: 272
@@ -55,6 +55,7 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
         move_animation.setDuration(300)
         move_animation.start()
         self.rotate_needle(roll, self.attitude_middle)
+        self.attitude_text.setText(pitch)
 
     def setSpeed(self, speed):
         if speed < self.maxSpeed:
@@ -94,32 +95,6 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
     def resizeEvent(self, event):
         self.btn_AllocateWidget.move(self.width() - self.btn_AllocateWidget.width(), 0)
         super().resizeEvent(event)
-
-
-# class RotatingLabel(QLabel):
-#     def __init__(self, image, parent=None):
-#         super().__init__(parent)
-#         self.setMinimumSize(200,200)
-#         self._angle = 0
-#         self.image = image
-#
-#     def getAngle(self):
-#         return self._angle
-#
-#     def setAngle(self, angle):
-#         self._angle = angle
-#         self.update()
-#
-#     angle = Property(int, getAngle, setAngle)
-#
-#     def paintEvent(self, event):
-#         painter = QPainter(self)
-#         painter.setRenderHint(QPainter.Antialiasing)
-#         painter.setRenderHint(QPainter.SmoothPixmapTransform)
-#         painter.translate(self.width() / 2, self.height()/2)
-#         painter.rotate(self._angle)
-#         pixmap = QPixmap(self.image).scaled(self.width(), self.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-#         painter.drawPixmap(-self.width()/2, -self.height()/2, pixmap)
 
 
 if __name__ == "__main__":
