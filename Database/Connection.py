@@ -16,7 +16,7 @@ def handleConnectedVehicle(connection, mapwidget, connectbutton):
     position = [msg.lat / 1e7, msg.lon / 1e7]
     # Set connect button disable
     connectbutton.setText('Connected')
-    connectbutton.setIcon(QIcon('uifolder/assets/icons/24x24/cil-link.png'))
+    connectbutton.setIcon(QIcon('../uifolder/assets/icons/24x24/cil-link.png'))
     connectbutton.setDisabled(True)
 
     # Fly to UAV's position
@@ -63,7 +63,7 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget):
 
 def connectionLost(connectbutton, mapwidget):
     connectbutton.setText('Connect')
-    connectbutton.setIcon(QIcon('uifolder/assets/icons/24x24/cil-link-broken.png'))
+    connectbutton.setIcon(QIcon('../uifolder/assets/icons/24x24/cil-link-broken.png'))
     connectbutton.setDisabled(False)
     # Add UAV marker
     mapwidget.page().runJavaScript("""
@@ -71,7 +71,7 @@ def connectionLost(connectbutton, mapwidget):
                     """
                                    )
 
-class ConnectionThread(QThread):
+class ArdupilotConnectionThread(QThread):
     vehicleConnected_signal = Signal(mavutil.mavudp, MapWidget, QPushButton)
     updateData_signal = Signal(QThread,mavutil.mavudp, MapWidget, IndicatorsPage, CameraWidget)
     connectionLost_signal = Signal(QPushButton)

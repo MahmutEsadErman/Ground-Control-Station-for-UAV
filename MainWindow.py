@@ -2,11 +2,11 @@ import sys
 
 from PySide6 import QtGui
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QComboBox, QFrame, QVBoxLayout, QWidget
-from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve, QTimer
+from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
 
 from TargetsPage import TargetsPage
-from Connection import ConnectionThread
+from Database.Connection import ArdupilotConnectionThread
 from HomePage import HomePage
 from IndicatorsPage import IndicatorsPage
 from uifolder import Ui_MainWindow
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.stackedWidget.setCurrentWidget(self.homepage)
 
         # Connection Thread
-        self.connectionThread = ConnectionThread(self)
+        self.connectionThread = ArdupilotConnectionThread(self)
 
         #  SET BUTTONS
         #  Main Window buttons

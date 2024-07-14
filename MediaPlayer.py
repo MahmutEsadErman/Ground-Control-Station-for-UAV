@@ -1,7 +1,7 @@
 import time
 import sys
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QApplication, QSlider, QPushButton, QFileDialog, \
-    QHBoxLayout, QFrame, QLabel, QStyle, QToolTip
+    QHBoxLayout, QFrame, QLabel, QStyle, QToolTip, QSpacerItem, QSizePolicy
 from PySide6.QtGui import QAction, QPalette, QColor, QPixmap, QIcon
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
 import vlc
@@ -164,6 +164,8 @@ class MediaPlayerWindow(QMainWindow):
 
         button = QPushButton("Show on Map")
         self.menu.layout().addWidget(button)
+
+        self.layout().addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
     def open_close_menu(self):
         width = self.menu.width()
@@ -352,7 +354,7 @@ class CustomSlider(QSlider):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    sample_pixmap = QPixmap("data/2.jpg")
+    sample_pixmap = QPixmap("Database/data/2.jpg")
     player = MediaPlayerWindow(sample_pixmap, (12.412345718, 15.1728378124),
                                (3000, 10000))
     player.show()

@@ -1,13 +1,14 @@
 import sys
 
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMainWindow, QScrollArea, QLabel, QGridLayout, \
-    QPushButton
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QGridLayout, \
+    QPushButton, QSpacerItem, QSizePolicy
 from PySide6.QtCore import Qt, QEvent
 
 from uifolder import Ui_TargetsPage
 from MediaPlayer import MediaPlayerWindow
-from users_db import FirebaseUser as firebase
+
+
 
 
 class TargetsPage(QWidget, Ui_TargetsPage):
@@ -42,17 +43,16 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         self.users_scrollarea.setWidget(self.usersWidget)
 
         # Users Dictionary
-        self.users = firebase().users
-        self.number_of_users = 3
+
 
         # Test
-        self.addTarget(QPixmap("data/1.jpg"), "Location 1", (10, 100))
-        self.addTarget(QPixmap("data/2.jpg"), "Location 2", (20, 200))
-        self.addTarget(QPixmap("data/3.jpg"), "Location 3", (30, 300))
+        self.addTarget(QPixmap("Database/data/1.jpg"), "Location 1", (10, 100))
+        self.addTarget(QPixmap("Database/data/2.jpg"), "Location 2", (20, 200))
+        self.addTarget(QPixmap("Database/data/3.jpg"), "Location 3", (30, 300))
 
-        self.addUser(1)
-        self.addUser(2)
-        self.addUser(3)
+        self.addUser(1, 3)
+        self.addUser(2, 3)
+
 
     def addTarget(self, pixmap, location, time_interval):
         # Create a new target
@@ -70,20 +70,20 @@ class TargetsPage(QWidget, Ui_TargetsPage):
             self.column = 0
             self.row += 1
 
-    def addUser(self, id):
+    def addUser(self, user, number_of_users):
         #     # Create a new user
         #     self.number_of_users += 1
         #     self.users[self.number_of_users] = {"pixmap": pixmap, "location": location}
         #
         # Create a container widget for the user
-        container = self.createContainer(f"user{self.number_of_users}", self.users[id]["image"], id)
+        container = self.createContainer(f"user{number_of_users}", user["image"], id)
 
         # Add the container widget to the grid layout
         self.usersWidget.layout().addWidget(container)
 
-    def createContainer(self, name, pixmap, number):
+    def createContainer(self, objectname, pixmap, number):
         # Create a QWidget to hold both labels
-        container = QWidget(objectName=name)
+        container = QWidget(objectName=objectname)
         layout = QVBoxLayout()
         container.setLayout(layout)
         container.setStyleSheet(self.containerStyleSheet)
@@ -118,7 +118,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         elif obj.objectName()[:-1] == "user":
             if event.type() == QEvent.MouseButtonDblClick:
                 no = int(obj.objectName()[-1])
-                self.newWindow = UserMenu(self.users[no]["image"], "Location")
+                self.newWindow = UserMenu()
                 self.newWindow.show()
 
         # When clicked change the border color
@@ -136,7 +136,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
 
 class UserMenu(QWidget):
-    def __init__(self, pixmap, location):
+    def __init__(self, name, pixmap, location):
         # Resim, İsim, Online olma durumu, Konum, yetki verme Buton
         super().__init__()
         self.setMaximumWidth(200)
@@ -146,24 +146,32 @@ class UserMenu(QWidget):
         self.isOnline = False
 
         scaled_pixmap = pixmap.scaled(180, 180, Qt.AspectRatioMode.KeepAspectRatio, Qt.SmoothTransformation)
-        image_label = QLabel(pixmap=scaled_pixmap)
-        image_label.setAlignment(Qt.AlignCenter)
-        self.layout().addWidget(image_label)
+        self.image_label = QLabel(pixmap=scaled_pixmap)
+        self.image_label.setAlignment(Qt.AlignCenter)
+        self.layout().addWidget(self.image_label)
 
-        location_label = QLabel("Location: \n" + str(location))
-        location_label.setAlignment(Qt.AlignTop)
-        self.layout().addWidget(location_label)
+        self.location_label = QLabel("Location: \n" + str(location))
+        self.location_label.setAlignment(Qt.AlignTop)
+        self.layout().addWidget(self.location_label)
 
         self.isonline_label = QLabel("Online: \n" + str(self.isOnline))
         self.isonline_label.setAlignment(Qt.AlignTop)
         self.layout().addWidget(self.isonline_label)
 
-        button = QPushButton("Show on Map")
+        button = QPushButton("Yetki Ver")
         self.layout().addWidget(button)
+
+        self.layout().addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
     def setOnline(self, online):
         self.isOnline = online
         self.isonline_label.setText("Online: \n" + str(self.isOnline))
+
+    def setLocation(self, location):
+        self.location_label.setText("Location: \n" + str(location))
+
+    def giveAuthority(self):
+        pass
 
 
 if __name__ == "__main__":

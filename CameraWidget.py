@@ -126,7 +126,7 @@ class VideoStreamThread(QThread):
 
         # Video recording
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # video codec
-        out = cv2.VideoWriter('output.avi', fourcc, 30.0, (640, 480))
+        out = cv2.VideoWriter('Database/output.avi', fourcc, 30.0, (640, 480))
         # Loop to receive video stream
         while self.loop:
             current_time = time.time()

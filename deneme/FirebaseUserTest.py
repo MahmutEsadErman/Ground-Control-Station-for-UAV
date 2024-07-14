@@ -1,4 +1,4 @@
-﻿from users_db import FirebaseUser
+﻿from Database.users_db import FirebaseUser
 
 # Example usage
 user = FirebaseUser('1')
