@@ -27,8 +27,8 @@ def handleConnectedVehicle(connection, mapwidget, connectbutton):
     mapwidget.page().runJavaScript("""
                     var uavMarker = L.marker(
                                 %s,
-                                {icon: uavIcon,},).addTo(%s);
-                    """ % (position, mapwidget.map_variable_name)
+                                {icon: uavIcon,},).addTo(map);
+                    """ % position
                                    )
 
 
@@ -61,10 +61,15 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget):
             indicators.flight_mode_label.setText(f"Flight Mode: {flight_mode}")
 
 
-def connectionLost(connectbutton):
+def connectionLost(connectbutton, mapwidget):
     connectbutton.setText('Connect')
     connectbutton.setIcon(QIcon('uifolder/assets/icons/24x24/cil-link-broken.png'))
     connectbutton.setDisabled(False)
+    # Add UAV marker
+    mapwidget.page().runJavaScript("""
+                    map.removeLayer(uavMarker);
+                    """
+                                   )
 
 class ConnectionThread(QThread):
     vehicleConnected_signal = Signal(mavutil.mavudp, MapWidget, QPushButton)

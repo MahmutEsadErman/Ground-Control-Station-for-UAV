@@ -9,8 +9,6 @@ from folium.plugins import MousePosition
 
 # Make Icon
 import base64
-from PIL import Image
-
 
 def image_to_base64(image_path):
     with open(image_path, "rb") as image_file:
@@ -89,24 +87,6 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
             else:
                 self.markers_pos = msg.split(',')
                 print(msg)
-
-    # def onLoadFinished(self):
-    #     # add marker
-    #     self.page().runJavaScript("""
-    #             var uavIcon = L.icon({
-    #                 iconUrl: 'data:image/png;base64,%s',
-    #                 iconSize: [40, 40],
-    #             });
-    #
-    #             var uavMarker = L.marker(
-    #                         [41.27442, 28.727317],
-    #                         {icon: uavIcon,
-    #                         },
-    #
-    #                     ).addTo(%s);
-    #             uavMarker.setRotationAngle(-45)
-    #             """ % (uav_icon_base64, self.map_variable_name)
-    #                               )
 
     def find_variable_name(self, html, name_start):
         variable_pattern = "var "
@@ -240,6 +220,42 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                             msg += "-";
                     }
                     console.log(msg);
+                }
+                
+                var bounds = [];
+                function drawRectangle(e) {
+                    if (bounds.length == 0) {
+                        bounds.push(e.latlng);
+                    } else if (bounds.length == 1){
+                        bounds.push(e.latlng);
+                        rect = L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(map);
+                        console.log("Bounds:");
+                        console.log(bounds[0].lat.toFixed(4) + "," +bounds[0].lng.toFixed(4));
+                        console.log(bounds[1].lat.toFixed(4) + "," +bounds[1].lng.toFixed(4));
+                    } else {
+                        bounds = [];
+                        bounds.push(e.latlng);
+                        map.removeLayer(rect);
+                    }
+                }
+                
+                function clearAll(e) {
+                    if (waypoints.length > 0){
+                        for(let i = 0; i < waypoints.length; i++){
+                            waypoints[i].remove();
+                        }
+                        waypoints = [];
+                    }
+                    if (lines.length > 0){
+                        for(let i = 0; i < lines.length; i++){
+                            lines[i].remove();
+                        }
+                        lines = [];
+                    }
+                    if (bounds.length > 0){
+                        bounds = [];
+                        map.removeLayer(rect);
+                    }
                 }
                 
                 // Initial mode for clicking on the map

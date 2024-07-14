@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QIcon, QImage, QPixmap
-from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QLabel, QVBoxLayout, QSizePolicy, QCheckBox
+from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QLabel, QVBoxLayout, QCheckBox
 
 
 class CameraWidget(QWidget):
@@ -25,7 +25,7 @@ class CameraWidget(QWidget):
 
         # Add Label
         self.FeedLabel = QLabel()
-        self.FeedLabel.setMinimumSize(640, 480)
+        # self.FeedLabel.setMinimumSize(640, 480)
         self.FeedLabel.setScaledContents(True)  # Enable scaling of contents
         self.QVBLayout.addWidget(self.FeedLabel)
 
