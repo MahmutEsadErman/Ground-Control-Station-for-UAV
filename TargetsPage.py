@@ -9,8 +9,6 @@ from uifolder import Ui_TargetsPage
 from MediaPlayer import MediaPlayerWindow
 
 
-
-
 class TargetsPage(QWidget, Ui_TargetsPage):
     def __init__(self):
         super().__init__()
@@ -42,17 +40,14 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         self.usersWidget.layout().setAlignment(Qt.AlignLeft | Qt.AlignTop)
         self.users_scrollarea.setWidget(self.usersWidget)
 
-        # Users Dictionary
-
-
         # Test
         self.addTarget(QPixmap("Database/data/1.jpg"), "Location 1", (10, 100))
         self.addTarget(QPixmap("Database/data/2.jpg"), "Location 2", (20, 200))
         self.addTarget(QPixmap("Database/data/3.jpg"), "Location 3", (30, 300))
 
-        self.addUser(1, 3)
-        self.addUser(2, 3)
-
+        # container = self.createContainer(f"user{1}", QPixmap("Database/data/1.jpg"), 1)
+        # print(container)
+        # self.usersWidget.layout().addWidget(container)
 
     def addTarget(self, pixmap, location, time_interval):
         # Create a new target
@@ -70,15 +65,8 @@ class TargetsPage(QWidget, Ui_TargetsPage):
             self.column = 0
             self.row += 1
 
-    def addUser(self, user, number_of_users):
-        #     # Create a new user
-        #     self.number_of_users += 1
-        #     self.users[self.number_of_users] = {"pixmap": pixmap, "location": location}
-        #
-        # Create a container widget for the user
-        container = self.createContainer(f"user{number_of_users}", user["image"], id)
-
-        # Add the container widget to the grid layout
+    def addUser(self, user, i):
+        container = self.createContainer(f"user{i}", user["image"], i)
         self.usersWidget.layout().addWidget(container)
 
     def createContainer(self, objectname, pixmap, number):
@@ -136,7 +124,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
 
 class UserMenu(QWidget):
-    def __init__(self, name, pixmap, location):
+    def __init__(self, id, name, pixmap, location):
         # Resim, İsim, Online olma durumu, Konum, yetki verme Buton
         super().__init__()
         self.setMaximumWidth(200)

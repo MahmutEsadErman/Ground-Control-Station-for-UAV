@@ -18,11 +18,13 @@ class FirebaseUser:
         self.mission = self.get_mission()
 
         self.users = []
-        self.users.append([])
         for i in range(1, 4):
             self.user_ref = db.reference(f'Users/{i}')
-            user = {"name": self.get_name(), "authority": self.get_authority(), "image": QPixmap(f"data/{i}.jpg"),
-                    "position": [self.get_latitude(), self.get_longitude()], "online": self.get_online()}
+            user = {"name": self.get_name(),
+                    "authority": self.get_authority(),
+                    "image": QPixmap(f"Database/data/{i}.jpg"),
+                    "position": [self.get_latitude(), self.get_longitude()],
+                    "online": self.get_online()}
             self.users.append(user)
 
     # Getters

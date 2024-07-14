@@ -5,6 +5,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QVBoxLayout, QWidget
 from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
 
+from Database.Cloud import FirebaseStart
 from TargetsPage import TargetsPage
 from Database.Connection import ArdupilotConnectionThread
 from HomePage import HomePage
@@ -54,6 +55,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Connection Thread
         self.connectionThread = ArdupilotConnectionThread(self)
+
+        # Firebase Thread
+        self.firebaseThread = FirebaseStart(self)
+        self.firebaseThread.start()
 
         #  SET BUTTONS
         #  Main Window buttons

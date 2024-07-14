@@ -26,8 +26,8 @@
    inkscape:pagecheckerboard="0"
    inkscape:deskcolor="#d1d1d1"
    inkscape:zoom="0.99999999"
-   inkscape:cx="221"
-   inkscape:cy="413.5"
+   inkscape:cx="-232.5"
+   inkscape:cy="252.5"
    inkscape:window-width="1920"
    inkscape:window-height="991"
    inkscape:window-x="-9"
@@ -36,7 +36,15 @@
    inkscape:current-layer="Layer_1"
    inkscape:connector-spacing="0"
    showguides="false" /><defs
-   id="defs519"><inkscape:path-effect
+   id="defs519"><linearGradient
+     id="linearGradient1"
+     inkscape:collect="always"><stop
+       style="stop-color:#1e211f;stop-opacity:1;"
+       offset="0.13"
+       id="stop91" /><stop
+       style="stop-color:#282c34;stop-opacity:0.5;"
+       offset="0.81"
+       id="stop90" /></linearGradient><inkscape:path-effect
      effect="powerclip"
      id="path-effect3"
      is_visible="true"
@@ -1001,7 +1009,15 @@
      y1="-51.647701"
      x2="384.52521"
      y2="-33.900799"
-     gradientTransform="matrix(1.410335,0,0,1.4016554,-276.58194,305.18694)" /></defs>
+     gradientTransform="matrix(1.410335,0,0,1.4016554,-276.58194,305.18694)" /><linearGradient
+     inkscape:collect="always"
+     xlink:href="#linearGradient1"
+     id="linearGradient76"
+     x1="-599"
+     y1="147"
+     x2="-299"
+     y2="147"
+     gradientUnits="userSpaceOnUse" /></defs>
 <style
    type="text/css"
    id="style1">
@@ -1699,11 +1715,11 @@
    xml:space="preserve"><tspan
      x="0"
      y="0"
-     id="tspan3"><tspan
+     id="tspan9"><tspan
        style="font-size:7.1255px;font-family:MyriadPro-BoldIt;fill:#ffffff"
-       id="tspan1">HIZ - </tspan><tspan
+       id="tspan7">HIZ - </tspan><tspan
        style="font-size:7.1255px;font-family:MyriadPro-BoldIt;fill:#009444"
-       id="tspan2">SPEED</tspan></tspan></text>
+       id="tspan8">SPEED</tspan></tspan></text>
 	<text
    transform="translate(72.9194,-8.3265)"
    id="text164"
@@ -4701,11 +4717,11 @@
    xml:space="preserve"><tspan
      x="359.89865"
      y="-33.003956"
-     id="tspan6"><tspan
+     id="tspan12"><tspan
        style="font-size:5.75086px;font-family:MyriadPro-BoldIt;fill:#ffffff"
-       id="tspan4">m / </tspan><tspan
+       id="tspan10">m / </tspan><tspan
        style="font-size:5.75086px;font-family:MyriadPro-BoldIt;fill:#009444"
-       id="tspan5">s</tspan></tspan></text>
+       id="tspan11">s</tspan></tspan></text>
 		<g
    id="g513">
 			
@@ -6502,4 +6518,11 @@
    style="display:inline"
    cx="-144.21138"
    cy="122"
-   r="111.13342" /></svg>
+   r="111.13342" /><rect
+   style="fill:url(#linearGradient76);stroke:#ffffff;stroke-width:0;fill-opacity:1"
+   id="rect1"
+   width="300"
+   height="272"
+   x="-599"
+   y="11"
+   ry="0.15573594" /></svg>
