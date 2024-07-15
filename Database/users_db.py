@@ -23,7 +23,7 @@ class FirebaseUser:
             user = {"name": self.get_name(),
                     "authority": self.get_authority(),
                     "image": QPixmap(f"Database/data/{i}.jpg"),
-                    "position": [self.get_latitude(), self.get_longitude()],
+                    "location": [self.get_latitude(), self.get_longitude()],
                     "online": self.get_online()}
             self.users.append(user)
 

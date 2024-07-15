@@ -56,10 +56,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Connection Thread
         self.connectionThread = ArdupilotConnectionThread(self)
 
-        # Firebase Thread
-        self.firebaseThread = FirebaseStart(self)
-        self.firebaseThread.start()
-
         #  SET BUTTONS
         #  Main Window buttons
         self.btn_close.setIcon(QtGui.QIcon('uifolder/assets/icons/16x16/cil-x.png'))

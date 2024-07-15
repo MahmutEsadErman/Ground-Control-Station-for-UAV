@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QGridL
     QPushButton, QSpacerItem, QSizePolicy
 from PySide6.QtCore import Qt, QEvent
 
+from Database.Cloud import FirebaseStart
 from uifolder import Ui_TargetsPage
 from MediaPlayer import MediaPlayerWindow
 
@@ -13,6 +14,8 @@ class TargetsPage(QWidget, Ui_TargetsPage):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+
+        self.users = []
 
         # Set Layout
         self.setLayout(QVBoxLayout())
@@ -40,14 +43,14 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         self.usersWidget.layout().setAlignment(Qt.AlignLeft | Qt.AlignTop)
         self.users_scrollarea.setWidget(self.usersWidget)
 
+        # Firebase Thread
+        self.firebase = FirebaseStart(self)
+        self.firebase.start()
+
         # Test
         self.addTarget(QPixmap("Database/data/1.jpg"), "Location 1", (10, 100))
         self.addTarget(QPixmap("Database/data/2.jpg"), "Location 2", (20, 200))
         self.addTarget(QPixmap("Database/data/3.jpg"), "Location 3", (30, 300))
-
-        # container = self.createContainer(f"user{1}", QPixmap("Database/data/1.jpg"), 1)
-        # print(container)
-        # self.usersWidget.layout().addWidget(container)
 
     def addTarget(self, pixmap, location, time_interval):
         # Create a new target
@@ -105,8 +108,8 @@ class TargetsPage(QWidget, Ui_TargetsPage):
                 self.newWindow.show()
         elif obj.objectName()[:-1] == "user":
             if event.type() == QEvent.MouseButtonDblClick:
-                no = int(obj.objectName()[-1])
-                self.newWindow = UserMenu()
+                no = int(obj.objectName()[-1])-1
+                self.newWindow = UserMenu(self.firebase.users[no]["name"], self.firebase.users[no]["image"],self.firebase.users[no]["location"])
                 self.newWindow.show()
 
         # When clicked change the border color
@@ -124,12 +127,12 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
 
 class UserMenu(QWidget):
-    def __init__(self, id, name, pixmap, location):
-        # Resim, İsim, Online olma durumu, Konum, yetki verme Buton
+    def __init__(self, name, pixmap, location):
         super().__init__()
         self.setMaximumWidth(200)
         self.resize(200, self.height())
         self.setLayout(QVBoxLayout())
+        self.layout().setSpacing(10)
 
         self.isOnline = False
 
@@ -137,6 +140,10 @@ class UserMenu(QWidget):
         self.image_label = QLabel(pixmap=scaled_pixmap)
         self.image_label.setAlignment(Qt.AlignCenter)
         self.layout().addWidget(self.image_label)
+
+        self.name_label = QLabel(str(name))
+        self.name_label.setAlignment(Qt.AlignCenter)
+        self.layout().addWidget(self.name_label)
 
         self.location_label = QLabel("Location: \n" + str(location))
         self.location_label.setAlignment(Qt.AlignTop)

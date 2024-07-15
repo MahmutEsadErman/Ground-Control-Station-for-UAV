@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QPushButton, QInputDialog
 from CameraWidget import CameraWidget
 from IndicatorsPage import IndicatorsPage
 from MapWidget import MapWidget
-
+from Database.users_db import FirebaseUser
 
 def handleConnectedVehicle(connection, mapwidget, connectbutton):
     msg = connection.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
@@ -32,7 +32,7 @@ def handleConnectedVehicle(connection, mapwidget, connectbutton):
                                    )
 
 
-def updateData(thread, vehicle, mapwidget, indicators, camerawidget):
+def updateData(thread, vehicle, mapwidget, indicators, camerawidget, firebase):
     type_list = ['ATTITUDE', 'GLOBAL_POSITION_INT', 'VFR_HUD', 'SYS_STATUS', 'HEARTBEAT']
 
     # Read messages from the vehicle
@@ -45,8 +45,11 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget):
             indicators.xpos_label.setText(f"X: {position[0]}")
             indicators.ypos_label.setText(f"Y: {position[1]}")
             mapwidget.page().runJavaScript(f"uavMarker.setLatLng({str(position)});")  # to set position of UAV marker
-            mapwidget.page().runJavaScript(f"uavMarker.setRotationAngle({(msg.hdg/100) - 45});")  # to set rotation of UAV
-            indicators.setHeading(msg.hdg/100)
+            mapwidget.page().runJavaScript(
+                f"uavMarker.setRotationAngle({(msg.hdg / 100) - 45});")  # to set rotation of UAV
+            indicators.setHeading(msg.hdg / 100)
+            firebase.update_latitude(position[0])
+            firebase.update_longitude(position[1])
         if msg.get_type() == 'VFR_HUD':
             indicators.setSpeed(msg.airspeed)
             indicators.setVerticalSpeed(msg.climb)
@@ -71,9 +74,10 @@ def connectionLost(connectbutton, mapwidget):
                     """
                                    )
 
+
 class ArdupilotConnectionThread(QThread):
     vehicleConnected_signal = Signal(mavutil.mavudp, MapWidget, QPushButton)
-    updateData_signal = Signal(QThread,mavutil.mavudp, MapWidget, IndicatorsPage, CameraWidget)
+    updateData_signal = Signal(QThread, mavutil.mavudp, MapWidget, IndicatorsPage, CameraWidget, FirebaseUser)
     connectionLost_signal = Signal(QPushButton)
 
     def __init__(self, parent=None):
@@ -85,6 +89,7 @@ class ArdupilotConnectionThread(QThread):
         self.connectButton = parent.btn_connect
         self.mapwidget = parent.homepage.mapwidget
         self.indicators = parent.indicatorspage
+        self.firebase = parent.targetspage.firebase.firebase
 
         self.vehicleConnected_signal.connect(handleConnectedVehicle)
         self.updateData_signal.connect(updateData)
@@ -97,7 +102,8 @@ class ArdupilotConnectionThread(QThread):
 
         try:
             print(f"Connecting to vehicle on: {self.connection_string}")
-            self.connection = mavutil.mavlink_connection(self.connection_string, baud=self.baudrate, autoreconnect=True, timeout=timeout)
+            self.connection = mavutil.mavlink_connection(self.connection_string, baud=self.baudrate, autoreconnect=True,
+                                                         timeout=timeout)
             print("Waiting for heartbeat...")
             if self.connection.wait_heartbeat(timeout=timeout):
                 print("Connected")
@@ -119,7 +125,8 @@ class ArdupilotConnectionThread(QThread):
                     connected = False
 
                 try:
-                    self.updateData_signal.emit(self, self.connection, self.mapwidget, self.indicators, self.parent.homepage.cameraWidget)
+                    self.updateData_signal.emit(self, self.connection, self.mapwidget, self.indicators,
+                                                self.parent.homepage.cameraWidget)
                     self.msleep(20)
                 except Exception as e:
                     print(f"Error: {e}")

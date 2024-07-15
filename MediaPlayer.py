@@ -165,7 +165,7 @@ class MediaPlayerWindow(QMainWindow):
         button = QPushButton("Show on Map")
         self.menu.layout().addWidget(button)
 
-        self.layout().addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        self.menu.layout().addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
     def open_close_menu(self):
         width = self.menu.width()

@@ -1,14 +1,12 @@
 import time
 
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QPushButton, QWidget
 from Database.users_db import FirebaseUser as fb
 
 
-def fonksiyon(parent, user, i):
-    print("çalışıyor")
-    parent.targetspage.addUser(user, i)
+def addUser(parent, user, i):
+    parent.addUser(user, i)
 
 
 class FirebaseStart(QThread):
@@ -17,27 +15,32 @@ class FirebaseStart(QThread):
     def __init__(self, parent=None):
         super().__init__()
         self.parent = parent
-        self.users = fb().users
+        self.firebase = fb()
+        self.users = self.firebase.users
         self.number_of_users = 3
 
-        self.create_signal.connect(fonksiyon)
+        self.create_signal.connect(addUser)
 
     def run(self):
         for i, user in enumerate(self.users):
             i = i + 1
-            fonksiyon(self.parent, user, i)
+            self.create_signal.emit(self.parent, user, i)
 
 
 class FirebaseThread(QThread):
     connectionLost_signal = Signal(QPushButton)
 
-    def __init__(self, parent=None):
+    def __init__(self, firebase, parent=None):
         super().__init__()
         self.parent = parent
+        self.loop = True
+        self.firebase = firebase
         # self.connectionLost_signal.connect(connectionLost)
 
     def run(self):
-        pass
+        while self.loop:
+            self.msleep(100)
+
 
 
 """  
