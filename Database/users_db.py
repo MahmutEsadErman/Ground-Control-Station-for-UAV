@@ -19,31 +19,38 @@ class FirebaseUser:
 
         self.users = []
         for i in range(1, 4):
-            self.user_ref = db.reference(f'Users/{i}')
-            user = {"name": self.get_name(),
-                    "authority": self.get_authority(),
+            user = {"name": self.get_name(i),
+                    "authority": self.get_authority(i),
                     "image": QPixmap(f"Database/data/{i}.jpg"),
-                    "location": [self.get_latitude(), self.get_longitude()],
-                    "online": self.get_online()}
+                    "location": [self.get_latitude(i), self.get_longitude(i)],
+                    "online": self.get_online(i)}
             self.users.append(user)
 
+
+
     # Getters
-    def get_authority(self):
+    def get_authority(self, id):
+        self.user_ref = db.reference(f'Users/{id}')
         return self.user_ref.child('Authority').get()
 
-    def get_image(self):
+    def get_image(self, id):
+        self.user_ref = db.reference(f'Users/{id}')
         return self.user_ref.child('Image').get()
 
-    def get_name(self):
+    def get_name(self, id):
+        self.user_ref = db.reference(f'Users/{id}')
         return self.user_ref.child('Name').get()
 
-    def get_online(self):
+    def get_online(self, id):
+        self.user_ref = db.reference(f'Users/{id}')
         return self.user_ref.child('Online').get()
 
-    def get_latitude(self):
+    def get_latitude(self, id):
+        self.user_ref = db.reference(f'Users/{id}')
         return self.user_ref.child('Position/latitude').get()
 
-    def get_longitude(self):
+    def get_longitude(self, id):
+        self.user_ref = db.reference(f'Users/{id}')
         return self.user_ref.child('Position/longitude').get()
 
     def get_marker_latitude(self):
@@ -56,7 +63,8 @@ class FirebaseUser:
         return self.ref.child('Mission').get()
 
     ## Updaters
-    def update_authority(self, value):
+    def update_authority(self, id, value):
+        self.user_ref = db.reference(f'Users/{id}')
         self.user_ref.update({'Authority': value})
 
     def update_image(self, value):

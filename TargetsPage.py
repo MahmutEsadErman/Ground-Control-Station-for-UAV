@@ -3,9 +3,9 @@ import sys
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QGridLayout, \
     QPushButton, QSpacerItem, QSizePolicy
-from PySide6.QtCore import Qt, QEvent
+from PySide6.QtCore import Qt, QEvent, Signal
 
-from Database.Cloud import FirebaseStart
+from Database.Cloud import FirebaseStart, FirebaseThread
 from uifolder import Ui_TargetsPage
 from MediaPlayer import MediaPlayerWindow
 
@@ -14,8 +14,6 @@ class TargetsPage(QWidget, Ui_TargetsPage):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-
-        self.users = []
 
         # Set Layout
         self.setLayout(QVBoxLayout())
@@ -44,8 +42,9 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         self.users_scrollarea.setWidget(self.usersWidget)
 
         # Firebase Thread
-        self.firebase = FirebaseStart(self)
-        self.firebase.start()
+        self.initialize_firebase = FirebaseStart(self)
+        self.firebase = self.initialize_firebase.firebase
+        self.initialize_firebase.start()
 
         # Test
         self.addTarget(QPixmap("Database/data/1.jpg"), "Location 1", (10, 100))
@@ -109,7 +108,10 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         elif obj.objectName()[:-1] == "user":
             if event.type() == QEvent.MouseButtonDblClick:
                 no = int(obj.objectName()[-1])-1
-                self.newWindow = UserMenu(self.firebase.users[no]["name"], self.firebase.users[no]["image"],self.firebase.users[no]["location"])
+                self.newWindow = UserMenu(no, self.firebase.users[no]["name"], self.firebase.users[no]["image"], self.firebase.users[no]["location"], self)
+                self.firebasethread = FirebaseThread(no, self.firebase, self.newWindow)
+                self.firebasethread.start()
+                self.newWindow.setCloseSignal(self.firebasethread.stop)
                 self.newWindow.show()
 
         # When clicked change the border color
@@ -127,8 +129,11 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
 
 class UserMenu(QWidget):
-    def __init__(self, name, pixmap, location):
+    close_signal = Signal()
+    def __init__(self, id, name, pixmap, location, parent=None):
         super().__init__()
+        self.parent = parent
+        self.id = id
         self.setMaximumWidth(200)
         self.resize(200, self.height())
         self.setLayout(QVBoxLayout())
@@ -153,10 +158,12 @@ class UserMenu(QWidget):
         self.isonline_label.setAlignment(Qt.AlignTop)
         self.layout().addWidget(self.isonline_label)
 
-        button = QPushButton("Yetki Ver")
-        self.layout().addWidget(button)
+        self.authority_button = QPushButton("Yetki Ver")
+        self.layout().addWidget(self.authority_button)
 
         self.layout().addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+        self.authority_button.clicked.connect(self.giveAuthority)
 
     def setOnline(self, online):
         self.isOnline = online
@@ -165,8 +172,20 @@ class UserMenu(QWidget):
     def setLocation(self, location):
         self.location_label.setText("Location: \n" + str(location))
 
+    def setCloseSignal(self, func):
+        self.close_signal.connect(func)
+
     def giveAuthority(self):
-        pass
+        if self.authority_button.text() == "Yetki Ver":
+            self.authority_button.setText("Yetkiyi Geri Al")
+            self.parent.firebase.update_authority(self.id, False)
+        else:
+            self.authority_button.setText("Yetki Ver")
+            self.parent.firebase.update_authority(self.id, True)
+
+    def closeEvent(self, event):
+        self.close_signal.emit()
+        super().closeEvent(event)
 
 
 if __name__ == "__main__":

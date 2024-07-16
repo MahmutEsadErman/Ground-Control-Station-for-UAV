@@ -89,7 +89,7 @@ class ArdupilotConnectionThread(QThread):
         self.connectButton = parent.btn_connect
         self.mapwidget = parent.homepage.mapwidget
         self.indicators = parent.indicatorspage
-        self.firebase = parent.targetspage.firebase.firebase
+        self.firebase = parent.targetspage.firebase
 
         self.vehicleConnected_signal.connect(handleConnectedVehicle)
         self.updateData_signal.connect(updateData)

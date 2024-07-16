@@ -1,8 +1,6 @@
-import time
-
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtWidgets import QPushButton, QWidget
-from Database.users_db import FirebaseUser as fb
+from PySide6.QtWidgets import QWidget
+from Database.users_db import FirebaseUser as fb, FirebaseUser
 
 
 def addUser(parent, user, i):
@@ -16,37 +14,41 @@ class FirebaseStart(QThread):
         super().__init__()
         self.parent = parent
         self.firebase = fb()
-        self.users = self.firebase.users
-        self.number_of_users = 3
 
         self.create_signal.connect(addUser)
 
     def run(self):
-        for i, user in enumerate(self.users):
+        for i, user in enumerate(self.firebase.users):
             i = i + 1
             self.create_signal.emit(self.parent, user, i)
 
 
-class FirebaseThread(QThread):
-    connectionLost_signal = Signal(QPushButton)
+def updateUserMenu(usermenu, firebase, id):
+    if usermenu.isOnline != firebase.users[id]['online']:
+        usermenu.setOnline(firebase.users[id]['online'])
+    if usermenu.location_label.text()[10:] != str(firebase.users[id]['location']):
+        usermenu.setLocation(firebase.users[id]['location'])
 
-    def __init__(self, firebase, parent=None):
+
+class FirebaseThread(QThread):
+    updateUserMenu_signal = Signal(QWidget, FirebaseUser, int)
+    updateFirebase_signal = Signal(FirebaseUser)
+
+    def __init__(self, user_id, firebase, usermenu, parent=None):
         super().__init__()
         self.parent = parent
+        self.id = user_id
         self.loop = True
         self.firebase = firebase
-        # self.connectionLost_signal.connect(connectionLost)
+        self.usermenu = usermenu
+        self.updateUserMenu_signal.connect(updateUserMenu)
+        #self.updateFirebase_signal.connect(updateUserMenu) Buraya ahmetin yazdığı fonksiyon yazılacaktır!!!
 
     def run(self):
         while self.loop:
-            self.msleep(100)
+            self.updateFirebase_signal.emit(self.firebase)
+            self.updateUserMenu_signal.emit(self.usermenu, self.firebase, self.id)
+            self.msleep(200)
 
-
-
-"""  
-Başlarken yapılacaklar:
-1) Firebase bağlantısı başlatılacak
-2) Kaç user olduğu alınacak
-3) User bilgileri target page e yansıtılacak
-
-"""
+    def stop(self):
+        self.loop = False
