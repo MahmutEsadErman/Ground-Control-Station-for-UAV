@@ -1,4 +1,5 @@
 import io, sys
+
 from PySide6 import QtWebEngineWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
@@ -8,14 +9,27 @@ import folium
 from folium.plugins import MousePosition
 
 # Make Icon
+from PIL import Image
 import base64
 
-def image_to_base64(image_path):
+
+def image_to_base64(image_path, size=(100, 100)):
+    with Image.open(image_path) as img:
+        img = img.resize(size, Image.ANTIALIAS)
+        if img.mode == 'RGBA':
+            img = img.convert('RGB')
+        buffered = io.BytesIO()
+        img.save(buffered, format="JPEG")
+        return base64.b64encode(buffered.getvalue()).decode()
+
+def icon_to_base64(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
 
 
-uav_icon_base64 = image_to_base64('uifolder/assets/icons/uav.png')
+uav_icon_base64 = icon_to_base64('uifolder/assets/icons/uav.png')
+mobileuser_marker_base64 = icon_to_base64('uifolder/assets/icons/mobileuser.png')
+target_marker_base64 = icon_to_base64('uifolder/assets/icons/target.png')
 
 
 class MapWidget(QtWebEngineWidgets.QWebEngineView):
@@ -172,6 +186,16 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     iconSize: [40, 40],
                     });
                     
+                var targetIcon = L.icon({
+                    iconUrl: 'data:image/png;base64,%s', 
+                    iconSize: [40, 40],
+                    });
+                    
+                var userIcon = L.icon({
+                    iconUrl: 'data:image/png;base64,%s', 
+                    iconSize: [40, 40],
+                    });
+                    
                 // Adding First Marker
                 var mymarker = L.marker(
                         [41.27442, 28.727317],
@@ -262,7 +286,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 map.on('click', moveMarkerByClick);
                 
                 // end custom code
-        ''' % (map_variable_name, uav_icon_base64)
+        ''' % (map_variable_name, uav_icon_base64, target_marker_base64, mobileuser_marker_base64)
 
 
 if __name__ == "__main__":

@@ -3,18 +3,19 @@ import sys
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QGridLayout, \
     QPushButton, QSpacerItem, QSizePolicy
-from PySide6.QtCore import Qt, QEvent, Signal
+from PySide6.QtCore import Qt, QEvent, Signal, QTimer
 
 from Database.Cloud import FirebaseStart, FirebaseThread
 from uifolder import Ui_TargetsPage
 from MediaPlayer import MediaPlayerWindow
+from MapWidget import image_to_base64
 
 
 class TargetsPage(QWidget, Ui_TargetsPage):
-    def __init__(self):
+    def __init__(self, parent=None):
         super().__init__()
         self.setupUi(self)
-
+        self.parent = parent
         # Set Layout
         self.setLayout(QVBoxLayout())
 
@@ -42,9 +43,8 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         self.users_scrollarea.setWidget(self.usersWidget)
 
         # Firebase Thread
-        self.initialize_firebase = FirebaseStart(self)
-        self.firebase = self.initialize_firebase.firebase
-        self.initialize_firebase.start()
+        self.firebase = self.parent.firebase
+        QTimer.singleShot(1000, self.addUsers)
 
         # Test
         self.addTarget(QPixmap("Database/data/1.jpg"), "Location 1", (10, 100))
@@ -67,9 +67,23 @@ class TargetsPage(QWidget, Ui_TargetsPage):
             self.column = 0
             self.row += 1
 
-    def addUser(self, user, i):
-        container = self.createContainer(f"user{i}", user["image"], i)
-        self.usersWidget.layout().addWidget(container)
+    def addUsers(self):
+        for i, user in enumerate(self.firebase.users):
+            container = self.createContainer(f"user{i}", QPixmap(user["image"]), i)
+            self.usersWidget.layout().addWidget(container)
+
+            if user["location"] is not None and all(user["location"]):
+                # Add user marker
+                location = user["location"]
+                name = user["name"].replace("'", "\\'")
+                image = 'data:image/png;base64,'+image_to_base64(user["image"])
+                self.parent.homepage.mapwidget.page().runJavaScript(f"""
+                    user_marker = L.marker({location}, {{icon: userIcon}}).addTo(map);
+                    user_marker.bindTooltip('{name}' + '<br>' + "<img src='{image}'/>");
+                """)
+                print(f'User {i} added to the map with location: {location}')
+            else:
+                print(f'User {i} has invalid location data: {user["location"]}')
 
     def createContainer(self, objectname, pixmap, number):
         # Create a QWidget to hold both labels
@@ -107,8 +121,8 @@ class TargetsPage(QWidget, Ui_TargetsPage):
                 self.newWindow.show()
         elif obj.objectName()[:-1] == "user":
             if event.type() == QEvent.MouseButtonDblClick:
-                no = int(obj.objectName()[-1])-1
-                self.newWindow = UserMenu(no, self.firebase.users[no]["name"], self.firebase.users[no]["image"], self.firebase.users[no]["location"], self)
+                no = int(obj.objectName()[-1])
+                self.newWindow = UserMenu(no, self.firebase.users[no]["name"], QPixmap(self.firebase.users[no]["image"]), self.firebase.users[no]["location"], self)
                 self.firebasethread = FirebaseThread(no, self.firebase, self.newWindow)
                 self.firebasethread.start()
                 self.newWindow.setCloseSignal(self.firebasethread.stop)
@@ -130,6 +144,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
 class UserMenu(QWidget):
     close_signal = Signal()
+
     def __init__(self, id, name, pixmap, location, parent=None):
         super().__init__()
         self.parent = parent

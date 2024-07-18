@@ -5,13 +5,13 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QVBoxLayout, QWidget
 from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
 
-from Database.Cloud import FirebaseStart
 from TargetsPage import TargetsPage
 from Database.Connection import ArdupilotConnectionThread
 from HomePage import HomePage
 from IndicatorsPage import IndicatorsPage
 from uifolder import Ui_MainWindow
 
+from Database.users_db import FirebaseUser as fb
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -42,10 +42,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Set Initial Baud Rate to Combobox
         self.combobox_baudrate.setCurrentText('115200')
 
+        # Initialize firebase
+        self.firebase = fb()
+
         # Setting Pages
         self.homepage = HomePage()
         self.indicatorspage = IndicatorsPage()
-        self.targetspage = TargetsPage()
+        self.targetspage = TargetsPage(self)
         self.indicatorswidget = QWidget(layout=QVBoxLayout())
         self.indicatorswidget.layout().addWidget(self.indicatorspage)
         self.stackedWidget.addWidget(self.homepage)

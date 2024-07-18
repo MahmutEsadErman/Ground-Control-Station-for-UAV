@@ -31,7 +31,7 @@ class FirebaseUser:
         for i in range(0, self.user_number):
             user = {"name": self.get_name(i),
                     "authority": self.get_authority(i),
-                    "image": QPixmap(f"Database/data/{i}.jpg"),
+                    "image": f"Database/data/{i}.jpg",
                     "location": [self.get_latitude(i), self.get_longitude(i)],
                     "online": self.get_online(i)}
             self.users.append(user)
