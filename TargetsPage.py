@@ -178,10 +178,10 @@ class UserMenu(QWidget):
     def giveAuthority(self):
         if self.authority_button.text() == "Yetki Ver":
             self.authority_button.setText("Yetkiyi Geri Al")
-            self.parent.firebase.update_authority(self.id, False)
+            self.parent.firebase.update_authority(False, self.id)
         else:
             self.authority_button.setText("Yetki Ver")
-            self.parent.firebase.update_authority(self.id, True)
+            self.parent.firebase.update_authority(True, self.id)
 
     def closeEvent(self, event):
         self.close_signal.emit()

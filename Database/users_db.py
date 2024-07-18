@@ -1,4 +1,8 @@
-﻿import firebase_admin
+﻿import time
+import concurrent.futures
+
+import firebase_admin
+from PySide6.QtCore import QThread
 from PySide6.QtGui import QPixmap
 from firebase_admin import credentials
 from firebase_admin import db
@@ -18,7 +22,13 @@ class FirebaseUser:
         self.mission = self.get_mission()
 
         self.users = []
-        for i in range(1, 4):
+
+        self.user_number = 4
+
+        self.init_users()
+
+    def init_users(self):
+        for i in range(0, self.user_number):
             user = {"name": self.get_name(i),
                     "authority": self.get_authority(i),
                     "image": QPixmap(f"Database/data/{i}.jpg"),
@@ -26,7 +36,16 @@ class FirebaseUser:
                     "online": self.get_online(i)}
             self.users.append(user)
 
+    def updateUsers(self):
+        self.user_number = 4
 
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [executor.submit(self.update_user_data, i) for i in range(self.user_number)]
+            concurrent.futures.wait(futures)
+
+    def update_user_data(self, i):
+        self.users[i]["location"] = [self.get_latitude(i), self.get_longitude(i)]
+        self.users[i]["online"] = self.get_online(i)
 
     # Getters
     def get_authority(self, id):
@@ -63,23 +82,28 @@ class FirebaseUser:
         return self.ref.child('Mission').get()
 
     ## Updaters
-    def update_authority(self, id, value):
+    def update_authority(self, value, id):
         self.user_ref = db.reference(f'Users/{id}')
         self.user_ref.update({'Authority': value})
 
-    def update_image(self, value):
+    def update_image(self, value, id):
+        self.user_ref = db.reference(f'Users/{id}')
         self.user_ref.update({'Image': value})
 
-    def update_name(self, value):
+    def update_name(self, value, id):
+        self.user_ref = db.reference(f'Users/{id}')
         self.user_ref.update({'Name': value})
 
-    def update_online(self, value):
+    def update_online(self, value, id):
+        self.user_ref = db.reference(f'Users/{id}')
         self.user_ref.update({'Online': value})
 
-    def update_latitude(self, value):
+    def update_latitude(self, value, id):
+        self.user_ref = db.reference(f'Users/{id}')
         self.user_ref.child('Position').update({'latitude': value})
 
-    def update_longitude(self, value):
+    def update_longitude(self, value, id):
+        self.user_ref = db.reference(f'Users/{id}')
         self.user_ref.child('Position').update({'longitude': value})
 
     def update_marker_latitude(self, value):

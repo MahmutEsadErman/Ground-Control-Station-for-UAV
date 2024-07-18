@@ -29,6 +29,9 @@ def updateUserMenu(usermenu, firebase, id):
     if usermenu.location_label.text()[10:] != str(firebase.users[id]['location']):
         usermenu.setLocation(firebase.users[id]['location'])
 
+def updateUsers(firebase):
+    firebase.updateUsers()
+
 
 class FirebaseThread(QThread):
     updateUserMenu_signal = Signal(QWidget, FirebaseUser, int)
@@ -42,13 +45,14 @@ class FirebaseThread(QThread):
         self.firebase = firebase
         self.usermenu = usermenu
         self.updateUserMenu_signal.connect(updateUserMenu)
-        #self.updateFirebase_signal.connect(updateUserMenu) Buraya ahmetin yazdığı fonksiyon yazılacaktır!!!
+        self.updateFirebase_signal.connect(updateUsers)
 
     def run(self):
         while self.loop:
             self.updateFirebase_signal.emit(self.firebase)
+            self.msleep(1000)
             self.updateUserMenu_signal.emit(self.usermenu, self.firebase, self.id)
-            self.msleep(200)
+            self.msleep(1000)
 
     def stop(self):
         self.loop = False
