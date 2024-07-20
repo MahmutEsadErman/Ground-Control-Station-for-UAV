@@ -9,17 +9,17 @@ from MapWidget import MapWidget
 from uifolder import Ui_HomePage
 
 class HomePage(QWidget, Ui_HomePage):
-    def __init__(self):
+    def __init__(self, parent=None):
         super().__init__()
         self.setupUi(self)
-
+        self.parent = parent
         # Set Map Widget
         istanbulhavalimani = [41.27442, 28.727317]
         self.mapwidget = MapWidget(istanbulhavalimani)
         self.mapFrame.layout().addWidget(self.mapwidget)
 
         # Set Camera Widget
-        self.cameraWidget = CameraWidget()
+        self.cameraWidget = CameraWidget(self)
         self.cameraFrame.layout().addWidget(self.cameraWidget)
 
         # Show in another window buttons

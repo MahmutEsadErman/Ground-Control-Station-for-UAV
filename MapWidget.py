@@ -15,7 +15,7 @@ import base64
 
 def image_to_base64(image_path, size=(100, 100)):
     with Image.open(image_path) as img:
-        img = img.resize(size, Image.ANTIALIAS)
+        img = img.resize(size)
         if img.mode == 'RGBA':
             img = img.convert('RGB')
         buffered = io.BytesIO()

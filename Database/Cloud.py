@@ -4,20 +4,16 @@ from Database.users_db import FirebaseUser
 
 
 class FirebaseThread(QThread):
-    updateFirebase_signal = Signal()
 
-    def __init__(self, user_id, firebase, parent=None):
+    def __init__(self, firebase):
         super().__init__()
-        self.parent = parent
-        self.id = user_id
         self.loop = True
         self.firebase = firebase
-        self.updateFirebase_signal.connect(self.firebase.updateUsers)
 
     def run(self):
         while self.loop:
-            self.updateFirebase_signal.emit()
-            self.msleep(1000)
+            self.firebase.update_user_data()
+            self.msleep(500)
 
     def stop(self):
         self.loop = False

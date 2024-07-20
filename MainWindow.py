@@ -3,7 +3,7 @@ import sys
 from PySide6 import QtGui
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QVBoxLayout, QWidget
-from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
+from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve, QThread, QTimer
 
 from TargetsPage import TargetsPage
 from Database.Connection import ArdupilotConnectionThread
@@ -11,12 +11,12 @@ from HomePage import HomePage
 from IndicatorsPage import IndicatorsPage
 from uifolder import Ui_MainWindow
 
-from Database.users_db import FirebaseUser as fb
-
 class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self):
+    def __init__(self, firebase):
         super().__init__()
         self.setupUi(self)
+
+        self.firebase = firebase
 
         # Frameless Windowimport os
         self.setWindowFlag(Qt.FramelessWindowHint)
@@ -42,13 +42,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Set Initial Baud Rate to Combobox
         self.combobox_baudrate.setCurrentText('115200')
 
-        # Initialize firebase
-        self.firebase = fb()
-
         # Setting Pages
-        self.homepage = HomePage()
-        self.indicatorspage = IndicatorsPage()
         self.targetspage = TargetsPage(self)
+        self.homepage = HomePage(self)
+        self.indicatorspage = IndicatorsPage()
         self.indicatorswidget = QWidget(layout=QVBoxLayout())
         self.indicatorswidget.layout().addWidget(self.indicatorspage)
         self.stackedWidget.addWidget(self.homepage)

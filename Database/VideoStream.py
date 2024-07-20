@@ -1,4 +1,5 @@
 import collections
+import json
 import math
 import struct
 import time
@@ -7,11 +8,12 @@ import socket
 import cv2
 import numpy as np
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtGui import QImage, Qt
+from PySide6.QtGui import QImage, Qt, QPixmap
 
 
 class VideoStreamThread(QThread):
     ImageUpdate = Signal(QImage, str)
+    NewTargetDetectedSignal = Signal(QPixmap, list, list)
     DISCONNECT_MESSAGE = "!DISCONNECT"
 
     def __init__(self, parent=None, ip=socket.gethostbyname(socket.gethostname()), port=5050):
@@ -24,12 +26,15 @@ class VideoStreamThread(QThread):
         self.timeout_duration = 5
         self.last_data_received_time = 0
         self.loop = True
+        self.saved_detections = []
+
+        self.NewTargetDetectedSignal.connect(parent.parent.parent.targetspage.addTarget)
 
         # Variables for Hud and Labels
         self.hudcolor = (85, 170, 255)
         self.thickness = 2
-        self.p1 = (self.parent.width()//2-200, self.parent.height()//2)
-        self.p2 = (self.parent.width()//2+200, self.parent.height()//2)
+        self.p1 = (self.parent.width() // 2 - 200, self.parent.height() // 2)
+        self.p2 = (self.parent.width() // 2 + 200, self.parent.height() // 2)
 
     def run(self):
         # Connect to the server
@@ -55,6 +60,8 @@ class VideoStreamThread(QThread):
         # Video recording
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # video codec
         out = cv2.VideoWriter('Database/output.avi', fourcc, 30.0, (640, 480))
+
+        last_detection_length = 0
         # Loop to receive video stream
         while self.loop:
             current_time = time.time()
@@ -80,11 +87,23 @@ class VideoStreamThread(QThread):
                 data = data[payload_size:]
                 message_size = struct.unpack("L", packed_message_size)[0]
 
-                # Take video frame
                 while len(data) < message_size:
                     data += connection.recv(4096)
                 frame_data = data[:message_size]
                 data = data[message_size:]
+
+                while len(data) < payload_size:
+                    data += connection.recv(4096)
+                packed_detection_size = data[:payload_size]
+                data = data[payload_size:]
+                detection_size = struct.unpack("L", packed_detection_size)[0]
+
+                while len(data) < detection_size:
+                    data += connection.recv(4096)
+                detection_data = data[:detection_size].decode('utf-8')
+                data = data[detection_size:]
+                detections = json.loads(detection_data)
+                print("Received detections:", detections)
 
                 self.last_data_received_time = current_time
 
@@ -102,9 +121,26 @@ class VideoStreamThread(QThread):
                     avg_fps = sum(fps_filter) / len(fps_filter)
                     avg_fps = str(int(avg_fps))
                     cv2.putText(frame, avg_fps, (10, 40), font, 1.5, self.hudcolor, self.thickness, cv2.LINE_AA)
-
                     # Put Horizon Line
                     cv2.line(frame, self.p1, self.p2, self.hudcolor, self.thickness)
+
+                # If Labeling is enabled
+                if self.parent.labels_checkbox.isChecked():
+                    for det in detections:
+                        if det['track_id'] > 0:
+                            cv2.rectangle(frame, (int(det['bb_left']), int(det['bb_top'])), (
+                                int(det['bb_left'] + det['bb_width']), int(det['bb_top'] + det['bb_height'])),
+                                          (0, 255, 0),
+                                          2)
+                            cv2.putText(frame, str(det['track_id']), (int(det['bb_left']), int(det['bb_top'])),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+                for det in detections:
+                    if det not in self.saved_detections:
+                        target_frame = frame[det['bb_top']:(det['bb_top'] + det['bb_height'])][det['bb_left']:det['bb_left']+det['bb_width']]
+                        target_image = QImage(target_frame.data, target_frame.shape[1], target_frame.shape[0], QImage.Format_RGB888)
+                        self.NewTargetDetectedSignal.emit(target_image, [0, 0], [1, 100])
+                        self.saved_detections.append(det)
 
                 # Convert frame to QImage
                 ConvertToQtFormat = QImage(frame.data, frame.shape[1], frame.shape[0], QImage.Format_RGB888)
@@ -119,10 +155,10 @@ class VideoStreamThread(QThread):
         print(f"IP address set to {ip}")
 
     def setHorizon(self, roll):
-        width = self.parent.width()//2
-        height = self.parent.height()//2
-        self.p1 = (int(width-200*math.cos(roll)), int(height+200*math.sin(roll)))
-        self.p2 = (int(width+200*math.cos(roll)), int(height-200*math.sin(roll)))
+        width = self.parent.width() // 2
+        height = self.parent.height() // 2
+        self.p1 = (int(width - 200 * math.cos(roll)), int(height + 200 * math.sin(roll)))
+        self.p2 = (int(width + 200 * math.cos(roll)), int(height - 200 * math.sin(roll)))
 
     def stop(self):
         self.loop = False

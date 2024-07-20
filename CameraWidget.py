@@ -7,8 +7,9 @@ from Database.VideoStream import VideoStreamThread
 
 
 class CameraWidget(QWidget):
-    def __init__(self):
+    def __init__(self, parent=None):
         super().__init__()
+        self.parent = parent
         # Create Layout
         self.QVBLayout = QVBoxLayout()
         self.QVBLayout.setContentsMargins(0, 0, 0, 0)  # Set the layout margins

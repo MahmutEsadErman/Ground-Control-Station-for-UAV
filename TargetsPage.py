@@ -3,9 +3,8 @@ import sys
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QGridLayout, \
     QPushButton, QSpacerItem, QSizePolicy
-from PySide6.QtCore import Qt, QEvent, Signal, QTimer
+from PySide6.QtCore import Qt, QEvent, QTimer
 
-from Database.Cloud import FirebaseStart, FirebaseThread
 from uifolder import Ui_TargetsPage
 from MediaPlayer import MediaPlayerWindow
 from MapWidget import image_to_base64
@@ -63,7 +62,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         self.targetsWidget.layout().addWidget(container, self.row, self.column)
 
         self.column += 1
-        if self.column > 4:  # Adjust this value to change the number of columns
+        if self.column > 5:  # Adjust this value to change the number of columns
             self.column = 0
             self.row += 1
 
@@ -123,9 +122,6 @@ class TargetsPage(QWidget, Ui_TargetsPage):
             if event.type() == QEvent.MouseButtonDblClick:
                 no = int(obj.objectName()[-1])
                 self.newWindow = UserMenu(no, self.firebase.users[no]["name"], QPixmap(self.firebase.users[no]["image"]), self.firebase.users[no]["location"], self)
-                self.firebasethread = FirebaseThread(no, self.firebase, self.newWindow)
-                self.firebasethread.start()
-                self.newWindow.setCloseSignal(self.firebasethread.stop)
                 self.newWindow.show()
 
         # When clicked change the border color
@@ -143,7 +139,6 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
 
 class UserMenu(QWidget):
-    close_signal = Signal()
 
     def __init__(self, id, name, pixmap, location, parent=None):
         super().__init__()
@@ -187,9 +182,6 @@ class UserMenu(QWidget):
     def setLocation(self, location):
         self.location_label.setText("Location: \n" + str(location))
 
-    def setCloseSignal(self, func):
-        self.close_signal.connect(func)
-
     def giveAuthority(self):
         if self.authority_button.text() == "Yetki Ver":
             self.authority_button.setText("Yetkiyi Geri Al")
@@ -197,10 +189,6 @@ class UserMenu(QWidget):
         else:
             self.authority_button.setText("Yetki Ver")
             self.parent.firebase.update_authority(True, self.id)
-
-    def closeEvent(self, event):
-        self.close_signal.emit()
-        super().closeEvent(event)
 
 
 if __name__ == "__main__":
