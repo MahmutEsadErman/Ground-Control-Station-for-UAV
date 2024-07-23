@@ -13,7 +13,7 @@ class FirebaseThread(QThread):
     def run(self):
         while self.loop:
             self.firebase.update_user_data()
-            self.msleep(500)
+            self.msleep(100)
 
     def stop(self):
         self.loop = False
@@ -41,7 +41,7 @@ class UpdateUserMenuThread(QThread):
     def run(self):
         while self.loop:
             self.updateUserMenu_signal.emit(self.usermenu, self.firebase, self.id)
-            self.msleep(200)
+            self.msleep(100)
 
     def stop(self):
         self.loop = False

@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
-from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QLabel, QVBoxLayout, QCheckBox
+from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QLabel, QVBoxLayout, QCheckBox, QDialog, QInputDialog
 
 from Database.VideoStream import VideoStreamThread
 
@@ -62,11 +62,13 @@ class CameraWidget(QWidget):
         self.connect_button.show()
 
     def connectStream(self):
-        print("Connecting to video stream...")
-        self.videothread.setIp("127.0.1.1")
-        self.videothread.start()
-        self.connect_button.hide()
-        self.disconnect_button.show()
+        ip, okPressed = QInputDialog.getText(self, "Enter IP Address", "IP Address:", text="192.168.1.1")
+        if okPressed:
+            print("Connecting to video stream...")
+            self.videothread.setIp(ip)
+            self.videothread.start()
+            self.connect_button.hide()
+            self.disconnect_button.show()
 
     def disconnect(self):
         self.videothread.stop()

@@ -14,7 +14,7 @@ class VideoServer:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((ip, port))
         self.timeout_seconds = 5
-        self.shared=shared
+        self.shared = shared
         print("[STARTING] server is starting...")
         print(f"[LISTENING] Server is listening on {ip}")
 
@@ -69,6 +69,8 @@ class sharing:
 
 
 if __name__ == "__main__":
-    shared=sharing()
-    server = VideoServer(shared=shared)
+    shared = sharing()
+    server = VideoServer(ip="127.0.1.1", shared=shared)
+    server_thread = threading.Thread(target=server.start_server, daemon=True)
+    server_thread.start()
     

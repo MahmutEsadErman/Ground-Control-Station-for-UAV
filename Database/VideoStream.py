@@ -8,12 +8,17 @@ import socket
 import cv2
 import numpy as np
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtGui import QImage, Qt, QPixmap
+from PySide6.QtGui import QImage, Qt
+from PySide6.QtWidgets import QWidget
 
+
+def updateTargetPosition(mapwidget, no, position):
+    mapwidget.page().runJavaScript(f"target_marker{no}.setLatLng({str(position)});")
 
 class VideoStreamThread(QThread):
     ImageUpdate = Signal(QImage, str)
-    NewTargetDetectedSignal = Signal(QPixmap, list, list)
+    NewTargetDetectedSignal = Signal(QImage, list, list, int)
+    UpdateTargetPositionSignal = Signal(QWidget, int, list)
     DISCONNECT_MESSAGE = "!DISCONNECT"
 
     def __init__(self, parent=None, ip=socket.gethostbyname(socket.gethostname()), port=5050):
@@ -23,12 +28,13 @@ class VideoStreamThread(QThread):
         self.port = port
         self.header = 64
         self.format = 'utf-8'
-        self.timeout_duration = 5
+        self.timeout_duration = 10
         self.last_data_received_time = 0
         self.loop = True
         self.saved_detections = []
 
         self.NewTargetDetectedSignal.connect(parent.parent.parent.targetspage.addTarget)
+        self.UpdateTargetPositionSignal.connect(updateTargetPosition)
 
         # Variables for Hud and Labels
         self.hudcolor = (85, 170, 255)
@@ -103,7 +109,6 @@ class VideoStreamThread(QThread):
                 detection_data = data[:detection_size].decode('utf-8')
                 data = data[detection_size:]
                 detections = json.loads(detection_data)
-                print("Received detections:", detections)
 
                 self.last_data_received_time = current_time
 
@@ -136,11 +141,14 @@ class VideoStreamThread(QThread):
                                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
                 for det in detections:
-                    if det not in self.saved_detections:
-                        target_frame = frame[det['bb_top']:(det['bb_top'] + det['bb_height'])][det['bb_left']:det['bb_left']+det['bb_width']]
+                    if det['track_id'] not in self.saved_detections:
+                        print(f"New target detected: {det['track_id']}")
+                        target_frame = frame[det['bb_top']:(det['bb_top'] + det['bb_height'])][det['bb_left']:(det['bb_left']+det['bb_width'])]
                         target_image = QImage(target_frame.data, target_frame.shape[1], target_frame.shape[0], QImage.Format_RGB888)
-                        self.NewTargetDetectedSignal.emit(target_image, [0, 0], [1, 100])
-                        self.saved_detections.append(det)
+                        self.NewTargetDetectedSignal.emit(target_image, [0, 0], [1, 100], det['track_id'])
+                        self.saved_detections.append(det['track_id'])
+
+                    self.UpdateTargetPositionSignal.emit(self.parent.parent.mapwidget, det['track_id'], [0,0])
 
                 # Convert frame to QImage
                 ConvertToQtFormat = QImage(frame.data, frame.shape[1], frame.shape[0], QImage.Format_RGB888)
@@ -162,3 +170,9 @@ class VideoStreamThread(QThread):
 
     def stop(self):
         self.loop = False
+
+    def sendMessage(self, msg):
+        message = msg.encode(self.format)
+        message_length = len(message)
+        send_length = struct.pack("L", message_length)
+        self.connection.sendall(send_length + message)

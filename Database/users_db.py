@@ -26,7 +26,7 @@ class FirebaseUser:
 
         self.users = []
 
-        self.user_number = 4
+        self.user_number = 2
 
         self.init_users()
 

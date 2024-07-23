@@ -3,11 +3,22 @@ import sys
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QGridLayout, \
     QPushButton, QSpacerItem, QSizePolicy
-from PySide6.QtCore import Qt, QEvent, QTimer
+from PySide6.QtCore import Qt, QEvent, QTimer, QByteArray, QBuffer, QIODevice
 
+from Database.Cloud import UpdateUserMenuThread
 from uifolder import Ui_TargetsPage
 from MediaPlayer import MediaPlayerWindow
 from MapWidget import image_to_base64
+
+
+def qimage_to_base64(qimage, image_format="PNG"):
+    byte_array = QByteArray()
+    buffer = QBuffer(byte_array)
+    buffer.open(QIODevice.WriteOnly)
+    image = qimage.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+    image.save(buffer, image_format)
+    base64_data = byte_array.toBase64().data().decode("utf-8")
+    return base64_data
 
 
 class TargetsPage(QWidget, Ui_TargetsPage):
@@ -46,17 +57,16 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         QTimer.singleShot(1000, self.addUsers)
 
         # Test
-        self.addTarget(QPixmap("Database/data/1.jpg"), "Location 1", (10, 100))
-        self.addTarget(QPixmap("Database/data/2.jpg"), "Location 2", (20, 200))
-        self.addTarget(QPixmap("Database/data/3.jpg"), "Location 3", (30, 300))
+        # self.addTarget(QPixmap("Database/data/1.jpg"), "Location 1", (10, 100))
 
-    def addTarget(self, pixmap, location, time_interval):
+
+    def addTarget(self, image, position, time_interval, no):
         # Create a new target
         self.number_of_targets += 1
-        self.targets[self.number_of_targets] = {"pixmap": pixmap, "location": location, "time_interval": time_interval}
+        self.targets[self.number_of_targets] = {"image": image, "location": position, "time_interval": time_interval}
 
         # Create a container widget for the target
-        container = self.createContainer(f"target{self.number_of_targets}", pixmap, self.number_of_targets)
+        container = self.createContainer(f"target{self.number_of_targets}", QPixmap.fromImage(image), self.number_of_targets)
 
         # Add the container widget to the grid layout
         self.targetsWidget.layout().addWidget(container, self.row, self.column)
@@ -65,6 +75,13 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         if self.column > 5:  # Adjust this value to change the number of columns
             self.column = 0
             self.row += 1
+
+        # Add target marker
+        image_base64 = 'data:image/png;base64,' + qimage_to_base64(image)
+        self.parent.homepage.mapwidget.page().runJavaScript(f"""
+                    target_marker{no} = L.marker({position}, {{icon: targetIcon}}).addTo(map);
+                    target_marker{no}.bindTooltip('<br>' + "<img src='{image_base64}'/>");
+                """)
 
     def addUsers(self):
         for i, user in enumerate(self.firebase.users):
@@ -75,14 +92,19 @@ class TargetsPage(QWidget, Ui_TargetsPage):
                 # Add user marker
                 location = user["location"]
                 name = user["name"].replace("'", "\\'")
-                image = 'data:image/png;base64,'+image_to_base64(user["image"])
+                image = 'data:image/png;base64,' + image_to_base64(user["image"])
                 self.parent.homepage.mapwidget.page().runJavaScript(f"""
-                    user_marker = L.marker({location}, {{icon: userIcon}}).addTo(map);
-                    user_marker.bindTooltip('{name}' + '<br>' + "<img src='{image}'/>");
+                    user_marker{i} = L.marker({location}, {{icon: userIcon}}).addTo(map);
+                    user_marker{i}.bindTooltip('{name}' + '<br>' + "<img src='{image}'/>");
                 """)
                 print(f'User {i} added to the map with location: {location}')
             else:
                 print(f'User {i} has invalid location data: {user["location"]}')
+
+        # Update users positions every 100ms
+        self.update_users_positions_timer = QTimer()
+        self.update_users_positions_timer.timeout.connect(self.update_users_positions)
+        self.update_users_positions_timer.start(100)
 
     def createContainer(self, objectname, pixmap, number):
         # Create a QWidget to hold both labels
@@ -110,18 +132,31 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
         return container
 
+    def update_users_positions(self):
+        for i, user in enumerate(self.firebase.users):
+            if user["location"] is not None and all(user["location"]):
+                # Update user marker
+                location = user["location"]
+                self.parent.homepage.mapwidget.page().runJavaScript(f"user_marker{i}.setLatLng({location});")
+            else:
+                print(f'User {i} has invalid location data: {user["location"]}')
+
     def eventFilter(self, obj, event):
         if obj.objectName()[:-1] == "target":
             # When double clicked open a new window
             if event.type() == QEvent.MouseButtonDblClick:
                 no = int(obj.objectName()[-1])
-                self.newWindow = MediaPlayerWindow(self.targets[no]["pixmap"], self.targets[no]["location"],
+                self.newWindow = MediaPlayerWindow(QPixmap.fromImage(self.targets[no]["image"]), self.targets[no]["location"],
                                                    self.targets[no]["time_interval"])
                 self.newWindow.show()
         elif obj.objectName()[:-1] == "user":
             if event.type() == QEvent.MouseButtonDblClick:
                 no = int(obj.objectName()[-1])
-                self.newWindow = UserMenu(no, self.firebase.users[no]["name"], QPixmap(self.firebase.users[no]["image"]), self.firebase.users[no]["location"], self)
+                self.newWindow = UserMenu(no, self.firebase.users[no]["name"],
+                                          QPixmap(self.firebase.users[no]["image"]),
+                                          self.firebase.users[no]["location"], self)
+                self.update_user_menu = UpdateUserMenuThread(no, self.firebase, self.newWindow)
+                self.update_user_menu.start()
                 self.newWindow.show()
 
         # When clicked change the border color
