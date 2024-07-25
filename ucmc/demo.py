@@ -7,8 +7,9 @@ from detector.mapper import Mapper
 
 import numpy as np
 import threading
+import time
 
-from server.server import sharing,VideoServer
+from server.server import sharing,VideoServerThread
 
 user_input = None
 
@@ -57,15 +58,19 @@ class Detection:
         }
 
 
+
 # Detector类，用于从Yolo检测器获取目标检测的结果
 class Detector:
     def __init__(self):
         self.seq_length = 0
         self.gmc = None
+        
 
     def load(self,cam_para_file):
         self.mapper = Mapper(cam_para_file,"MOT17")
         self.model = YOLO('/home/master/Desktop/ucmctest/pretrained/yolov8x.pt')
+        #self.model = YOLO('/home/master/Desktop/Nebula-image-processing/yolotrain/runs/detect/visdrone-s/weights/best.pt')
+
 
     def get_dets(self, img,conf_thresh = 0,det_classes = [0]):
         
@@ -108,28 +113,28 @@ def main(args):
     global user_input , input_thread
     number = -1
     class_list = [0,2,5,7]
+    valid_dets={}
+    threshold_time=0.5
 
-    shared=sharing()
-    server = VideoServer(shared=shared)
-
-    cap = cv2.VideoCapture(args.video)
+    #args.video
+    cap = cv2.VideoCapture(0)
 
     input_thread = threading.Thread(target=input_thread, daemon=True)
     input_thread.start()
-
-    server_thread= threading.Thread(target=server.start_server, daemon=True)
-    server_thread.start()
-
-    # 获取视频的 fps
+    # fps
     fps = cap.get(cv2.CAP_PROP_FPS)
 
-    # 获取视频的宽度和高度
+    shared=sharing(fps=fps)
+    server = VideoServerThread(ip='192.168.12.1' ,shared=shared)
+
+    server.start()
+    
+
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    video_out = cv2.VideoWriter('/home/master/Desktop/ucmctest/output/output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))  
+    #video_out = cv2.VideoWriter('/home/master/Desktop/ucmctest/output/output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))  
 
-    # 打开一个cv的窗口，指定高度和宽度
     cv2.namedWindow("demo", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("demo", width, height)
 
@@ -139,18 +144,36 @@ def main(args):
     
     tracker = UCMCTrack(args.a, args.a, args.wx, args.wy, args.vmax, args.cdt, fps, "MOT", args.high_score,False,None)
 
-    # 循环读取视频帧
+    frame_time = 1 / fps
+
     frame_id = 1
+
+
+
     while True:
+        start_time=time.time()
+        detections_list=[]
         ret, frame_img = cap.read()
         if not ret:  
             break
     
         dets = detector.get_dets(frame_img,args.conf_thresh,class_list)
         tracker.update(dets,frame_id)
-
-        detections_list = [det.to_dict() for det in dets]
+        
+        for det in dets :
+            if det.track_id not in valid_dets:
+                 valid_dets[det.track_id]=time.time()
+            elif time.time()- valid_dets[det.track_id] >=threshold_time :
+                detections_list.append(det.to_dict())
+        
         shared.update_detections(detections_list,frame_img)
+
+
+        elapsed_time= time.time() -start_time
+        sleep_time= frame_time - elapsed_time
+        if sleep_time > 0:
+            time.sleep(sleep_time)
+            
 
         if user_input is not None:
             if user_input.lower() == 'q':
@@ -168,25 +191,25 @@ def main(args):
 
 
 
-        
-        #for det in dets:
+        """
+        for det in dets:
             # 画出检测框
-         #   if det.track_id ==number:
-          #      cv2.rectangle(frame_img, (int(det.bb_left), int(det.bb_top)), (int(det.bb_left+det.bb_width), int(det.bb_top+det.bb_height)), (255, 0, 0), 2)
+            if det.track_id ==number:
+                cv2.rectangle(frame_img, (int(det.bb_left), int(det.bb_top)), (int(det.bb_left+det.bb_width), int(det.bb_top+det.bb_height)), (255, 0, 0), 2)
                 # 画出检测框的id
-           #     cv2.putText(frame_img, str(det.track_id), (int(det.bb_left), int(det.bb_top)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-          #  elif det.track_id > 0:
-           #     cv2.rectangle(frame_img, (int(det.bb_left), int(det.bb_top)), (int(det.bb_left+det.bb_width), int(det.bb_top+det.bb_height)), (0, 255, 0), 2)
+                cv2.putText(frame_img, str(det.track_id), (int(det.bb_left), int(det.bb_top)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            elif det.track_id > 0:
+                cv2.rectangle(frame_img, (int(det.bb_left), int(det.bb_top)), (int(det.bb_left+det.bb_width), int(det.bb_top+det.bb_height)), (0, 255, 0), 2)
                 # 画出检测框的id
-            #    cv2.putText(frame_img, str(det.track_id), (int(det.bb_left), int(det.bb_top)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-    
+                cv2.putText(frame_img, str(det.track_id), (int(det.bb_left), int(det.bb_top)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        """
         frame_id += 1
 
 
         # 显示当前帧
-        #cv2.imshow("demo", frame_img)
-        #if cv2.waitKey(1) & 0xFF== ord('q'):
-        #    break
+        cv2.imshow("demo", frame_img)
+        if cv2.waitKey(1) & 0xFF== ord('q'):
+            break
         
 
         
@@ -196,8 +219,8 @@ def main(args):
         #video_out.write(frame_img)
     
     cap.release()
-    video_out.release()
-    #cv2.destroyAllWindows()
+    #video_out.release()
+    cv2.destroyAllWindows()
 
 
 

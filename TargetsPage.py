@@ -54,19 +54,19 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
         # Firebase Thread
         self.firebase = self.parent.firebase
-        QTimer.singleShot(1000, self.addUsers)
+        QTimer.singleShot(3000, self.addUsers)
 
         # Test
         # self.addTarget(QPixmap("Database/data/1.jpg"), "Location 1", (10, 100))
 
-
-    def addTarget(self, image, position, time_interval, no):
+    def addTarget(self, image, position, time, no):
         # Create a new target
         self.number_of_targets += 1
-        self.targets[self.number_of_targets] = {"image": image, "location": position, "time_interval": time_interval}
+        self.targets[no] = {"image": image, "location": position, "time_interval": [time, 0]}
 
         # Create a container widget for the target
-        container = self.createContainer(f"target{self.number_of_targets}", QPixmap.fromImage(image), self.number_of_targets)
+        container = self.createContainer(f"target{no}", QPixmap.fromImage(image),
+                                         self.number_of_targets)
 
         # Add the container widget to the grid layout
         self.targetsWidget.layout().addWidget(container, self.row, self.column)
@@ -82,6 +82,9 @@ class TargetsPage(QWidget, Ui_TargetsPage):
                     target_marker{no} = L.marker({position}, {{icon: targetIcon}}).addTo(map);
                     target_marker{no}.bindTooltip('<br>' + "<img src='{image_base64}'/>");
                 """)
+
+    def setLeavingTime(self, no, time):
+        self.targets[no]["time_interval"][1] = time
 
     def addUsers(self):
         for i, user in enumerate(self.firebase.users):
@@ -146,7 +149,8 @@ class TargetsPage(QWidget, Ui_TargetsPage):
             # When double clicked open a new window
             if event.type() == QEvent.MouseButtonDblClick:
                 no = int(obj.objectName()[-1])
-                self.newWindow = MediaPlayerWindow(QPixmap.fromImage(self.targets[no]["image"]), self.targets[no]["location"],
+                self.newWindow = MediaPlayerWindow(QPixmap.fromImage(self.targets[no]["image"]),
+                                                   self.targets[no]["location"],
                                                    self.targets[no]["time_interval"])
                 self.newWindow.show()
         elif obj.objectName()[:-1] == "user":

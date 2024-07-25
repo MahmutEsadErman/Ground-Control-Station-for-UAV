@@ -54,7 +54,9 @@ class HomePage(QWidget, Ui_HomePage):
         if button.objectName() == "btn_undo":
             self.mapwidget.page().runJavaScript("undoWaypoint();")
         if button.objectName() == "btn_setMission":
-            self.mapwidget.page().runJavaScript("setMission();")
+            self.cameraWidget.videothread.sendMessage("Naber")
+            print("Mesaj gönderildi")
+            # self.mapwidget.page().runJavaScript("setMission();")
             print("mission: "+str(self.mapwidget.mission))
         if button.objectName() == "btn_chooseField":
             print("Drawing Rectangle Mode")

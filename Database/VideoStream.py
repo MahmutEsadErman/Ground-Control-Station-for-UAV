@@ -1,9 +1,9 @@
 import collections
-import json
 import math
 import struct
 import time
 import socket
+import msgpack
 
 import cv2
 import numpy as np
@@ -12,12 +12,14 @@ from PySide6.QtGui import QImage, Qt
 from PySide6.QtWidgets import QWidget
 
 
-def updateTargetPosition(mapwidget, no, position):
-    mapwidget.page().runJavaScript(f"target_marker{no}.setLatLng({str(position)});")
+def updateTargetPosition(mainwindow, no, position):
+    mainwindow.homepage.mapwidget.page().runJavaScript(f"target_marker{no}.setLatLng({str(position)});")
+    mainwindow.targetspage.setLeavingTime(no, time.time())
+
 
 class VideoStreamThread(QThread):
     ImageUpdate = Signal(QImage, str)
-    NewTargetDetectedSignal = Signal(QImage, list, list, int)
+    NewTargetDetectedSignal = Signal(QImage, list, float, int)
     UpdateTargetPositionSignal = Signal(QWidget, int, list)
     DISCONNECT_MESSAGE = "!DISCONNECT"
 
@@ -31,7 +33,7 @@ class VideoStreamThread(QThread):
         self.timeout_duration = 10
         self.last_data_received_time = 0
         self.loop = True
-        self.saved_detections = []
+        self.saved_detections = {}
 
         self.NewTargetDetectedSignal.connect(parent.parent.parent.targetspage.addTarget)
         self.UpdateTargetPositionSignal.connect(updateTargetPosition)
@@ -45,8 +47,15 @@ class VideoStreamThread(QThread):
     def run(self):
         # Connect to the server
         try:
-            connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            connection.connect((self.ip, self.port))
+            self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # # Set TCP_NODELAY to True to disable Nagle's algorithm
+            # self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            #
+            # # Increase buffer sizes
+            # self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)  # Send buffer
+            # self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2048)  # Receive buffer
+
+            self.connection.connect((self.ip, self.port))
             print("Connected to the server.")
         except Exception as e:
             print(f"Error connecting to server: {e}")
@@ -67,7 +76,6 @@ class VideoStreamThread(QThread):
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # video codec
         out = cv2.VideoWriter('Database/output.avi', fourcc, 30.0, (640, 480))
 
-        last_detection_length = 0
         # Loop to receive video stream
         while self.loop:
             current_time = time.time()
@@ -76,45 +84,52 @@ class VideoStreamThread(QThread):
                 print(f"No data received for {self.timeout_duration} seconds. Disconnecting...")
                 break
             try:
+                # Read the message length
                 while len(data) < payload_size:
-                    data += connection.recv(4096)
+                    data += self.connection.recv(4096)
                 packed_msg_length = data[:payload_size]
                 data = data[payload_size:]
                 msg_length = struct.unpack("L", packed_msg_length)[0]
 
+                # Read the message
                 while len(data) < msg_length:
-                    data += connection.recv(4096)
+                    data += self.connection.recv(4096)
                 message = data[:msg_length].decode(self.format)
                 data = data[msg_length:]
 
+                # Read the frame length
                 while len(data) < payload_size:
-                    data += connection.recv(4096)
+                    data += self.connection.recv(4096)
                 packed_message_size = data[:payload_size]
                 data = data[payload_size:]
                 message_size = struct.unpack("L", packed_message_size)[0]
 
+                # Read the frame data
                 while len(data) < message_size:
-                    data += connection.recv(4096)
+                    data += self.connection.recv(4096)
                 frame_data = data[:message_size]
                 data = data[message_size:]
 
+                # Read the detection size
                 while len(data) < payload_size:
-                    data += connection.recv(4096)
+                    data += self.connection.recv(4096)
                 packed_detection_size = data[:payload_size]
                 data = data[payload_size:]
                 detection_size = struct.unpack("L", packed_detection_size)[0]
 
+                # Read the detection data
                 while len(data) < detection_size:
-                    data += connection.recv(4096)
-                detection_data = data[:detection_size].decode('utf-8')
+                    data += self.connection.recv(4096)
+                detection_data = data[:detection_size]
                 data = data[detection_size:]
-                detections = json.loads(detection_data)
+                detections = msgpack.unpackb(detection_data, raw=False)
 
                 self.last_data_received_time = current_time
 
                 frame = cv2.imdecode(np.frombuffer(frame_data, dtype=np.uint8), cv2.IMREAD_COLOR)
                 out.write(frame)  # Video recording
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                raw_frame = frame
 
                 # If HUD is enabled
                 if self.parent.hud_checkbox.isChecked():
@@ -143,12 +158,12 @@ class VideoStreamThread(QThread):
                 for det in detections:
                     if det['track_id'] not in self.saved_detections:
                         print(f"New target detected: {det['track_id']}")
-                        target_frame = frame[det['bb_top']:(det['bb_top'] + det['bb_height'])][det['bb_left']:(det['bb_left']+det['bb_width'])]
-                        target_image = QImage(target_frame.data, target_frame.shape[1], target_frame.shape[0], QImage.Format_RGB888)
-                        self.NewTargetDetectedSignal.emit(target_image, [0, 0], [1, 100], det['track_id'])
-                        self.saved_detections.append(det['track_id'])
+                        target_image = QImage(raw_frame.data, raw_frame.shape[1], raw_frame.shape[0], QImage.Format_RGB888)
+                        target_image = target_image.copy(det['bb_left'], det['bb_top'], det['bb_width'], det['bb_height'])
+                        self.NewTargetDetectedSignal.emit(target_image, [0, 0], time.time(), det['track_id'])
+                        self.saved_detections[det['track_id']] = True
 
-                    self.UpdateTargetPositionSignal.emit(self.parent.parent.mapwidget, det['track_id'], [0,0])
+                    self.UpdateTargetPositionSignal.emit(self.parent.parent.parent, det['track_id'], [0, 0])
 
                 # Convert frame to QImage
                 ConvertToQtFormat = QImage(frame.data, frame.shape[1], frame.shape[0], QImage.Format_RGB888)
@@ -156,7 +171,6 @@ class VideoStreamThread(QThread):
                 self.ImageUpdate.emit(image, message)
             except Exception as e:
                 print(f"Error during video stream: {e}")
-                break
 
     def setIp(self, ip):
         self.ip = ip

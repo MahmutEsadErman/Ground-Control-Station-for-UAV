@@ -4,7 +4,6 @@ import struct
 import cv2
 import socket
 import threading
-import msgpack
 import numpy as np
 
 class VideoClient:
@@ -47,31 +46,14 @@ class VideoClient:
             frame_data = data[:message_size]
             data = data[message_size:]
 
-            while len(data) < payload_size:
-                data += self.socket.recv(4096)
-            packed_detection_size = data[:payload_size]
-            data = data[payload_size:]
-            detection_size = struct.unpack("L", packed_detection_size)[0]
-
-            while len(data) < detection_size:
-                data += self.socket.recv(4096)
-            detection_data = data[:detection_size]
-            data = data[detection_size:]
-            detections = msgpack.unpackb(detection_data)
-
             frame = cv2.imdecode(np.frombuffer(frame_data, dtype=np.uint8), cv2.IMREAD_COLOR)
+
             new_frame_time = time.time()
             fps = 1 / (new_frame_time - prev_frame_time)
             prev_frame_time = new_frame_time
             fps_filter.append(fps)
             avg_fps = sum(fps_filter) / len(fps_filter)
             avg_fps = str(int(avg_fps))
-
-            for det in detections:
-                if det['track_id'] > 0:
-                    cv2.rectangle(frame, (int(det['bb_left']), int(det['bb_top'])), (int(det['bb_left']+det['bb_width']), int(det['bb_top']+det['bb_height'])), (0, 255, 0), 2)
-                    cv2.putText(frame, str(det['track_id']), (int(det['bb_left']), int(det['bb_top'])), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
 
             cv2.putText(frame, avg_fps, (10, 40), font, 1.5, (100, 255, 0), 2, cv2.LINE_AA)
             cv2.putText(frame, message, (10, 80), font, 1.5, (255, 0, 0), 2, cv2.LINE_AA)
@@ -80,4 +62,4 @@ class VideoClient:
                 break
 
 if __name__ == "__main__":
-    client = VideoClient("192.168.11.108")
+    client = VideoClient(ip="192.168.8.164")
