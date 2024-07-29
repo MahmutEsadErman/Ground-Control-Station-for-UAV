@@ -1,6 +1,4 @@
-import math
 import sys
-import time
 
 from PySide6.QtCore import Qt, QPropertyAnimation, QPoint, QTimer
 from PySide6.QtGui import QIcon
@@ -55,7 +53,7 @@ class IndicatorsPage(QWidget, Ui_IndicatorsPage):
         move_animation.setDuration(300)
         move_animation.start()
         self.rotate_needle(roll, self.attitude_middle)
-        self.attitude_text.setText(pitch)
+        # self.attitude_text.setText("%.2f" % pitch)
 
     def setSpeed(self, speed):
         if speed < self.maxSpeed:

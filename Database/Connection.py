@@ -41,15 +41,22 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget, firebase):
         # Update indicators
         if msg.get_type() == 'GLOBAL_POSITION_INT':
             position = [msg.lat / 1e7, msg.lon / 1e7]
+            # Update indicators
             indicators.setAltitude(msg.relative_alt / 1000.0)
             indicators.xpos_label.setText(f"X: {position[0]}")
             indicators.ypos_label.setText(f"Y: {position[1]}")
+            indicators.setHeading(msg.hdg / 100)
+            # Update UAV marker
             mapwidget.page().runJavaScript(f"uavMarker.setLatLng({str(position)});")  # to set position of UAV marker
             mapwidget.page().runJavaScript(
                 f"uavMarker.setRotationAngle({(msg.hdg / 100) - 45});")  # to set rotation of UAV
-            indicators.setHeading(msg.hdg / 100)
-            firebase.update_latitude(position[0])
-            firebase.update_longitude(position[1])
+            # Update Firebase
+            # firebase.update_latitude(position[0])
+            # firebase.update_longitude(position[1])
+
+            camerawidget.videothread.lat = position[0]
+            camerawidget.videothread.lon = position[1]
+            camerawidget.videothread.heading = msg.hdg / 100
         if msg.get_type() == 'VFR_HUD':
             indicators.setSpeed(msg.airspeed)
             indicators.setVerticalSpeed(msg.climb)
@@ -78,7 +85,7 @@ def connectionLost(connectbutton, mapwidget):
 class ArdupilotConnectionThread(QThread):
     vehicleConnected_signal = Signal(mavutil.mavudp, MapWidget, QPushButton)
     updateData_signal = Signal(QThread, mavutil.mavudp, MapWidget, IndicatorsPage, CameraWidget, FirebaseUser)
-    connectionLost_signal = Signal(QPushButton)
+    connectionLost_signal = Signal(QPushButton, MapWidget)
 
     def __init__(self, parent=None):
         super().__init__()
@@ -97,7 +104,7 @@ class ArdupilotConnectionThread(QThread):
 
     # This method is called when the thread is started
     def run(self):
-        timeout = 7
+        timeout = 10  # seconds
         connected = False  # Flag to monitor connection status
 
         try:
@@ -117,21 +124,15 @@ class ArdupilotConnectionThread(QThread):
             connected = False
 
         if connected:
-            self.last_heartbeat = time.time()  # Track the last heartbeat time
             while connected:
-                current_time = time.time()
-                if current_time - self.last_heartbeat > timeout:
-                    print("Connection Lost - Heartbeat timeout")
-                    connected = False
-
                 try:
                     self.updateData_signal.emit(self, self.connection, self.mapwidget, self.indicators,
-                                                self.parent.homepage.cameraWidget)
+                                                self.parent.homepage.cameraWidget, self.firebase)
                     self.msleep(20)
                 except Exception as e:
                     print(f"Error: {e}")
                     connected = False
-            self.connectionLost_signal.emit(self.connectButton)
+            self.connectionLost_signal.emit(self.connectButton, self.mapwidget)
 
     def setBaudRate(self, baud):
         self.baudrate = baud  # 115200 on USB or 57600 on Radio/Telemetry

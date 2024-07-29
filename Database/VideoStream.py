@@ -11,10 +11,12 @@ from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QImage, Qt
 from PySide6.QtWidgets import QWidget
 
+from math import asin, atan2, cos, degrees, radians, sin
+
 
 def updateTargetPosition(mainwindow, no, position):
     mainwindow.homepage.mapwidget.page().runJavaScript(f"target_marker{no}.setLatLng({str(position)});")
-    mainwindow.targetspage.setLeavingTime(no, time.time())
+    mainwindow.targetspage.setLeavingTime(no, time.time() * 1000)
 
 
 class VideoStreamThread(QThread):
@@ -34,6 +36,11 @@ class VideoStreamThread(QThread):
         self.last_data_received_time = 0
         self.loop = True
         self.saved_detections = {}
+        self.starting_time = 0
+        # Variables for target position
+        self.lat = 0
+        self.lon = 0
+        self.heading = 0
 
         self.NewTargetDetectedSignal.connect(parent.parent.parent.targetspage.addTarget)
         self.UpdateTargetPositionSignal.connect(updateTargetPosition)
@@ -57,6 +64,7 @@ class VideoStreamThread(QThread):
 
             self.connection.connect((self.ip, self.port))
             print("Connected to the server.")
+            self.starting_time = time.time()
         except Exception as e:
             print(f"Error connecting to server: {e}")
             return
@@ -129,7 +137,7 @@ class VideoStreamThread(QThread):
                 frame = cv2.imdecode(np.frombuffer(frame_data, dtype=np.uint8), cv2.IMREAD_COLOR)
                 out.write(frame)  # Video recording
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                raw_frame = frame
+                raw_frame = np.copy(frame)
 
                 # If HUD is enabled
                 if self.parent.hud_checkbox.isChecked():
@@ -156,14 +164,18 @@ class VideoStreamThread(QThread):
                                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
                 for det in detections:
+                    position = self.get_point_at_distance(0)
                     if det['track_id'] not in self.saved_detections:
                         print(f"New target detected: {det['track_id']}")
-                        target_image = QImage(raw_frame.data, raw_frame.shape[1], raw_frame.shape[0], QImage.Format_RGB888)
-                        target_image = target_image.copy(det['bb_left'], det['bb_top'], det['bb_width'], det['bb_height'])
-                        self.NewTargetDetectedSignal.emit(target_image, [0, 0], time.time(), det['track_id'])
+                        self.setImageBorders(det)
+                        target_image = QImage(raw_frame.data, raw_frame.shape[1], raw_frame.shape[0],
+                                              QImage.Format_RGB888)
+                        target_image = target_image.copy(det['bb_left'], det['bb_top'], det['bb_width'],
+                                                         det['bb_height'])
+                        self.NewTargetDetectedSignal.emit(target_image, position, time.time(), det['track_id'])
                         self.saved_detections[det['track_id']] = True
 
-                    self.UpdateTargetPositionSignal.emit(self.parent.parent.parent, det['track_id'], [0, 0])
+                    self.UpdateTargetPositionSignal.emit(self.parent.parent.parent, det['track_id'], position)
 
                 # Convert frame to QImage
                 ConvertToQtFormat = QImage(frame.data, frame.shape[1], frame.shape[0], QImage.Format_RGB888)
@@ -190,3 +202,35 @@ class VideoStreamThread(QThread):
         message_length = len(message)
         send_length = struct.pack("L", message_length)
         self.connection.sendall(send_length + message)
+
+    def setImageBorders(self, detection):
+        pass
+        # aspect_ratio = 4/3
+        # if detection['bb_width'] > detection['bb_height']:
+        #     length = detection['bb_width'] / aspect_ratio - detection['bb_width']
+        #     detection["bb_top"] = detection["bb_top"] - length/2
+        #     detection['bb_height'] = detection['bb_height'] + length/2
+        # else:
+        #     length = detection['bb_height'] / aspect_ratio - detection['bb_height']
+        #     detection["bb_left"] = detection["bb_left"] - length/2
+        #     detection['bb_width'] = detection['bb_width'] + length/2
+
+    def get_point_at_distance(self, d, R=6371):
+        """
+        lat: initial latitude, in degrees
+        lon: initial longitude, in degrees
+        d: target distance from initial
+        bearing: (true) heading in degrees
+        R: optional radius of sphere, defaults to mean radius of earth
+
+        Returns new lat/lon coordinate {d}km from initial, in degrees
+        """
+        lat1 = radians(self.lat)
+        lon1 = radians(self.lon)
+        a = radians(self.heading)
+        lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(a))
+        lon2 = lon1 + atan2(
+            sin(a) * sin(d / R) * cos(lat1),
+            cos(d / R) - sin(lat1) * sin(lat2)
+        )
+        return degrees(lat2), degrees(lon2)

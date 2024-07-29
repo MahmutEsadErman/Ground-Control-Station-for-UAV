@@ -54,7 +54,8 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
         # Firebase Thread
         self.firebase = self.parent.firebase
-        QTimer.singleShot(3000, self.addUsers)
+        if self.firebase != None:
+            QTimer.singleShot(3000, self.addUsers)
 
         # Test
         # self.addTarget(QPixmap("Database/data/1.jpg"), "Location 1", (10, 100))
@@ -62,7 +63,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
     def addTarget(self, image, position, time, no):
         # Create a new target
         self.number_of_targets += 1
-        self.targets[no] = {"image": image, "location": position, "time_interval": [time, 0]}
+        self.targets[no] = {"image": image, "location": position, "time_interval": [time*1000, 0]}
 
         # Create a container widget for the target
         container = self.createContainer(f"target{no}", QPixmap.fromImage(image),
@@ -151,7 +152,8 @@ class TargetsPage(QWidget, Ui_TargetsPage):
                 no = int(obj.objectName()[-1])
                 self.newWindow = MediaPlayerWindow(QPixmap.fromImage(self.targets[no]["image"]),
                                                    self.targets[no]["location"],
-                                                   self.targets[no]["time_interval"])
+                                                   self.targets[no]["time_interval"],
+                                                   self.parent.homepage.cameraWidget.videothread.starting_time)
                 self.newWindow.show()
         elif obj.objectName()[:-1] == "user":
             if event.type() == QEvent.MouseButtonDblClick:

@@ -11,3 +11,9 @@ sudo apt-get install vlc
 ```
 ```bash
 pip install python-vlc
+```
+
+pip install pyside6
+pip install opencv-python
+pip install folium
+pip install firebase-admin

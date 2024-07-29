@@ -3,7 +3,7 @@ import sys
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QApplication, QSlider, QPushButton, QFileDialog, \
     QHBoxLayout, QFrame, QLabel, QStyle, QToolTip, QSpacerItem, QSizePolicy
 from PySide6.QtGui import QAction, QPalette, QColor, QPixmap, QIcon
-from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
+from PySide6.QtCore import Qt, QTimer
 import vlc
 
 
@@ -14,14 +14,12 @@ class SliderTypes:
 
 
 class MediaPlayerWindow(QMainWindow):
-    starting_time = 0
-
-    def __init__(self, pixmap, location, time_interval):
+    def __init__(self, pixmap, location, time_interval, starting_time):
         super().__init__()
-
-        self.first_encounter = time_interval[0]
-        self.last_encounter = time_interval[1]
-        self.video_length = (time.time_ns() / 1000000) - self.starting_time
+        self.starting_time = starting_time*1000
+        self.first_encounter = time_interval[0] - self.starting_time
+        self.last_encounter = time_interval[1] - self.starting_time
+        self.video_length = time.time()*1000 - self.starting_time
 
         self.setWindowTitle("Media Player")
 
@@ -158,7 +156,7 @@ class MediaPlayerWindow(QMainWindow):
         location_label.setAlignment(Qt.AlignTop)
         self.menu.layout().addWidget(location_label)
 
-        time_interval_label = QLabel("Time Interval: \n" + str(time_interval))
+        time_interval_label = QLabel("Time Interval: \n" + str(self.first_encounter) + " , " + str(self.last_encounter))
         time_interval_label.setAlignment(Qt.AlignTop)
         self.menu.layout().addWidget(time_interval_label)
 
@@ -204,7 +202,7 @@ class MediaPlayerWindow(QMainWindow):
         self.duration_label.setText(
             "%02d:%02d:%02d" % (watched_second // 3600, (watched_second // 60) % 60, watched_second % 60))
 
-    def open_file(self, filename="output.avi"):
+    def open_file(self, filename="Database/output.avi"):
         # dialog_txt = "Choose Media File"
         # filename, _ = QFileDialog.getOpenFileName(self, dialog_txt, os.path.expanduser('~'))
         # if not filename:
@@ -249,7 +247,7 @@ class MediaPlayerWindow(QMainWindow):
         self.speedlabel.setText("%.2fx" % (speed / 100.0))
 
     def update_ui(self):
-        self.video_length = (time.time_ns() / 1000000) - self.starting_time
+        self.video_length = (time.time() * 1000) - self.starting_time
         media_pos = int(self.mediaplayer.get_position() * 1000)
         self.duration_slider.setValue(media_pos)
         watched_second = self.mediaplayer.get_position() * self.video_length / 1000
@@ -276,9 +274,6 @@ class MediaPlayerWindow(QMainWindow):
                     return array[x]
                 else:
                     return array[x - 1]
-
-    def set_starting_time(self, time):
-        self.starting_time = time
 
     def closeEvent(self, event):
         self.mediaplayer.stop()
