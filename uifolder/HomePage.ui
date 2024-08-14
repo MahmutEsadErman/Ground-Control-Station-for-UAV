@@ -75,36 +75,69 @@
             </attribute>
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <item>
-              <widget class="QWidget" name="widget" native="true">
-               <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,1">
+              <widget class="QFrame" name="frame">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_4">
                 <item>
-                 <widget class="QComboBox" name="modes_comboBox">
-                  <item>
-                   <property name="text">
-                    <string>Harita Modu Seç</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>İşaretçi Modu</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Alan Seçimi Modu</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Waypoint Modu</string>
-                   </property>
-                  </item>
+                 <widget class="QWidget" name="widget" native="true">
+                  <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,1">
+                   <item>
+                    <widget class="QComboBox" name="modes_comboBox">
+                     <item>
+                      <property name="text">
+                       <string>Harita Modu Seç</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>İşaretçi Modu</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Alan Seçimi Modu</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
+                       <string>Waypoint Modu</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="btn_chooseMode">
+                     <property name="text">
+                      <string>Modu Seç</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="btn_chooseMode">
+                 <widget class="QPushButton" name="btn_setMission">
                   <property name="text">
-                   <string>Modu Seç</string>
+                   <string>Görevi Tanımla</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_undo">
+                  <property name="text">
+                   <string>Geri Al</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_clearAll">
+                  <property name="text">
+                   <string>Hepsini Temizle</string>
                   </property>
                  </widget>
                 </item>
@@ -112,38 +145,43 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="btn_setMission">
-               <property name="text">
-                <string>Görevi Tanımla</string>
+              <widget class="QFrame" name="frame_3">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
                </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_undo">
-               <property name="text">
-                <string>Geri Al</string>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
                </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_clearAll">
-               <property name="text">
-                <string>Hepsini Temizle</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_takeoff">
-               <property name="text">
-                <string>Kalk</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_move">
-               <property name="text">
-                <string>Noktaya Git</string>
-               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_5">
+                <item>
+                 <widget class="QPushButton" name="pushButton_2">
+                  <property name="text">
+                   <string>Hazırlan</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_takeoff">
+                  <property name="text">
+                   <string>Kalk</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_abort">
+                  <property name="text">
+                   <string>Görev Bitir</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_move">
+                  <property name="text">
+                   <string>Noktaya Git</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>

@@ -17,9 +17,8 @@ def input_thread():
     global user_input
     while True:
         user_input = input("Enter a number (or 'q' to quit): ")
-    
 
-# 定义一个Detection类，包含id,bb_left,bb_top,bb_width,bb_height,conf,det_class
+
 class Detection:
 
     def __init__(self, id, bb_left = 0, bb_top = 0, bb_width = 0, bb_height = 0, conf = 0, det_class = 0):
@@ -125,7 +124,7 @@ def main(args):
     fps = cap.get(cv2.CAP_PROP_FPS)
 
     shared=sharing(fps=fps)
-    server = VideoServerThread(ip='192.168.12.1' ,shared=shared)
+    server = VideoServerThread(ip='127.0.1.1' ,shared=shared)
 
     server.start()
     

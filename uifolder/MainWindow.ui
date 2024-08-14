@@ -1453,6 +1453,11 @@ background-color: rgb(33, 37, 43);
                      </item>
                      <item>
                       <property name="text">
+                       <string>Telemetri</string>
+                      </property>
+                     </item>
+                     <item>
+                      <property name="text">
                        <string>SITL (UDP)</string>
                       </property>
                      </item>

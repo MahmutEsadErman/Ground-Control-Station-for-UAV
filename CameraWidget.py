@@ -64,11 +64,11 @@ class CameraWidget(QWidget):
     def connectStream(self):
         ip, okPressed = QInputDialog.getText(self, "Enter IP Address", "IP Address:", text="192.168.1.1")
         if okPressed:
-            print("Connecting to video stream...")
-            self.videothread.setIp(ip)
-            self.videothread.start()
-            self.connect_button.hide()
-            self.disconnect_button.show()
+                print("Connecting to video stream...")
+                self.videothread.setIp(ip)
+                self.videothread.start()
+                self.connect_button.hide()
+                self.disconnect_button.show()
 
     def disconnect(self):
         self.videothread.stop()

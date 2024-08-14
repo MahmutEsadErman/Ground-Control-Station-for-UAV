@@ -114,6 +114,9 @@ class FirebaseUser:
     def update_marker_longitude(self, value):
         self.ref.child('MarkerLocation').update({'longitude': value})
 
+    def update_marker_heading(self, value):
+        self.ref.child('MarkerLocation').update({'compass': value})
+
     def update_mission(self, value):
         self.ref.update({'Mission': value})
 

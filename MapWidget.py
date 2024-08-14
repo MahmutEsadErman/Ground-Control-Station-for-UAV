@@ -236,16 +236,6 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     console.log("New waypoint added to "+e.latlng.lat + "," +e.latlng.lng);
                 }
                 
-                function setMission() {
-                    var msg = "m";
-                    for(let i = 0; i < waypoints.length; i++){
-                        msg += waypoints[i].getLatLng().lat+","+waypoints[i].getLatLng().lng;
-                        if(i != waypoints.length-1)
-                            msg += "-";
-                    }
-                    console.log(msg);
-                }
-                
                 var bounds = [];
                 function drawRectangle(e) {
                     if (bounds.length == 0) {
@@ -261,6 +251,13 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         bounds.push(e.latlng);
                         map.removeLayer(rect);
                     }
+                }
+                
+                function setMission() {
+                    var msg = "m";
+                    msg += bounds[0].lat.toFixed(4) + "," + bounds[0].lng.toFixed(4) + "-";
+                    msg += bounds[1].lat.toFixed(4) + "," + bounds[1].lng.toFixed(4) + "-";
+                    console.log(msg);
                 }
                 
                 function clearAll(e) {

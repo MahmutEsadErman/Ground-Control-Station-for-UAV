@@ -76,7 +76,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Buttons to give orders to vehicle
         self.btn_connect.clicked.connect(self.connectToVehicle)
         self.homepage.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
-        self.homepage.btn_takeoff.clicked.connect(lambda: self.connectionThread.takeoff(10))
+        self.homepage.btn_takeoff.clicked.connect(lambda: self.connectionThread.takeoff(50))
+        self.homepage.btn_abort.clicked.connect(self.connectionThread.land)
+        self.homepage.btn_undo.clicked.connect(self.connectionThread.do_transition)
 
         # Button to Allocate Windows
         self.indicatorspage.btn_AllocateWidget.clicked.connect(

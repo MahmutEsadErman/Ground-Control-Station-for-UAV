@@ -1,0 +1,8 @@
+v4l2-ctl --list-devices     # Kameraları orin nano görüyor mu?
+sudo lsof -i : [port]       # Ip kullanılıyor hatası için
+sudo kill -9 [PID]          # Ip kullanılıyor hatası için
+
+# Minihawk Simulasyonunu açmak için:
+gz sim -v4 -r alti_runway.sdf
+sim_vehicle.py -v ArduPlane --model JSON --add-param-file=$HOME/ardupilot_gazebo/models/alti_transition_quad/alti_transition_quad.param
+

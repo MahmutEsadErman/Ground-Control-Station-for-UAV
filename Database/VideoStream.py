@@ -52,6 +52,7 @@ class VideoStreamThread(QThread):
         self.p2 = (self.parent.width() // 2 + 200, self.parent.height() // 2)
 
     def run(self):
+        # v4l2-ctl --list-devices
         # Connect to the server
         try:
             self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -82,7 +83,9 @@ class VideoStreamThread(QThread):
 
         # Video recording
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # video codec
-        out = cv2.VideoWriter('Database/output.avi', fourcc, 30.0, (640, 480))
+        width = 960
+        height = 540
+        out = cv2.VideoWriter('Database/output.avi', fourcc, 30.0, (width, height))
 
         # Loop to receive video stream
         while self.loop:
@@ -148,7 +151,7 @@ class VideoStreamThread(QThread):
                     fps_filter.append(fps)
                     avg_fps = sum(fps_filter) / len(fps_filter)
                     avg_fps = str(int(avg_fps))
-                    cv2.putText(frame, avg_fps, (10, 40), font, 1.5, self.hudcolor, self.thickness, cv2.LINE_AA)
+                    cv2.putText(frame, avg_fps, (40, 60), font, 1.5, self.hudcolor, self.thickness, cv2.LINE_AA)
                     # Put Horizon Line
                     cv2.line(frame, self.p1, self.p2, self.hudcolor, self.thickness)
 
@@ -204,16 +207,16 @@ class VideoStreamThread(QThread):
         self.connection.sendall(send_length + message)
 
     def setImageBorders(self, detection):
-        pass
-        # aspect_ratio = 4/3
-        # if detection['bb_width'] > detection['bb_height']:
-        #     length = detection['bb_width'] / aspect_ratio - detection['bb_width']
-        #     detection["bb_top"] = detection["bb_top"] - length/2
-        #     detection['bb_height'] = detection['bb_height'] + length/2
-        # else:
-        #     length = detection['bb_height'] / aspect_ratio - detection['bb_height']
-        #     detection["bb_left"] = detection["bb_left"] - length/2
-        #     detection['bb_width'] = detection['bb_width'] + length/2
+        if detection['bb_width'] > detection['bb_height']:
+            detection['bb_width'] = detection['bb_width'] + detection['bb_width']/10
+            detection['bb_height'] = detection['bb_width']
+            detection['bb_left'] = detection['bb_left'] - detection['bb_width']/10
+            detection['bb_top'] = detection['bb_top'] - detection['bb_width']/10
+        else:
+            detection['bb_height'] = detection['bb_height'] + detection['bb_height']/10
+            detection['bb_width'] = detection['bb_height']
+            detection['bb_top'] = detection['bb_top'] - detection['bb_height']/10
+            detection['bb_left'] = detection['bb_left'] - detection['bb_height']/10
 
     def get_point_at_distance(self, d, R=6371):
         """

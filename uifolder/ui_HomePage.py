@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'HomePage.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.3
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -57,7 +57,13 @@ class Ui_HomePage(object):
         self.Buttons.setObjectName(u"Buttons")
         self.verticalLayout_3 = QVBoxLayout(self.Buttons)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.widget = QWidget(self.Buttons)
+        self.frame = QFrame(self.Buttons)
+        self.frame.setObjectName(u"frame")
+        self.frame.setFrameShape(QFrame.StyledPanel)
+        self.frame.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_4 = QVBoxLayout(self.frame)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.widget = QWidget(self.frame)
         self.widget.setObjectName(u"widget")
         self.horizontalLayout = QHBoxLayout(self.widget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -78,32 +84,54 @@ class Ui_HomePage(object):
         self.horizontalLayout.setStretch(0, 3)
         self.horizontalLayout.setStretch(1, 1)
 
-        self.verticalLayout_3.addWidget(self.widget)
+        self.verticalLayout_4.addWidget(self.widget)
 
-        self.btn_setMission = QPushButton(self.Buttons)
+        self.btn_setMission = QPushButton(self.frame)
         self.btn_setMission.setObjectName(u"btn_setMission")
 
-        self.verticalLayout_3.addWidget(self.btn_setMission)
+        self.verticalLayout_4.addWidget(self.btn_setMission)
 
-        self.btn_undo = QPushButton(self.Buttons)
+        self.btn_undo = QPushButton(self.frame)
         self.btn_undo.setObjectName(u"btn_undo")
 
-        self.verticalLayout_3.addWidget(self.btn_undo)
+        self.verticalLayout_4.addWidget(self.btn_undo)
 
-        self.btn_clearAll = QPushButton(self.Buttons)
+        self.btn_clearAll = QPushButton(self.frame)
         self.btn_clearAll.setObjectName(u"btn_clearAll")
 
-        self.verticalLayout_3.addWidget(self.btn_clearAll)
+        self.verticalLayout_4.addWidget(self.btn_clearAll)
 
-        self.btn_takeoff = QPushButton(self.Buttons)
+
+        self.verticalLayout_3.addWidget(self.frame)
+
+        self.frame_3 = QFrame(self.Buttons)
+        self.frame_3.setObjectName(u"frame_3")
+        self.frame_3.setFrameShape(QFrame.StyledPanel)
+        self.frame_3.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_5 = QVBoxLayout(self.frame_3)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.pushButton_2 = QPushButton(self.frame_3)
+        self.pushButton_2.setObjectName(u"pushButton_2")
+
+        self.verticalLayout_5.addWidget(self.pushButton_2)
+
+        self.btn_takeoff = QPushButton(self.frame_3)
         self.btn_takeoff.setObjectName(u"btn_takeoff")
 
-        self.verticalLayout_3.addWidget(self.btn_takeoff)
+        self.verticalLayout_5.addWidget(self.btn_takeoff)
 
-        self.btn_move = QPushButton(self.Buttons)
+        self.btn_abort = QPushButton(self.frame_3)
+        self.btn_abort.setObjectName(u"btn_abort")
+
+        self.verticalLayout_5.addWidget(self.btn_abort)
+
+        self.btn_move = QPushButton(self.frame_3)
         self.btn_move.setObjectName(u"btn_move")
 
-        self.verticalLayout_3.addWidget(self.btn_move)
+        self.verticalLayout_5.addWidget(self.btn_move)
+
+
+        self.verticalLayout_3.addWidget(self.frame_3)
 
         self.tabWidget.addTab(self.Buttons, "")
         self.Console = QWidget()
@@ -152,7 +180,9 @@ class Ui_HomePage(object):
         self.btn_setMission.setText(QCoreApplication.translate("HomePage", u"G\u00f6revi Tan\u0131mla", None))
         self.btn_undo.setText(QCoreApplication.translate("HomePage", u"Geri Al", None))
         self.btn_clearAll.setText(QCoreApplication.translate("HomePage", u"Hepsini Temizle", None))
+        self.pushButton_2.setText(QCoreApplication.translate("HomePage", u"Haz\u0131rlan", None))
         self.btn_takeoff.setText(QCoreApplication.translate("HomePage", u"Kalk", None))
+        self.btn_abort.setText(QCoreApplication.translate("HomePage", u"G\u00f6rev Bitir", None))
         self.btn_move.setText(QCoreApplication.translate("HomePage", u"Noktaya Git", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Buttons), QCoreApplication.translate("HomePage", u"Butonlar", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Console), QCoreApplication.translate("HomePage", u"Konsol", None))

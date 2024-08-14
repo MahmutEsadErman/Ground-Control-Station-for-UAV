@@ -50,9 +50,6 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget, firebase):
             mapwidget.page().runJavaScript(f"uavMarker.setLatLng({str(position)});")  # to set position of UAV marker
             mapwidget.page().runJavaScript(
                 f"uavMarker.setRotationAngle({(msg.hdg / 100) - 45});")  # to set rotation of UAV
-            # Update Firebase
-            # firebase.update_latitude(position[0])
-            # firebase.update_longitude(position[1])
 
             camerawidget.videothread.lat = position[0]
             camerawidget.videothread.lon = position[1]
@@ -111,6 +108,7 @@ class ArdupilotConnectionThread(QThread):
             print(f"Connecting to vehicle on: {self.connection_string}")
             self.connection = mavutil.mavlink_connection(self.connection_string, baud=self.baudrate, autoreconnect=True,
                                                          timeout=timeout)
+
             print("Waiting for heartbeat...")
             if self.connection.wait_heartbeat(timeout=timeout):
                 print("Connected")
@@ -138,6 +136,8 @@ class ArdupilotConnectionThread(QThread):
         self.baudrate = baud  # 115200 on USB or 57600 on Radio/Telemetry
 
     def setConnectionString(self, connectionstring):
+        if connectionstring == 'Telemetri':
+            self.connection_string = '/dev/ttyUSB0'
         if connectionstring == 'USB':
             self.connection_string = '/dev/ttyACM0'
         elif connectionstring == 'SITL (UDP)':
@@ -154,22 +154,37 @@ class ArdupilotConnectionThread(QThread):
                 self.connection_string = f'tcp:{text}:5760'
 
     def goto_markers_pos(self):
-        lat = int(int(self.mapwidget.map_page.markers_pos[0]) * 1e7)
-        lon = int(int(self.mapwidget.map_page.markers_pos[1]) * 1e7)
+        lat = float(self.mapwidget.map_page.markers_pos[0])
+        lon = float(self.mapwidget.map_page.markers_pos[1])
         alt = self.connection.location(relative_alt=True).alt
         # Send command to move to the specified latitude, longitude, and current altitude
-        self.connection.mav.set_position_target_global_int_send(
-            0,  # time_boot_ms (not used)
-            self.connection.target_system,  # target system
-            self.connection.target_component,  # target component
-            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,  # frame
-            0b0000111111111000,  # type_mask (only positions enabled)
-            lat,  # lat_int
-            lon,  # lon_int
-            alt,  # alt
-            0, 0, 0,  # X, Y, Z velocity in m/s (not used)
-            0, 0, 0,  # X, Y, Z acceleration (not supported yet, ignored in GCS_Mavlink)
-            0, 0)  # yaw, yaw_rate (not used)
+        self.connection.mav.mission_item_send(
+            self.connection.target_system,
+            self.connection.target_component,
+            0,
+            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,  # “frame” = 0 or 3 for alt-above-sea-level, 6 for alt-above-home or 11 for alt-above-terrain
+            mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+            2,  # Current
+            1,  # Autocontinue
+            0, 0, 0, 0,  # Params 1-4 (unused)
+            lat,
+            lon,
+            alt
+        )
+
+    def do_transition(self):
+        # self.connection.set_mode_apm('AUTO')
+        self.connection.mav.command_long_send(
+            self.connection.target_system,
+            self.connection.target_component,
+            mavutil.mavlink.MAV_CMD_DO_VTOL_TRANSITION,
+            0,
+            3,  # Transition mode (e.g., 3 VTOL mode, 4 for Fixed Wing mode)
+            0, 0, 0, 0, 0, 0
+        )
+
+    def land(self):
+        self.connection.set_mode_apm('QLAND')
 
     def takeoff(self, target_altitude):
         self.connection.set_mode_apm('GUIDED')
@@ -182,3 +197,60 @@ class ArdupilotConnectionThread(QThread):
             0,
             0, 0, 0, 0,
             0, 0, target_altitude)
+
+    def setMission(self):
+        # Define mission items
+        mission_items = [
+            {
+                'frame': mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+                'command': mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                'current': 0,
+                'autocontinue': 1,
+                'param1': 0,  # Hold time in decimal seconds
+                'param2': 0,  # Acceptance radius in meters
+                'param3': 0,  # Pass through the waypoint
+                'param4': 0,  # Desired yaw angle at waypoint
+                'x': -35.3630,  # Latitude
+                'y': 149.1655,  # Longitude
+                'z': 10  # Altitude in meters
+            },
+            {
+                'frame': mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+                'command': mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                'current': 0,
+                'autocontinue': 1,
+                'param1': 0,
+                'param2': 0,
+                'param3': 0,
+                'param4': 0,
+                'x': -35.3632,
+                'y': 149.1657,
+                'z': 20
+            }
+        ]
+
+        # Send mission count
+        self.connection.mav.mission_count_send(
+            self.connection.target_system,
+            self.connection.target_component,
+            len(mission_items)
+        )
+
+        # Send each mission item
+        for i, item in enumerate(mission_items):
+            self.connection.mav.mission_item_send(
+                self.connection.target_system,
+                self.connection.target_component,
+                i,
+                item['frame'],
+                item['command'],
+                item['current'],
+                item['autocontinue'],
+                item['param1'],
+                item['param2'],
+                item['param3'],
+                item['param4'],
+                item['x'],
+                item['y'],
+                item['z']
+            )

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.3
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -371,7 +371,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.btn_toggle_menu = QPushButton(self.frame_toggle)
         self.btn_toggle_menu.setObjectName(u"btn_toggle_menu")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_toggle_menu.sizePolicy().hasHeightForWidth())
@@ -449,7 +449,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.frame_label_top_btns = QFrame(self.frame_top_btns)
         self.frame_label_top_btns.setObjectName(u"frame_label_top_btns")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.frame_label_top_btns.sizePolicy().hasHeightForWidth())
@@ -474,6 +474,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_10.addWidget(self.label_title_bar_top)
 
         self.combobox_connectionstring = QComboBox(self.frame_label_top_btns)
+        self.combobox_connectionstring.addItem("")
         self.combobox_connectionstring.addItem("")
         self.combobox_connectionstring.addItem("")
         self.combobox_connectionstring.addItem("")
@@ -535,7 +536,7 @@ class Ui_MainWindow(object):
         self.btn_connect = QPushButton(self.frame_label_top_btns)
         self.btn_connect.setObjectName(u"btn_connect")
         self.btn_connect.setEnabled(True)
-        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.btn_connect.sizePolicy().hasHeightForWidth())
@@ -578,7 +579,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.btn_minimize = QPushButton(self.frame_btns_right)
         self.btn_minimize.setObjectName(u"btn_minimize")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.btn_minimize.sizePolicy().hasHeightForWidth())
@@ -697,7 +698,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.frame_left_menu = QFrame(self.frame_center)
         self.frame_left_menu.setObjectName(u"frame_left_menu")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(0)
         sizePolicy4.setHeightForWidth(self.frame_left_menu.sizePolicy().hasHeightForWidth())
@@ -911,10 +912,11 @@ class Ui_MainWindow(object):
         self.btn_toggle_menu.setText("")
         self.label_title_bar_top.setText(QCoreApplication.translate("MainWindow", u"Nebula UAV Ground Control Station", None))
         self.combobox_connectionstring.setItemText(0, QCoreApplication.translate("MainWindow", u"USB", None))
-        self.combobox_connectionstring.setItemText(1, QCoreApplication.translate("MainWindow", u"SITL (UDP)", None))
-        self.combobox_connectionstring.setItemText(2, QCoreApplication.translate("MainWindow", u"SITL (TCP)", None))
-        self.combobox_connectionstring.setItemText(3, QCoreApplication.translate("MainWindow", u"TCP", None))
-        self.combobox_connectionstring.setItemText(4, QCoreApplication.translate("MainWindow", u"UDP", None))
+        self.combobox_connectionstring.setItemText(1, QCoreApplication.translate("MainWindow", u"Telemetri", None))
+        self.combobox_connectionstring.setItemText(2, QCoreApplication.translate("MainWindow", u"SITL (UDP)", None))
+        self.combobox_connectionstring.setItemText(3, QCoreApplication.translate("MainWindow", u"SITL (TCP)", None))
+        self.combobox_connectionstring.setItemText(4, QCoreApplication.translate("MainWindow", u"TCP", None))
+        self.combobox_connectionstring.setItemText(5, QCoreApplication.translate("MainWindow", u"UDP", None))
 
 #if QT_CONFIG(tooltip)
         self.combobox_connectionstring.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Connection String</p></body></html>", None))
