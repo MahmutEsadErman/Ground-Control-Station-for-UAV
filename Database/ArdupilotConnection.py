@@ -50,9 +50,11 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget, firebase):
             mapwidget.page().runJavaScript(f"uavMarker.setLatLng({str(position)});")  # to set position of UAV marker
             mapwidget.page().runJavaScript(
                 f"uavMarker.setRotationAngle({(msg.hdg / 100) - 45});")  # to set rotation of UAV
-            # Update Firebase
-            # firebase.update_latitude(position[0])
-            # firebase.update_longitude(position[1])
+
+            # Update Firebase UAV Data
+            firebase.marker_latitude = position[0]
+            firebase.marker_longitude = position[1]
+            firebase.marker_compass = msg.hdg / 100
 
             camerawidget.videothread.lat = position[0]
             camerawidget.videothread.lon = position[1]

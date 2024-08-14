@@ -12,7 +12,18 @@ class FirebaseThread(QThread):
 
     def run(self):
         while self.loop:
-            self.firebase.update_user_data()
+            # Fetching user data such as location, online status
+            self.firebase.get_user_data()
+
+            # Sending targets to the database
+            if len(self.firebase.targets) != 0:
+                self.firebase.send_targets()
+
+            # Updating UAV data
+            self.firebase.update_marker_latitude()
+            self.firebase.update_marker_longitude()
+            self.firebase.update_marker_compass()
+
             self.msleep(100)
 
     def stop(self):

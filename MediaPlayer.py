@@ -349,7 +349,7 @@ class CustomSlider(QSlider):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    sample_pixmap = QPixmap("Database/data/2.jpg")
+    sample_pixmap = QPixmap("Database/data/deneme/2.jpg")
     player = MediaPlayerWindow(sample_pixmap, (12.412345718, 15.1728378124),
                                (3000, 10000))
     player.show()
