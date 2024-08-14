@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip,
 from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve, QThread, QTimer
 
 from TargetsPage import TargetsPage
-from Database.Connection import ArdupilotConnectionThread
+from Database.ArdupilotConnection import ArdupilotConnectionThread
 from HomePage import HomePage
 from IndicatorsPage import IndicatorsPage
 from uifolder import Ui_MainWindow

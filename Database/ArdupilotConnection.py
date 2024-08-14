@@ -51,6 +51,11 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget, firebase):
             mapwidget.page().runJavaScript(
                 f"uavMarker.setRotationAngle({(msg.hdg / 100) - 45});")  # to set rotation of UAV
 
+            # Update Firebase UAV Data
+            firebase.marker_latitude = position[0]
+            firebase.marker_longitude = position[1]
+            firebase.marker_compass = msg.hdg / 100
+
             camerawidget.videothread.lat = position[0]
             camerawidget.videothread.lon = position[1]
             camerawidget.videothread.heading = msg.hdg / 100
@@ -108,7 +113,6 @@ class ArdupilotConnectionThread(QThread):
             print(f"Connecting to vehicle on: {self.connection_string}")
             self.connection = mavutil.mavlink_connection(self.connection_string, baud=self.baudrate, autoreconnect=True,
                                                          timeout=timeout)
-
             print("Waiting for heartbeat...")
             if self.connection.wait_heartbeat(timeout=timeout):
                 print("Connected")

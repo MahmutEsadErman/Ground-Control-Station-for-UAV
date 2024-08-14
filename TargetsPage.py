@@ -1,6 +1,6 @@
 import sys
 
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QGridLayout, \
     QPushButton, QSpacerItem, QSizePolicy
 from PySide6.QtCore import Qt, QEvent, QTimer, QByteArray, QBuffer, QIODevice
@@ -55,15 +55,19 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         # Firebase Thread
         self.firebase = self.parent.firebase
         if self.firebase != None:
-            QTimer.singleShot(3000, self.addUsers)
+            QTimer.singleShot(20000, self.addUsers)
 
-        # Test
-        # self.addTarget(QPixmap("Database/data/1.jpg"), "Location 1", (10, 100))
+            # Test
+            QTimer.singleShot(3000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], (10, 100), 1))
+            QTimer.singleShot(20000, lambda: self.addTarget(QImage("Database/data/deneme/2.jpg"), [1,1], (10, 500), 2))
+            QTimer.singleShot(6000, lambda: self.addTarget(QImage("Database/data/deneme/3.jpg"), [1,1], (10, 100), 3))
+            QTimer.singleShot(40000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], (10, 100), 4))
+            QTimer.singleShot(100000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], (10, 100), 5))
 
     def addTarget(self, image, position, time, no):
         # Create a new target
         self.number_of_targets += 1
-        self.targets[no] = {"image": image, "location": position, "time_interval": [time*1000, 0]}
+        self.targets[no] = {"image": image, "location": position, "time_interval": [time * 1000, 0]}
 
         # Create a container widget for the target
         container = self.createContainer(f"target{no}", QPixmap.fromImage(image),
@@ -84,11 +88,15 @@ class TargetsPage(QWidget, Ui_TargetsPage):
                     target_marker{no}.bindTooltip('<br>' + "<img src='{image_base64}'/>");
                 """)
 
+        # Adding target to firebase
+        self.firebase.targets.append(
+            {"id": no, "visibility": True, "longitude": position[0], "latitude": position[1], "image": image_base64})
+
     def setLeavingTime(self, no, time):
         self.targets[no]["time_interval"][1] = time
 
     def addUsers(self):
-        for i, user in enumerate(self.firebase.users):
+        for i, user in enumerate(self.firebase.users, start=1):
             container = self.createContainer(f"user{i}", QPixmap(user["image"]), i)
             self.usersWidget.layout().addWidget(container)
 
@@ -138,6 +146,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
     def update_users_positions(self):
         for i, user in enumerate(self.firebase.users):
+            i = i+1
             if user["location"] is not None and all(user["location"]):
                 # Update user marker
                 location = user["location"]
@@ -157,7 +166,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
                 self.newWindow.show()
         elif obj.objectName()[:-1] == "user":
             if event.type() == QEvent.MouseButtonDblClick:
-                no = int(obj.objectName()[-1])
+                no = int(obj.objectName()[-1])-1
                 self.newWindow = UserMenu(no, self.firebase.users[no]["name"],
                                           QPixmap(self.firebase.users[no]["image"]),
                                           self.firebase.users[no]["location"], self)
@@ -226,14 +235,7 @@ class UserMenu(QWidget):
     def giveAuthority(self):
         if self.authority_button.text() == "Yetki Ver":
             self.authority_button.setText("Yetkiyi Geri Al")
-            self.parent.firebase.update_authority(False, self.id)
+            self.parent.firebase.update_user_authority(False, self.id)
         else:
             self.authority_button.setText("Yetki Ver")
-            self.parent.firebase.update_authority(True, self.id)
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = TargetsPage()
-    window.show()
-    sys.exit(app.exec())
+            self.parent.firebase.update_user_authority(True, self.id)
