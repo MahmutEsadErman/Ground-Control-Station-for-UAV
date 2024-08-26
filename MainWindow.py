@@ -3,10 +3,10 @@ import sys
 from PySide6 import QtGui
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QVBoxLayout, QWidget
-from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve, QThread, QTimer
+from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
 
 from TargetsPage import TargetsPage
-from Database.ArdupilotConnection import ArdupilotConnectionThread
+from Vehicle.ArdupilotConnection import ArdupilotConnectionThread
 from HomePage import HomePage
 from IndicatorsPage import IndicatorsPage
 from uifolder import Ui_MainWindow
@@ -78,7 +78,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.homepage.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
         self.homepage.btn_takeoff.clicked.connect(lambda: self.connectionThread.takeoff(50))
         self.homepage.btn_abort.clicked.connect(self.connectionThread.land)
-        self.homepage.btn_undo.clicked.connect(self.connectionThread.do_transition)
+        self.homepage.btn_startMission.clicked.connect(self.connectionThread.start_mission)
 
         # Button to Allocate Windows
         self.indicatorspage.btn_AllocateWidget.clicked.connect(

@@ -110,25 +110,25 @@ class Ui_HomePage(object):
         self.frame_3.setFrameShadow(QFrame.Raised)
         self.verticalLayout_5 = QVBoxLayout(self.frame_3)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.pushButton_2 = QPushButton(self.frame_3)
-        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.btn_startMission = QPushButton(self.frame_3)
+        self.btn_startMission.setObjectName(u"btn_startMission")
 
-        self.verticalLayout_5.addWidget(self.pushButton_2)
+        self.verticalLayout_5.addWidget(self.btn_startMission)
 
         self.btn_takeoff = QPushButton(self.frame_3)
         self.btn_takeoff.setObjectName(u"btn_takeoff")
 
         self.verticalLayout_5.addWidget(self.btn_takeoff)
 
-        self.btn_abort = QPushButton(self.frame_3)
-        self.btn_abort.setObjectName(u"btn_abort")
-
-        self.verticalLayout_5.addWidget(self.btn_abort)
-
         self.btn_move = QPushButton(self.frame_3)
         self.btn_move.setObjectName(u"btn_move")
 
         self.verticalLayout_5.addWidget(self.btn_move)
+
+        self.btn_abort = QPushButton(self.frame_3)
+        self.btn_abort.setObjectName(u"btn_abort")
+
+        self.verticalLayout_5.addWidget(self.btn_abort)
 
 
         self.verticalLayout_3.addWidget(self.frame_3)
@@ -180,10 +180,10 @@ class Ui_HomePage(object):
         self.btn_setMission.setText(QCoreApplication.translate("HomePage", u"G\u00f6revi Tan\u0131mla", None))
         self.btn_undo.setText(QCoreApplication.translate("HomePage", u"Geri Al", None))
         self.btn_clearAll.setText(QCoreApplication.translate("HomePage", u"Hepsini Temizle", None))
-        self.pushButton_2.setText(QCoreApplication.translate("HomePage", u"Haz\u0131rlan", None))
+        self.btn_startMission.setText(QCoreApplication.translate("HomePage", u"G\u00f6reve Ba\u015fla", None))
         self.btn_takeoff.setText(QCoreApplication.translate("HomePage", u"Kalk", None))
-        self.btn_abort.setText(QCoreApplication.translate("HomePage", u"G\u00f6rev Bitir", None))
         self.btn_move.setText(QCoreApplication.translate("HomePage", u"Noktaya Git", None))
+        self.btn_abort.setText(QCoreApplication.translate("HomePage", u"G\u00f6revi Bitir", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Buttons), QCoreApplication.translate("HomePage", u"Butonlar", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Console), QCoreApplication.translate("HomePage", u"Konsol", None))
     # retranslateUi

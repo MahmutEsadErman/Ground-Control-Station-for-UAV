@@ -217,23 +217,3 @@ class VideoStreamThread(QThread):
             detection['bb_width'] = detection['bb_height']
             detection['bb_top'] = detection['bb_top'] - detection['bb_height']/10
             detection['bb_left'] = detection['bb_left'] - detection['bb_height']/10
-
-    def get_point_at_distance(self, d, R=6371):
-        """
-        lat: initial latitude, in degrees
-        lon: initial longitude, in degrees
-        d: target distance from initial
-        bearing: (true) heading in degrees
-        R: optional radius of sphere, defaults to mean radius of earth
-
-        Returns new lat/lon coordinate {d}km from initial, in degrees
-        """
-        lat1 = radians(self.lat)
-        lon1 = radians(self.lon)
-        a = radians(self.heading)
-        lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(a))
-        lon2 = lon1 + atan2(
-            sin(a) * sin(d / R) * cos(lat1),
-            cos(d / R) - sin(lat1) * sin(lat2)
-        )
-        return degrees(lat2), degrees(lon2)

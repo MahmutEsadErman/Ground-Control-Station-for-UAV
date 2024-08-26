@@ -94,10 +94,10 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
         def javaScriptConsoleMessage(self, level, msg, line, sourceID):
             if msg[0] == 'm':
                 MapWidget.mission = []
-                pairs = msg[1:].split('-')
+                pairs = msg[1:].split('&')
                 for pair in pairs:
-                    MapWidget.mission.append(pair.split(','))
-                print(MapWidget.mission)
+                    MapWidget.mission.append(list(map(float, pair.split(','))))
+                print("mission: ", MapWidget.mission)
             else:
                 self.markers_pos = msg.split(',')
                 print(msg)
@@ -219,9 +219,13 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 var waypointNumber = 0;
                 var waypoints = [];
                 var lines = [];
-                function putWaypoint(e) {
+                function putWaypointEvent(e) {
+                    putWaypoint(e.latlng.lat.toFixed(4), e.latlng.lng.toFixed(4))
+                }
+                
+                function putWaypoint(lat, lng) {
                     var marker = L.marker(
-                        [e.latlng.lat.toFixed(4), e.latlng.lng.toFixed(4)],
+                        [lat, lng],
                         {}
                     ).addTo(map);
                     
@@ -231,36 +235,46 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         line = L.polyline(points, {color: 'red'}).addTo(map);
                         lines.push(line);
                     }
-                    
                     waypoints.push(marker);
-                    console.log("New waypoint added to "+e.latlng.lat + "," +e.latlng.lng);
                 }
                 
-                var bounds = [];
+                var rect = 0;
+                var corners = 0;
                 function drawRectangle(e) {
-                    if (bounds.length == 0) {
-                        bounds.push(e.latlng);
-                    } else if (bounds.length == 1){
-                        bounds.push(e.latlng);
-                        rect = L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(map);
-                        console.log("Bounds:");
-                        console.log(bounds[0].lat.toFixed(4) + "," +bounds[0].lng.toFixed(4));
-                        console.log(bounds[1].lat.toFixed(4) + "," +bounds[1].lng.toFixed(4));
+                    if (corners.length == 0) {
+                        corners.push(e.latlng);
+                    } else if (corners.length == 1){
+                        corners.push(e.latlng);
+                        rect = L.rectangle(corners, {color: "#ff7800", weight: 1}).addTo(map);
                     } else {
-                        bounds = [];
-                        bounds.push(e.latlng);
+                        corners = [];
+                        corners.push(e.latlng);
                         map.removeLayer(rect);
                     }
                 }
                 
-                function setMission() {
+                function setMission(mission_type) {
                     var msg = "m";
-                    msg += bounds[0].lat.toFixed(4) + "," + bounds[0].lng.toFixed(4) + "-";
-                    msg += bounds[1].lat.toFixed(4) + "," + bounds[1].lng.toFixed(4) + "-";
+                    if (mission_type){ // waypoints
+                        for(let i = 0; i < waypoints.length; i++){
+                            msg += waypoints[i].getLatLng().lat.toFixed(4) + "," + waypoints[i].getLatLng().lng.toFixed(4) ;
+                            if (i < waypoints.length-1){
+                                msg += "&"
+                            }
+                        }
+                    }
+                    else{ // exploration
+                        for(let i = 0; i < 2; i++){
+                            msg += corners[i].lat.toFixed(4) + "," + corners[i].lng.toFixed(4) ;
+                            if (i < corners.length-1){
+                                msg += "&"
+                            }
+                        }
+                    }
                     console.log(msg);
                 }
                 
-                function clearAll(e) {
+                function clearAll() {
                     if (waypoints.length > 0){
                         for(let i = 0; i < waypoints.length; i++){
                             waypoints[i].remove();
@@ -273,8 +287,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         }
                         lines = [];
                     }
-                    if (bounds.length > 0){
-                        bounds = [];
+                    if (rect != 0){
                         map.removeLayer(rect);
                     }
                 }

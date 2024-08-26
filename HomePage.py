@@ -1,11 +1,13 @@
 import sys
+import time
 
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 
 from CameraWidget import CameraWidget
 from MapWidget import MapWidget
+from Vehicle.ArdupilotConnection import MissionModes
 from uifolder import Ui_HomePage
 
 class HomePage(QWidget, Ui_HomePage):
@@ -36,29 +38,32 @@ class HomePage(QWidget, Ui_HomePage):
         button = self.sender()
 
         if button.objectName() == "btn_chooseMode":
+
             if self.modes_comboBox.currentText() == "İşaretçi Modu":
                 self.mapwidget.page().runJavaScript(f"map.on('click', moveMarkerByClick);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', drawRectangle);")
-                self.mapwidget.page().runJavaScript(f"map.off('click', putWaypoint);")
+                self.mapwidget.page().runJavaScript(f"map.off('click', putWaypointEvent);")
             if self.modes_comboBox.currentText() == "Alan Seçimi Modu":
-                self.mapwidget.page().runJavaScript(f"map.off('click', putWaypoint);")
+                self.mapwidget.page().runJavaScript(f"map.off('click', putWaypointEvent);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', moveMarkerByClick);")
                 self.mapwidget.page().runJavaScript(f"map.on('click', drawRectangle);")
             if self.modes_comboBox.currentText() == "Waypoint Modu":
                 self.mapwidget.page().runJavaScript(f"map.off('click', moveMarkerByClick);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', drawRectangle);")
-                self.mapwidget.page().runJavaScript(f"map.on('click', putWaypoint);")
-        if button.objectName() == "btn_movemarker":
-            self.mapwidget.page().runJavaScript(f"map.off('click', putWaypoint);")
-            self.mapwidget.page().runJavaScript(f"map.on('click', moveMarkerByClick);")
+                self.mapwidget.page().runJavaScript(f"map.on('click', putWaypointEvent);")
+        if button.objectName() == "btn_clearAll":
+            self.mapwidget.page().runJavaScript(f"clearAll();")
         if button.objectName() == "btn_undo":
             self.mapwidget.page().runJavaScript("undoWaypoint();")
         if button.objectName() == "btn_setMission":
-            # self.mapwidget.page().runJavaScript("setMission();")
+            if self.modes_comboBox.currentText() == 'Waypoint Modu':
+                self.mapwidget.page().runJavaScript("setMission(1);")
+                QTimer().singleShot(1000, lambda: self.parent.connectionThread.set_mission(MissionModes.WAYPOINTS, self.mapwidget.mission))
+            else:
+                self.mapwidget.page().runJavaScript("setMission(0);")
+                QTimer().singleShot(1000, lambda: self.parent.connectionThread.set_mission(MissionModes.EXPLORATION, self.mapwidget.mission))
+
             # self.cameraWidget.videothread.sendMessage("scan"+self.mapwidget.mission)
-            self.parent.connectionThread.setMission()
-            print("mission: "+str(self.mapwidget.mission))
-            print("Görev Tanımlandı")
         if button.objectName() == "btn_chooseField":
             print("Drawing Rectangle Mode")
             self.mapwidget.page().runJavaScript(f"map.off('click', putWaypoint);")

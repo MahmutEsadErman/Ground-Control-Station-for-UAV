@@ -154,9 +154,9 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_5">
                 <item>
-                 <widget class="QPushButton" name="pushButton_2">
+                 <widget class="QPushButton" name="btn_startMission">
                   <property name="text">
-                   <string>Hazırlan</string>
+                   <string>Göreve Başla</string>
                   </property>
                  </widget>
                 </item>
@@ -168,16 +168,16 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="btn_abort">
+                 <widget class="QPushButton" name="btn_move">
                   <property name="text">
-                   <string>Görev Bitir</string>
+                   <string>Noktaya Git</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="btn_move">
+                 <widget class="QPushButton" name="btn_abort">
                   <property name="text">
-                   <string>Noktaya Git</string>
+                   <string>Görevi Bitir</string>
                   </property>
                  </widget>
                 </item>
