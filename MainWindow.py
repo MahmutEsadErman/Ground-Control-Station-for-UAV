@@ -11,6 +11,7 @@ from HomePage import HomePage
 from IndicatorsPage import IndicatorsPage
 from uifolder import Ui_MainWindow
 
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, firebase):
         super().__init__()

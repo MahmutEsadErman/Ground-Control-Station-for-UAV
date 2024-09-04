@@ -59,10 +59,9 @@ def exploration(vehicle, point1, point2, altitude, fov):
                                            distance_between_wp / 2)
         waypoint_list.append([new_lat, point_list[starting_point_no][1]])
 
-    i = 0
+    i = 1
     # loop while not reached to the ending point
-    while (i // 2) * distance_between_wp < (short_edge_length - distance_between_wp):
-        i += 1
+    while (i // 2) * distance_between_wp < (short_edge_length - distance_between_wp/2):
         if short_edge == vertical:
             if i % 4 == 2 or i % 4 == 0:  # movement in short edge
                 new_lat, _ = get_point_at_distance(waypoint_list[i - 1][0], waypoint_list[i - 1][1], 180 + direction,
@@ -80,6 +79,7 @@ def exploration(vehicle, point1, point2, altitude, fov):
                 waypoint_list.append([point_list[ending_point_no][0], new_lng])
             elif i % 4 == 0 or i % 4 == 3:  # movement in starting edge
                 waypoint_list.append([point_list[starting_point_no][0], new_lng])
+        i += 1
 
     # For last long edge movement
     i += 1

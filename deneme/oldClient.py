@@ -62,4 +62,4 @@ class VideoClient:
                 break
 
 if __name__ == "__main__":
-    client = VideoClient(ip="192.168.8.164")
+    client = VideoClient(ip="127.0.0.1")

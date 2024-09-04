@@ -58,16 +58,16 @@ class TargetsPage(QWidget, Ui_TargetsPage):
             QTimer.singleShot(20000, self.addUsers)
 
             # Test
-            QTimer.singleShot(3000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], (10, 100), 1))
-            QTimer.singleShot(20000, lambda: self.addTarget(QImage("Database/data/deneme/2.jpg"), [1,1], (10, 500), 2))
-            QTimer.singleShot(6000, lambda: self.addTarget(QImage("Database/data/deneme/3.jpg"), [1,1], (10, 100), 3))
-            QTimer.singleShot(40000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], (10, 100), 4))
-            QTimer.singleShot(100000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], (10, 100), 5))
+            QTimer.singleShot(3000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], [10, 100], 1))
+            QTimer.singleShot(20000, lambda: self.addTarget(QImage("Database/data/deneme/2.jpg"), [1,1], [10, 500], 2))
+            QTimer.singleShot(6000, lambda: self.addTarget(QImage("Database/data/deneme/3.jpg"), [1,1], [10, 100], 3))
+            QTimer.singleShot(40000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], [10, 100], 4))
+            QTimer.singleShot(100000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], [10, 100], 5))
 
     def addTarget(self, image, position, time, no):
         # Create a new target
         self.number_of_targets += 1
-        self.targets[no] = {"image": image, "location": position, "time_interval": [time * 1000, 0]}
+        self.targets[no] = {"image": image, "location": position, "time_interval": time}
 
         # Create a container widget for the target
         container = self.createContainer(f"target{no}", QPixmap.fromImage(image),
@@ -159,7 +159,9 @@ class TargetsPage(QWidget, Ui_TargetsPage):
             # When double clicked open a new window
             if event.type() == QEvent.MouseButtonDblClick:
                 no = int(obj.objectName()[-1])
-                self.newWindow = MediaPlayerWindow(QPixmap.fromImage(self.targets[no]["image"]),
+                self.newWindow = MediaPlayerWindow(self,
+                                                   no,
+                                                   QPixmap.fromImage(self.targets[no]["image"]),
                                                    self.targets[no]["location"],
                                                    self.targets[no]["time_interval"],
                                                    self.parent.homepage.cameraWidget.videothread.starting_time)

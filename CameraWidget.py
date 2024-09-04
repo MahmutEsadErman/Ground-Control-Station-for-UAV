@@ -72,6 +72,7 @@ class CameraWidget(QWidget):
 
     def disconnect(self):
         self.videothread.stop()
+        self.videothread.exit()
 
     def resizeEvent(self, event):
         self.btn_AllocateWidget.move(self.width() - self.btn_AllocateWidget.width(), 0)

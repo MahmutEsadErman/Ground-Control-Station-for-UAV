@@ -184,7 +184,7 @@ class ArdupilotConnectionThread(QThread):
             if ok and text:
                 self.connection_string = f'tcp:{text}:5760'
 
-    def goto_markers_pos(self, speed=-1):
+    def goto_markers_pos(self, speed=5):
         lat = int(float(self.mapwidget.map_page.markers_pos[0]) * 1e7)
         lng = int(float(self.mapwidget.map_page.markers_pos[1]) * 1e7)
         alt = self.connection.location(relative_alt=True).alt
@@ -222,6 +222,8 @@ class ArdupilotConnectionThread(QThread):
             0, 0, target_altitude)
 
     def start_mission(self):
+        self.connection.set_mode_apm('GUIDED')
+        self.connection.arducopter_arm()
         self.connection.set_mode('AUTO')
 
     def set_mission(self, mission_mode, waypoints):
@@ -242,14 +244,15 @@ class ArdupilotConnectionThread(QThread):
             mission_type=dialect.MAV_MISSION_TYPE_MISSION
         )
 
-    def upload_mission(self, waypoints):
+    def upload_mission(self, waypoints, altitude=50):
         self.clear_mission()
 
         # Verify mission count
         self.connection.mav.mission_count_send(
             self.connection.target_system,
             self.connection.target_component,
-            len(waypoints)+1)
+            len(waypoints)+2
+        )
 
         # Upload home
         self.connection.mav.mission_item_int_send(
@@ -263,8 +266,21 @@ class ArdupilotConnectionThread(QThread):
             0, 0, 0, 0,  # params 1-4
             0, 0, 0)
 
+        self.connection.mav.mission_item_int_send(
+            self.connection.target_system,
+            self.connection.target_component,
+            1,
+            dialect.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+            dialect.MAV_CMD_NAV_TAKEOFF,
+            0,  # current
+            0,  # auto continue
+            0, 0, 0, 0,  # params 1-4
+            0,
+            0,
+            altitude)
+
         # Upload waypoints
-        for i, item in enumerate(waypoints, start=1):
+        for i, item in enumerate(waypoints, start=2):
             print(i, item)
             self.connection.mav.mission_item_int_send(
                 self.connection.target_system,
@@ -277,5 +293,5 @@ class ArdupilotConnectionThread(QThread):
                 0, 0, 0, 0,  # params 1-4
                 int(item[0] * 1e7),
                 int(item[1] * 1e7),
-                50)
+                altitude)
         print("Mission uploaded successfully.")

@@ -32,7 +32,7 @@ class VideoStreamThread(QThread):
         self.port = port
         self.header = 64
         self.format = 'utf-8'
-        self.timeout_duration = 10
+        self.timeout_duration = 2
         self.last_data_received_time = 0
         self.loop = True
         self.saved_detections = {}
@@ -52,10 +52,13 @@ class VideoStreamThread(QThread):
         self.p2 = (self.parent.width() // 2 + 200, self.parent.height() // 2)
 
     def run(self):
-        # v4l2-ctl --list-devices
         # Connect to the server
         try:
             self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.connection.settimeout(self.timeout_duration)
+            self.connection.connect((self.ip, self.port))
+            print("Connected to the server.")
+            self.starting_time = time.time()
             # # Set TCP_NODELAY to True to disable Nagle's algorithm
             # self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             #
@@ -63,9 +66,6 @@ class VideoStreamThread(QThread):
             # self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)  # Send buffer
             # self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2048)  # Receive buffer
 
-            self.connection.connect((self.ip, self.port))
-            print("Connected to the server.")
-            self.starting_time = time.time()
         except Exception as e:
             print(f"Error connecting to server: {e}")
             return
@@ -78,7 +78,6 @@ class VideoStreamThread(QThread):
         filter_length = 10
         fps_filter = collections.deque(maxlen=filter_length)
 
-        self.last_data_received_time = time.time()
         self.loop = True
 
         # Video recording
@@ -89,12 +88,10 @@ class VideoStreamThread(QThread):
 
         # Loop to receive video stream
         while self.loop:
-            current_time = time.time()
-
-            if current_time - self.last_data_received_time > self.timeout_duration:
-                print(f"No data received for {self.timeout_duration} seconds. Disconnecting...")
-                break
             try:
+                print("Receiving video stream...")
+                self.last_data_received_time = time.time()
+
                 # Read the message length
                 while len(data) < payload_size:
                     data += self.connection.recv(4096)
@@ -135,7 +132,9 @@ class VideoStreamThread(QThread):
                 data = data[detection_size:]
                 detections = msgpack.unpackb(detection_data, raw=False)
 
-                self.last_data_received_time = current_time
+                if time.time() - self.last_data_received_time > self.timeout_duration:
+                    print("Connection timeout")
+                    break
 
                 frame = cv2.imdecode(np.frombuffer(frame_data, dtype=np.uint8), cv2.IMREAD_COLOR)
                 out.write(frame)  # Video recording
@@ -217,3 +216,23 @@ class VideoStreamThread(QThread):
             detection['bb_width'] = detection['bb_height']
             detection['bb_top'] = detection['bb_top'] - detection['bb_height']/10
             detection['bb_left'] = detection['bb_left'] - detection['bb_height']/10
+
+    def get_point_at_distance(self, d, R=6371):
+        """
+        lat: initial latitude, in degrees
+        lon: initial longitude, in degrees
+        d: target distance from initial
+        bearing: (true) heading in degrees
+        R: optional radius of sphere, defaults to mean radius of earth
+
+        Returns new lat/lon coordinate {d}km from initial, in degrees
+        """
+        lat1 = radians(self.lat)
+        lon1 = radians(self.lon)
+        a = radians(self.heading)
+        lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(a))
+        lon2 = lon1 + atan2(
+            sin(a) * sin(d / R) * cos(lat1),
+            cos(d / R) - sin(lat1) * sin(lat2)
+        )
+        return degrees(lat2), degrees(lon2)

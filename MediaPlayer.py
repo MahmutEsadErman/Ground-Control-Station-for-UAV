@@ -14,8 +14,10 @@ class SliderTypes:
 
 
 class MediaPlayerWindow(QMainWindow):
-    def __init__(self, pixmap, location, time_interval, starting_time):
+    def __init__(self, parent, id, pixmap, location, time_interval, starting_time):
         super().__init__()
+        self.parent = parent
+        self.id = id
         self.starting_time = starting_time*1000
         self.first_encounter = time_interval[0] - self.starting_time
         self.last_encounter = time_interval[1] - self.starting_time
@@ -134,14 +136,14 @@ class MediaPlayerWindow(QMainWindow):
         self.volumeslider.setValue(50)
         self.mediaplayer.audio_set_volume(50)
 
-        self.create_menu(pixmap, location, time_interval)
+        self.create_menu(pixmap, location)
         self.main_layout = QHBoxLayout()
         self.main_layout.addLayout(self.vboxlayout)
         self.main_layout.addWidget(self.menu)
         self.widget.setLayout(self.main_layout)
         self.menu.hide()
 
-    def create_menu(self, pixmap, location, time_interval):
+    def create_menu(self, pixmap, location):
         self.menu = QFrame(self)
         self.menu.setMaximumWidth(200)
         self.menu.resize(200, self.height())
@@ -162,6 +164,10 @@ class MediaPlayerWindow(QMainWindow):
 
         button = QPushButton("Show on Map")
         self.menu.layout().addWidget(button)
+
+        track_button = QPushButton("Track This")
+        self.menu.layout().addWidget(track_button)
+        track_button.clicked.connect(lambda: self.parent.parent.homepage.cameraWidget.videothread.sendMessage("track " + str(self.id)))
 
         self.menu.layout().addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
