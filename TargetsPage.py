@@ -57,12 +57,8 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         if self.firebase != None:
             QTimer.singleShot(20000, self.addUsers)
 
-            # Test
-            QTimer.singleShot(3000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], [10, 100], 1))
-            QTimer.singleShot(20000, lambda: self.addTarget(QImage("Database/data/deneme/2.jpg"), [1,1], [10, 500], 2))
-            QTimer.singleShot(6000, lambda: self.addTarget(QImage("Database/data/deneme/3.jpg"), [1,1], [10, 100], 3))
-            QTimer.singleShot(40000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], [10, 100], 4))
-            QTimer.singleShot(100000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], [10, 100], 5))
+        # Test
+        # QTimer.singleShot(3000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], [10, 100], 1))
 
     def addTarget(self, image, position, time, no):
         # Create a new target

@@ -23,7 +23,7 @@ class Ui_HomePage(object):
     def setupUi(self, HomePage):
         if not HomePage.objectName():
             HomePage.setObjectName(u"HomePage")
-        HomePage.resize(1085, 578)
+        HomePage.resize(1097, 620)
         HomePage.setStyleSheet(u"")
         self.gridLayout_2 = QGridLayout(HomePage)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
@@ -53,11 +53,11 @@ class Ui_HomePage(object):
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.tabWidget = QTabWidget(self.frame_2)
         self.tabWidget.setObjectName(u"tabWidget")
-        self.Buttons = QWidget()
-        self.Buttons.setObjectName(u"Buttons")
-        self.verticalLayout_3 = QVBoxLayout(self.Buttons)
+        self.mission = QWidget()
+        self.mission.setObjectName(u"mission")
+        self.verticalLayout_3 = QVBoxLayout(self.mission)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.frame = QFrame(self.Buttons)
+        self.frame = QFrame(self.mission)
         self.frame.setObjectName(u"frame")
         self.frame.setFrameShape(QFrame.StyledPanel)
         self.frame.setFrameShadow(QFrame.Raised)
@@ -104,7 +104,28 @@ class Ui_HomePage(object):
 
         self.verticalLayout_3.addWidget(self.frame)
 
-        self.frame_3 = QFrame(self.Buttons)
+        self.btn_antenna = QPushButton(self.mission)
+        self.btn_antenna.setObjectName(u"btn_antenna")
+        self.btn_antenna.setStyleSheet(u"QPushButton{\n"
+"	border-radius: 4px;\n"
+"	\n"
+"	background-color: qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.159204 rgba(99, 18, 24, 255), stop:1 rgba(165, 29, 45, 252));\n"
+"}\n"
+"QPushButton:hover{ \n"
+"	background-color:qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.0646766 rgba(89, 22, 27, 255), stop:0.527363 rgba(165, 29, 45, 252))\n"
+"}\n"
+"QPushButton:pressed{\n"
+"  padding-left: 5px;\n"
+"	padding-top: 5px;\n"
+"	background-color: qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.159204 rgba(99, 18, 24, 200), stop:1 rgba(165, 29, 45, 200));\n"
+"}\n"
+"QPushButton:disabled{ \n"
+"	background-color: qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.159204 rgba(14, 74, 89, 255), stop:1 rgba(77, 149, 47, 255));\n"
+"}")
+
+        self.verticalLayout_3.addWidget(self.btn_antenna)
+
+        self.frame_3 = QFrame(self.mission)
         self.frame_3.setObjectName(u"frame_3")
         self.frame_3.setFrameShape(QFrame.StyledPanel)
         self.frame_3.setFrameShadow(QFrame.Raised)
@@ -115,30 +136,54 @@ class Ui_HomePage(object):
 
         self.verticalLayout_5.addWidget(self.btn_startMission)
 
-        self.btn_takeoff = QPushButton(self.frame_3)
-        self.btn_takeoff.setObjectName(u"btn_takeoff")
-
-        self.verticalLayout_5.addWidget(self.btn_takeoff)
-
-        self.btn_move = QPushButton(self.frame_3)
-        self.btn_move.setObjectName(u"btn_move")
-
-        self.verticalLayout_5.addWidget(self.btn_move)
-
         self.btn_abort = QPushButton(self.frame_3)
         self.btn_abort.setObjectName(u"btn_abort")
 
         self.verticalLayout_5.addWidget(self.btn_abort)
 
+        self.btn_rtl = QPushButton(self.frame_3)
+        self.btn_rtl.setObjectName(u"btn_rtl")
+
+        self.verticalLayout_5.addWidget(self.btn_rtl)
+
 
         self.verticalLayout_3.addWidget(self.frame_3)
 
-        self.tabWidget.addTab(self.Buttons, "")
+        self.tabWidget.addTab(self.mission, "")
+        self.guided = QWidget()
+        self.guided.setObjectName(u"guided")
+        self.verticalLayout_6 = QVBoxLayout(self.guided)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.btn_takeoff = QPushButton(self.guided)
+        self.btn_takeoff.setObjectName(u"btn_takeoff")
+
+        self.verticalLayout_6.addWidget(self.btn_takeoff)
+
+        self.btn_move = QPushButton(self.guided)
+        self.btn_move.setObjectName(u"btn_move")
+
+        self.verticalLayout_6.addWidget(self.btn_move)
+
+        self.btn_land = QPushButton(self.guided)
+        self.btn_land.setObjectName(u"btn_land")
+
+        self.verticalLayout_6.addWidget(self.btn_land)
+
+        self.btn_rtl_2 = QPushButton(self.guided)
+        self.btn_rtl_2.setObjectName(u"btn_rtl_2")
+
+        self.verticalLayout_6.addWidget(self.btn_rtl_2)
+
+        self.tabWidget.addTab(self.guided, "")
         self.Console = QWidget()
         self.Console.setObjectName(u"Console")
+        self.verticalLayout_7 = QVBoxLayout(self.Console)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
         self.textBrowser = QTextBrowser(self.Console)
         self.textBrowser.setObjectName(u"textBrowser")
-        self.textBrowser.setGeometry(QRect(60, 20, 256, 192))
+
+        self.verticalLayout_7.addWidget(self.textBrowser)
+
         self.tabWidget.addTab(self.Console, "")
 
         self.verticalLayout_2.addWidget(self.tabWidget)
@@ -163,7 +208,7 @@ class Ui_HomePage(object):
 
         self.retranslateUi(HomePage)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(HomePage)
@@ -180,11 +225,16 @@ class Ui_HomePage(object):
         self.btn_setMission.setText(QCoreApplication.translate("HomePage", u"G\u00f6revi Tan\u0131mla", None))
         self.btn_undo.setText(QCoreApplication.translate("HomePage", u"Geri Al", None))
         self.btn_clearAll.setText(QCoreApplication.translate("HomePage", u"Hepsini Temizle", None))
+        self.btn_antenna.setText(QCoreApplication.translate("HomePage", u"Anten Takibi", None))
         self.btn_startMission.setText(QCoreApplication.translate("HomePage", u"G\u00f6reve Ba\u015fla", None))
+        self.btn_abort.setText(QCoreApplication.translate("HomePage", u"Takibi B\u0131rak", None))
+        self.btn_rtl.setText(QCoreApplication.translate("HomePage", u"Eve D\u00f6n", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.mission), QCoreApplication.translate("HomePage", u"Mission", None))
         self.btn_takeoff.setText(QCoreApplication.translate("HomePage", u"Kalk", None))
         self.btn_move.setText(QCoreApplication.translate("HomePage", u"Noktaya Git", None))
-        self.btn_abort.setText(QCoreApplication.translate("HomePage", u"G\u00f6revi Bitir", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Buttons), QCoreApplication.translate("HomePage", u"Butonlar", None))
+        self.btn_land.setText(QCoreApplication.translate("HomePage", u"\u0130ni\u015f Yap", None))
+        self.btn_rtl_2.setText(QCoreApplication.translate("HomePage", u"Eve D\u00f6n", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.guided), QCoreApplication.translate("HomePage", u"Guided", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Console), QCoreApplication.translate("HomePage", u"Konsol", None))
     # retranslateUi
 

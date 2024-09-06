@@ -28,6 +28,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.screenSize = QApplication.primaryScreen().size()
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
 
+        width = self.screenSize.width() * 0.8
+        height = self.screenSize.height() * 0.8
+        self.resize(width, height)
+
         # Move Window to Center
         self.move(self.screenSize.width() / 2 - self.width() / 2, self.screenSize.height() / 2 - self.height() / 2)
 
@@ -77,8 +81,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Buttons to give orders to vehicle
         self.btn_connect.clicked.connect(self.connectToVehicle)
         self.homepage.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
-        self.homepage.btn_takeoff.clicked.connect(lambda: self.connectionThread.takeoff(50))
-        self.homepage.btn_abort.clicked.connect(self.connectionThread.land)
+        self.homepage.btn_takeoff.clicked.connect(lambda: self.connectionThread.takeoff(15))
+        self.homepage.btn_land.clicked.connect(self.connectionThread.land)
+        self.homepage.btn_rtl.clicked.connect(self.connectionThread.rtl)
+        self.homepage.btn_rtl_2.clicked.connect(self.connectionThread.rtl)
+        self.homepage.btn_abort.clicked.connect(self.abort)
         self.homepage.btn_startMission.clicked.connect(self.connectionThread.start_mission)
 
         # Button to Allocate Windows
@@ -192,6 +199,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.connectionThread.setBaudRate(int(self.combobox_baudrate.currentText()))
         self.connectionThread.setConnectionString(self.combobox_connectionstring.currentText())
         self.connectionThread.start()
+
+    def abort(self):
+        self.homepage.cameraWidget.videothread.sendMessage("abort")
 
     def AllocateWidget(self, parent, child):
         if child.isAttached:

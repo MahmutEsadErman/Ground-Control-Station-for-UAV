@@ -87,7 +87,7 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget, firebase):
             indicators.setAttitude(math.degrees(msg.pitch), math.degrees(msg.roll))
             camerawidget.videothread.setHorizon(msg.roll)
         if msg.get_type() == 'SYS_STATUS':
-            indicators.battery_label.setText(f"Battery: {msg.battery_remaining}%")
+            indicators.battery_label.setText(f"Battery: {msg.voltage_battery}V")
         if msg.get_type() == 'HEARTBEAT':
             thread.last_heartbeat = time.time()
             flight_mode = mavutil.mode_string_v10(msg)
@@ -184,7 +184,7 @@ class ArdupilotConnectionThread(QThread):
             if ok and text:
                 self.connection_string = f'tcp:{text}:5760'
 
-    def goto_markers_pos(self, speed=5):
+    def goto_markers_pos(self, speed=-1):
         lat = int(float(self.mapwidget.map_page.markers_pos[0]) * 1e7)
         lng = int(float(self.mapwidget.map_page.markers_pos[1]) * 1e7)
         alt = self.connection.location(relative_alt=True).alt
@@ -208,6 +208,9 @@ class ArdupilotConnectionThread(QThread):
 
     def land(self):
         self.connection.set_mode_apm('QLAND')
+
+    def rtl(self):
+        self.connection.set_mode_apm('QRTL')
 
     def takeoff(self, target_altitude):
         self.connection.set_mode_apm('GUIDED')

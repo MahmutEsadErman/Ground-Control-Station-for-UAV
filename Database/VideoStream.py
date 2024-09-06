@@ -11,8 +11,6 @@ from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QImage, Qt
 from PySide6.QtWidgets import QWidget
 
-from math import asin, atan2, cos, degrees, radians, sin
-
 
 def updateTargetPosition(mainwindow, no, position):
     mainwindow.homepage.mapwidget.page().runJavaScript(f"target_marker{no}.setLatLng({str(position)});")
@@ -32,7 +30,7 @@ class VideoStreamThread(QThread):
         self.port = port
         self.header = 64
         self.format = 'utf-8'
-        self.timeout_duration = 2
+        self.timeout_duration = 5
         self.last_data_received_time = 0
         self.loop = True
         self.saved_detections = {}
@@ -48,10 +46,26 @@ class VideoStreamThread(QThread):
         # Variables for Hud and Labels
         self.hudcolor = (85, 170, 255)
         self.thickness = 2
-        self.p1 = (self.parent.width() // 2 - 200, self.parent.height() // 2)
-        self.p2 = (self.parent.width() // 2 + 200, self.parent.height() // 2)
+        self.p1 = (int(self.parent.width() // 6), int(self.parent.height() // 2))
+        self.p2 = (int(self.parent.width() - self.parent.width() // 6), int(self.parent.height() // 2))
 
     def run(self):
+        # Variables for video stream
+        data = b""
+        payload_size = struct.calcsize("L")
+        prev_frame_time = 0
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        filter_length = 10
+        fps_filter = collections.deque(maxlen=filter_length)
+
+        self.loop = True
+
+        # Video recording
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')  # video codec
+        width = 640
+        height = 480
+        out = cv2.VideoWriter('Database/output.avi', fourcc, 30.0, (width, height))
+
         # Connect to the server
         try:
             self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -70,30 +84,12 @@ class VideoStreamThread(QThread):
             print(f"Error connecting to server: {e}")
             return
 
-        # Variables for video stream
-        data = b""
-        payload_size = struct.calcsize("L")
-        prev_frame_time = 0
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        filter_length = 10
-        fps_filter = collections.deque(maxlen=filter_length)
-
-        self.loop = True
-
-        # Video recording
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')  # video codec
-        width = 960
-        height = 540
-        out = cv2.VideoWriter('Database/output.avi', fourcc, 30.0, (width, height))
-
         # Loop to receive video stream
         while self.loop:
             try:
-                print("Receiving video stream...")
-                self.last_data_received_time = time.time()
-
                 # Read the message length
                 while len(data) < payload_size:
+                    self.connection.settimeout(self.timeout_duration)
                     data += self.connection.recv(4096)
                 packed_msg_length = data[:payload_size]
                 data = data[payload_size:]
@@ -101,12 +97,14 @@ class VideoStreamThread(QThread):
 
                 # Read the message
                 while len(data) < msg_length:
+                    self.connection.settimeout(self.timeout_duration)
                     data += self.connection.recv(4096)
                 message = data[:msg_length].decode(self.format)
                 data = data[msg_length:]
 
                 # Read the frame length
                 while len(data) < payload_size:
+                    self.connection.settimeout(self.timeout_duration)
                     data += self.connection.recv(4096)
                 packed_message_size = data[:payload_size]
                 data = data[payload_size:]
@@ -114,12 +112,14 @@ class VideoStreamThread(QThread):
 
                 # Read the frame data
                 while len(data) < message_size:
+                    self.connection.settimeout(self.timeout_duration)
                     data += self.connection.recv(4096)
                 frame_data = data[:message_size]
                 data = data[message_size:]
 
                 # Read the detection size
                 while len(data) < payload_size:
+                    self.connection.settimeout(self.timeout_duration)
                     data += self.connection.recv(4096)
                 packed_detection_size = data[:payload_size]
                 data = data[payload_size:]
@@ -127,15 +127,13 @@ class VideoStreamThread(QThread):
 
                 # Read the detection data
                 while len(data) < detection_size:
+                    self.connection.settimeout(self.timeout_duration)
                     data += self.connection.recv(4096)
                 detection_data = data[:detection_size]
                 data = data[detection_size:]
                 detections = msgpack.unpackb(detection_data, raw=False)
 
-                if time.time() - self.last_data_received_time > self.timeout_duration:
-                    print("Connection timeout")
-                    break
-
+                # Convert frame data to frame
                 frame = cv2.imdecode(np.frombuffer(frame_data, dtype=np.uint8), cv2.IMREAD_COLOR)
                 out.write(frame)  # Video recording
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -165,8 +163,8 @@ class VideoStreamThread(QThread):
                             cv2.putText(frame, str(det['track_id']), (int(det['bb_left']), int(det['bb_top'])),
                                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
+                # Update target position and put new targets
                 for det in detections:
-                    position = self.get_point_at_distance(0)
                     if det['track_id'] not in self.saved_detections:
                         print(f"New target detected: {det['track_id']}")
                         self.setImageBorders(det)
@@ -174,10 +172,10 @@ class VideoStreamThread(QThread):
                                               QImage.Format_RGB888)
                         target_image = target_image.copy(det['bb_left'], det['bb_top'], det['bb_width'],
                                                          det['bb_height'])
-                        self.NewTargetDetectedSignal.emit(target_image, position, time.time(), det['track_id'])
+                        self.NewTargetDetectedSignal.emit(target_image, det['position'], time.time(), det['track_id'])
                         self.saved_detections[det['track_id']] = True
 
-                    self.UpdateTargetPositionSignal.emit(self.parent.parent.parent, det['track_id'], position)
+                    self.UpdateTargetPositionSignal.emit(self.parent.parent.parent, det['track_id'], det['position'])
 
                 # Convert frame to QImage
                 ConvertToQtFormat = QImage(frame.data, frame.shape[1], frame.shape[0], QImage.Format_RGB888)
@@ -185,16 +183,18 @@ class VideoStreamThread(QThread):
                 self.ImageUpdate.emit(image, message)
             except Exception as e:
                 print(f"Error during video stream: {e}")
+                break
 
     def setIp(self, ip):
         self.ip = ip
         print(f"IP address set to {ip}")
 
     def setHorizon(self, roll):
-        width = self.parent.width() // 2
-        height = self.parent.height() // 2
-        self.p1 = (int(width - 200 * math.cos(roll)), int(height + 200 * math.sin(roll)))
-        self.p2 = (int(width + 200 * math.cos(roll)), int(height - 200 * math.sin(roll)))
+        x = self.parent.width() // 6
+        y = self.parent.height() // 2
+        length = 2 * self.parent.width() // 3
+        self.p1 = (int(x * math.cos(roll)), int(y + length * math.sin(roll)))
+        self.p2 = (int(self.parent.width() - x + length * math.cos(roll)), int(y - length * math.sin(roll)))
 
     def stop(self):
         self.loop = False
@@ -216,23 +216,3 @@ class VideoStreamThread(QThread):
             detection['bb_width'] = detection['bb_height']
             detection['bb_top'] = detection['bb_top'] - detection['bb_height']/10
             detection['bb_left'] = detection['bb_left'] - detection['bb_height']/10
-
-    def get_point_at_distance(self, d, R=6371):
-        """
-        lat: initial latitude, in degrees
-        lon: initial longitude, in degrees
-        d: target distance from initial
-        bearing: (true) heading in degrees
-        R: optional radius of sphere, defaults to mean radius of earth
-
-        Returns new lat/lon coordinate {d}km from initial, in degrees
-        """
-        lat1 = radians(self.lat)
-        lon1 = radians(self.lon)
-        a = radians(self.heading)
-        lat2 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(a))
-        lon2 = lon1 + atan2(
-            sin(a) * sin(d / R) * cos(lat1),
-            cos(d / R) - sin(lat1) * sin(lat2)
-        )
-        return degrees(lat2), degrees(lon2)
