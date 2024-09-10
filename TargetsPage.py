@@ -1,7 +1,7 @@
 import sys
 
-from PySide6.QtGui import QPixmap, QImage
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QGridLayout, \
+from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QGridLayout, \
     QPushButton, QSpacerItem, QSizePolicy
 from PySide6.QtCore import Qt, QEvent, QTimer, QByteArray, QBuffer, QIODevice
 
@@ -151,10 +151,10 @@ class TargetsPage(QWidget, Ui_TargetsPage):
                 print(f'User {i} has invalid location data: {user["location"]}')
 
     def eventFilter(self, obj, event):
-        if obj.objectName()[:-1] == "target":
+        if obj.objectName()[:6] == "target":
             # When double clicked open a new window
             if event.type() == QEvent.MouseButtonDblClick:
-                no = int(obj.objectName()[-1])
+                no = int(obj.objectName()[6:])
                 self.newWindow = MediaPlayerWindow(self,
                                                    no,
                                                    QPixmap.fromImage(self.targets[no]["image"]),
@@ -162,9 +162,10 @@ class TargetsPage(QWidget, Ui_TargetsPage):
                                                    self.targets[no]["time_interval"],
                                                    self.parent.homepage.cameraWidget.videothread.starting_time)
                 self.newWindow.show()
-        elif obj.objectName()[:-1] == "user":
+        elif obj.objectName()[:4] == "user":
             if event.type() == QEvent.MouseButtonDblClick:
-                no = int(obj.objectName()[-1])-1
+                no = int(obj.objectName()[4:])-1
+                print(no)
                 self.newWindow = UserMenu(no, self.firebase.users[no]["name"],
                                           QPixmap(self.firebase.users[no]["image"]),
                                           self.firebase.users[no]["location"], self)

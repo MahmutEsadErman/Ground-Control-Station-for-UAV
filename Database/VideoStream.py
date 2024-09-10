@@ -14,12 +14,12 @@ from PySide6.QtWidgets import QWidget
 
 def updateTargetPosition(mainwindow, no, position):
     mainwindow.homepage.mapwidget.page().runJavaScript(f"target_marker{no}.setLatLng({str(position)});")
-    mainwindow.targetspage.setLeavingTime(no, time.time() * 1000)
+    mainwindow.targetspage.setLeavingTime(no, time.time())
 
 
 class VideoStreamThread(QThread):
     ImageUpdate = Signal(QImage, str)
-    NewTargetDetectedSignal = Signal(QImage, list, float, int)
+    NewTargetDetectedSignal = Signal(QImage, list, list, int)
     UpdateTargetPositionSignal = Signal(QWidget, int, list)
     DISCONNECT_MESSAGE = "!DISCONNECT"
 
@@ -172,7 +172,7 @@ class VideoStreamThread(QThread):
                                               QImage.Format_RGB888)
                         target_image = target_image.copy(det['bb_left'], det['bb_top'], det['bb_width'],
                                                          det['bb_height'])
-                        self.NewTargetDetectedSignal.emit(target_image, det['position'], time.time(), det['track_id'])
+                        self.NewTargetDetectedSignal.emit(target_image, det['position'], [time.time(), time.time()], det['track_id'])
                         self.saved_detections[det['track_id']] = True
 
                     self.UpdateTargetPositionSignal.emit(self.parent.parent.parent, det['track_id'], det['position'])

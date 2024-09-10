@@ -18,10 +18,10 @@ class MediaPlayerWindow(QMainWindow):
         super().__init__()
         self.parent = parent
         self.id = id
-        self.starting_time = starting_time*1000
+        self.starting_time = starting_time
         self.first_encounter = time_interval[0] - self.starting_time
         self.last_encounter = time_interval[1] - self.starting_time
-        self.video_length = time.time()*1000 - self.starting_time
+        self.video_length = time.time() - self.starting_time
 
         self.setWindowTitle("Media Player")
 
@@ -154,11 +154,11 @@ class MediaPlayerWindow(QMainWindow):
         image_label.setAlignment(Qt.AlignCenter)
         self.menu.layout().addWidget(image_label)
 
-        location_label = QLabel("Location: \n" + str(location))
+        location_label = QLabel("Location:\n %.4f, %.4f" % (location[0], location[1]))
         location_label.setAlignment(Qt.AlignTop)
         self.menu.layout().addWidget(location_label)
 
-        time_interval_label = QLabel("Time Interval: \n" + str(self.first_encounter) + " , " + str(self.last_encounter))
+        time_interval_label = QLabel("Time Interval:\n %.2f, %.2f" % (self.first_encounter, self.last_encounter))
         time_interval_label.setAlignment(Qt.AlignTop)
         self.menu.layout().addWidget(time_interval_label)
 
@@ -230,7 +230,7 @@ class MediaPlayerWindow(QMainWindow):
 
         self.play_pause()
 
-        self.set_position(self.first_encounter / self.video_length * 1000)
+        self.set_position((self.first_encounter / self.video_length) * 1000)
 
     def set_volume(self, volume):
         self.mediaplayer.audio_set_volume(volume)
@@ -242,7 +242,7 @@ class MediaPlayerWindow(QMainWindow):
             position = 1000
         pos = position / 1000.0
         self.mediaplayer.set_position(pos)
-        watched_second = pos * self.video_length / 1000
+        watched_second = pos * self.video_length
         self.duration_label.setText(
             "%02d:%02d:%02d" % (watched_second // 3600, (watched_second // 60) % 60, watched_second % 60))
 
@@ -253,10 +253,10 @@ class MediaPlayerWindow(QMainWindow):
         self.speedlabel.setText("%.2fx" % (speed / 100.0))
 
     def update_ui(self):
-        self.video_length = (time.time() * 1000) - self.starting_time
+        self.video_length = time.time() - self.starting_time
         media_pos = int(self.mediaplayer.get_position() * 1000)
         self.duration_slider.setValue(media_pos)
-        watched_second = self.mediaplayer.get_position() * self.video_length / 1000
+        watched_second = self.mediaplayer.get_position() * self.video_length
         self.duration_label.setText(
             "%02d:%02d:%02d" % (watched_second // 3600, (watched_second // 60) % 60, watched_second % 60))
 
@@ -321,7 +321,7 @@ class CustomSlider(QSlider):
         pos = (self.minimum() + (self.maximum() - self.minimum()) * event.pos().x() / self.width())
 
         if self.type == SliderTypes.POSITION:
-            second = pos * self.prnt.video_length / (1000 * 1000)
+            second = pos * self.prnt.video_length / 1000
             time = "%02d:%02d:%02d" % (second // 3600, (second // 60) % 60, second % 60)
             QToolTip.showText(event.globalPos(), time)
         elif self.type == SliderTypes.VOLUME:
@@ -338,7 +338,7 @@ class CustomSlider(QSlider):
             if (pos > firstpos - 40) and (pos < firstpos + 40):
                 self.prnt.set_position(firstpos)
                 self.prnt.duration_slider.setValue(firstpos)
-                watched_second = firstpos * self.prnt.video_length / 1000
+                watched_second = firstpos * self.prnt.video_length
                 self.prnt.duration_label.setText(
                     "%02d:%02d:%02d" % (watched_second // 3600, (watched_second // 60) % 60, watched_second % 60))
         super().mouseReleaseEvent(event)
@@ -356,8 +356,8 @@ class CustomSlider(QSlider):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     sample_pixmap = QPixmap("Database/data/deneme/2.jpg")
-    player = MediaPlayerWindow(sample_pixmap, (12.412345718, 15.1728378124),
-                               (3000, 10000))
+    time_interval = (time.time()+10, time.time()+20)
+    player = MediaPlayerWindow(None, 1, sample_pixmap, (39.925533, 32.866287), time_interval, time.time())
     player.show()
     player.resize(640, 480)
     sys.exit(app.exec())
