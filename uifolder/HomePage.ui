@@ -224,6 +224,13 @@ QPushButton:disabled{
               </widget>
              </item>
              <item>
+              <widget class="QPushButton" name="btn_track_all">
+               <property name="text">
+                <string>Gördüğünü Takip Et</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="btn_land">
                <property name="text">
                 <string>İniş Yap</string>

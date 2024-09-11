@@ -87,6 +87,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.homepage.btn_rtl_2.clicked.connect(self.connectionThread.rtl)
         self.homepage.btn_abort.clicked.connect(self.abort)
         self.homepage.btn_startMission.clicked.connect(self.connectionThread.start_mission)
+        self.homepage.btn_track_all.clicked.connect(self.track_all)
+
 
         # Button to Allocate Windows
         self.indicatorspage.btn_AllocateWidget.clicked.connect(
@@ -202,6 +204,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def abort(self):
         self.homepage.cameraWidget.videothread.sendMessage("abort")
+
+    def track_all(self):
+        self.homepage.cameraWidget.videothread.sendMessage("track -1")
 
     def AllocateWidget(self, parent, child):
         if child.isAttached:

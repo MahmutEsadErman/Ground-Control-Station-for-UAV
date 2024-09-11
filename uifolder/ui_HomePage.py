@@ -164,6 +164,11 @@ class Ui_HomePage(object):
 
         self.verticalLayout_6.addWidget(self.btn_move)
 
+        self.btn_track_all = QPushButton(self.guided)
+        self.btn_track_all.setObjectName(u"btn_track_all")
+
+        self.verticalLayout_6.addWidget(self.btn_track_all)
+
         self.btn_land = QPushButton(self.guided)
         self.btn_land.setObjectName(u"btn_land")
 
@@ -232,6 +237,7 @@ class Ui_HomePage(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.mission), QCoreApplication.translate("HomePage", u"Mission", None))
         self.btn_takeoff.setText(QCoreApplication.translate("HomePage", u"Kalk", None))
         self.btn_move.setText(QCoreApplication.translate("HomePage", u"Noktaya Git", None))
+        self.btn_track_all.setText(QCoreApplication.translate("HomePage", u"G\u00f6rd\u00fc\u011f\u00fcn\u00fc Takip Et", None))
         self.btn_land.setText(QCoreApplication.translate("HomePage", u"\u0130ni\u015f Yap", None))
         self.btn_rtl_2.setText(QCoreApplication.translate("HomePage", u"Eve D\u00f6n", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.guided), QCoreApplication.translate("HomePage", u"Guided", None))
