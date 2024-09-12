@@ -1,6 +1,4 @@
-import sys
-
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QGridLayout, \
     QPushButton, QSpacerItem, QSizePolicy
 from PySide6.QtCore import Qt, QEvent, QTimer, QByteArray, QBuffer, QIODevice

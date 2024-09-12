@@ -87,7 +87,7 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget, firebase):
             indicators.setAttitude(math.degrees(msg.pitch), math.degrees(msg.roll))
             camerawidget.videothread.setHorizon(msg.roll)
         if msg.get_type() == 'SYS_STATUS':
-            indicators.battery_label.setText(f"Battery: {msg.voltage_battery}V")
+            indicators.battery_label.setText(f"Battery: {msg.voltage_battery/1e3}V")
         if msg.get_type() == 'HEARTBEAT':
             thread.last_heartbeat = time.time()
             flight_mode = mavutil.mode_string_v10(msg)

@@ -36,12 +36,12 @@ class MediaPlayerWindow(QMainWindow):
         # Create an empty vlc media player
         self.mediaplayer = self.instance.media_player_new()
 
-        self.create_ui(pixmap, location, time_interval)
+        self.create_ui(pixmap, location)
         self.is_paused = False
 
         self.open_file()
 
-    def create_ui(self, pixmap, location, time_interval):
+    def create_ui(self, pixmap, location):
         self.widget = QWidget(self)
         self.setCentralWidget(self.widget)
 
@@ -141,7 +141,6 @@ class MediaPlayerWindow(QMainWindow):
         self.main_layout.addLayout(self.vboxlayout)
         self.main_layout.addWidget(self.menu)
         self.widget.setLayout(self.main_layout)
-        self.menu.hide()
 
     def create_menu(self, pixmap, location):
         self.menu = QFrame(self)
@@ -266,9 +265,6 @@ class MediaPlayerWindow(QMainWindow):
                 self.is_paused = True
                 self.playbutton.setText("Play")
                 self.mediaplayer.stop()
-
-        if self.mediaplayer.get_position() < self.last_encounter / self.video_length + 0.01 and self.mediaplayer.get_position() > self.last_encounter / self.video_length - 0.01:
-            self.play_pause()
 
     def findClosest(self, array, value):
         array = sorted(array)
