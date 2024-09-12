@@ -2,7 +2,7 @@ import sys
 import time
 
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QWidget, QMainWindow
+from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QInputDialog
 from PySide6.QtCore import Qt, QTimer
 
 from CameraWidget import CameraWidget
@@ -31,14 +31,13 @@ class HomePage(QWidget, Ui_HomePage):
         # Buttons
         self.btn_chooseMode.clicked.connect(self.buttonFunctions)
         self.btn_undo.clicked.connect(self.buttonFunctions)
-        self.btn_setMission.clicked.connect(self.buttonFunctions)
         self.btn_clearAll.clicked.connect(self.buttonFunctions)
+        self.btn_setMission.clicked.connect(self.set_mission)
 
     def buttonFunctions(self):
         button = self.sender()
 
         if button.objectName() == "btn_chooseMode":
-
             if self.modes_comboBox.currentText() == "İşaretçi Modu":
                 self.mapwidget.page().runJavaScript(f"map.on('click', moveMarkerByClick);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', drawRectangle);")
@@ -55,21 +54,20 @@ class HomePage(QWidget, Ui_HomePage):
             self.mapwidget.page().runJavaScript(f"clearAll();")
         if button.objectName() == "btn_undo":
             self.mapwidget.page().runJavaScript("undoWaypoint();")
-        if button.objectName() == "btn_setMission":
-            if self.modes_comboBox.currentText() == 'Waypoint Modu':
-                self.mapwidget.page().runJavaScript("setMission(1);")
-                QTimer().singleShot(1000, lambda: self.parent.connectionThread.set_mission(MissionModes.WAYPOINTS, self.mapwidget.mission))
-            else:
-                self.mapwidget.page().runJavaScript("setMission(0);")
-                QTimer().singleShot(1000, lambda: self.parent.connectionThread.set_mission(MissionModes.EXPLORATION, self.mapwidget.mission))
-
-            # self.cameraWidget.videothread.sendMessage("scan"+self.mapwidget.mission)
         if button.objectName() == "btn_chooseField":
             print("Drawing Rectangle Mode")
             self.mapwidget.page().runJavaScript(f"map.off('click', putWaypoint);")
-            # self.mapwidget.page().runJavaScript(f"map.on('click', moveMarkerByClick);")
             self.mapwidget.page().runJavaScript(f"map.on('click', drawRectangle);")
-            # print("mission: "+str(self.mapwidget.mission))
+
+    def set_mission(self):
+        altitude, okPressed = QInputDialog.getText(self, "Enter Altitude", "Altitude:", text="10")
+        if okPressed:
+            if self.modes_comboBox.currentText() == 'Waypoint Modu':
+                self.mapwidget.page().runJavaScript("setMission(1);")
+                QTimer().singleShot(1000, lambda: self.parent.connectionThread.set_mission(MissionModes.WAYPOINTS, self.mapwidget.mission, altitude))
+            else:
+                self.mapwidget.page().runJavaScript("setMission(0);")
+                QTimer().singleShot(1000, lambda: self.parent.connectionThread.set_mission(MissionModes.EXPLORATION, self.mapwidget.mission, altitude))
 
     def AllocateWidget(self, parent, child):
         if child.isAttached:

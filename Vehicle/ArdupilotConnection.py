@@ -229,16 +229,16 @@ class ArdupilotConnectionThread(QThread):
         self.connection.arducopter_arm()
         self.connection.set_mode('AUTO')
 
-    def set_mission(self, mission_mode, waypoints):
+    def set_mission(self, mission_mode, waypoints, altitude):
         if mission_mode == MissionModes.EXPLORATION:
             waypoints = exploration(self, waypoints[0], waypoints[1], ALTITUDE, FOV)
-            self.upload_mission(waypoints)
+            self.upload_mission(waypoints, int(altitude))
             # Put waypoints
             for wp in waypoints:
                 self.mapwidget.page().runJavaScript(f"putWaypoint({wp[0]}, {wp[1]});")
 
         elif mission_mode == MissionModes.WAYPOINTS:
-            self.upload_mission(waypoints)
+            self.upload_mission(waypoints,)
 
     def clear_mission(self):
         self.connection.mav.mission_clear_all_send(
@@ -247,7 +247,7 @@ class ArdupilotConnectionThread(QThread):
             mission_type=dialect.MAV_MISSION_TYPE_MISSION
         )
 
-    def upload_mission(self, waypoints, altitude=50):
+    def upload_mission(self, waypoints, altitude=30):
         self.clear_mission()
 
         # Verify mission count
