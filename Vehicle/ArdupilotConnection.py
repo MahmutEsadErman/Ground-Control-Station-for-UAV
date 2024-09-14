@@ -125,7 +125,10 @@ class ArdupilotConnectionThread(QThread):
         self.latitude = 0
         self.longitude = 0
         self.altitude = 50
+
+        # Variables
         self.camera_angle = 60
+        self.speed_limit = 10
 
         self.vehicleConnected_signal.connect(handleConnectedVehicle)
         self.updateData_signal.connect(updateData)
@@ -184,7 +187,7 @@ class ArdupilotConnectionThread(QThread):
             if ok and text:
                 self.connection_string = f'tcp:{text}:5760'
 
-    def goto_markers_pos(self, speed=-1):
+    def goto_markers_pos(self, speed=10):
         lat = int(float(self.mapwidget.map_page.markers_pos[0]) * 1e7)
         lng = int(float(self.mapwidget.map_page.markers_pos[1]) * 1e7)
         alt = self.connection.location(relative_alt=True).alt
