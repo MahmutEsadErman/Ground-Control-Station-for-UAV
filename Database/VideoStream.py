@@ -62,8 +62,8 @@ class VideoStreamThread(QThread):
 
         # Video recording
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # video codec
-        width = 640
-        height = 480
+        width = 1280
+        height = 720
         out = cv2.VideoWriter('Database/output.avi', fourcc, 30.0, (width, height))
 
         # Connect to the server

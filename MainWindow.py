@@ -80,6 +80,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Buttons to give orders to vehicle
         self.btn_connect.clicked.connect(self.connectToVehicle)
+        self.homepage.btn_set_roi.clicked.connect(self.connectionThread.set_roi)
+        self.homepage.btn_cancel_roi.clicked.connect(self.connectionThread.cancel_roi_mode)
         self.homepage.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
         self.homepage.btn_takeoff.clicked.connect(self.takeoff)
         self.homepage.btn_land.clicked.connect(self.connectionThread.land)
@@ -88,6 +90,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.homepage.btn_abort.clicked.connect(self.abort)
         self.homepage.btn_startMission.clicked.connect(self.connectionThread.start_mission)
         self.homepage.btn_track_all.clicked.connect(self.track_all)
+        self.homepage.btn_antenna.clicked.connect(self.run_antenna_tracker)
 
         # Button to Allocate Windows
         self.indicatorspage.btn_AllocateWidget.clicked.connect(
@@ -205,6 +208,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         altitude, okPressed = QInputDialog.getText(self, "Enter Altitude", "Altitude:", text="10")
         if okPressed:
             self.connectionThread.takeoff(int(altitude))
+
+    def run_antenna_tracker(self):
+        self.homepage.btn_antenna.setDisabled(True)
 
     def abort(self):
         self.homepage.cameraWidget.videothread.sendMessage("abort")

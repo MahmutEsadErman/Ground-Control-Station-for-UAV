@@ -154,30 +154,54 @@ class Ui_HomePage(object):
         self.guided.setObjectName(u"guided")
         self.verticalLayout_6 = QVBoxLayout(self.guided)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.btn_takeoff = QPushButton(self.guided)
+        self.widget_3 = QWidget(self.guided)
+        self.widget_3.setObjectName(u"widget_3")
+        self.verticalLayout_9 = QVBoxLayout(self.widget_3)
+        self.verticalLayout_9.setObjectName(u"verticalLayout_9")
+        self.btn_takeoff = QPushButton(self.widget_3)
         self.btn_takeoff.setObjectName(u"btn_takeoff")
 
-        self.verticalLayout_6.addWidget(self.btn_takeoff)
+        self.verticalLayout_9.addWidget(self.btn_takeoff)
 
-        self.btn_move = QPushButton(self.guided)
+        self.btn_move = QPushButton(self.widget_3)
         self.btn_move.setObjectName(u"btn_move")
 
-        self.verticalLayout_6.addWidget(self.btn_move)
+        self.verticalLayout_9.addWidget(self.btn_move)
 
-        self.btn_track_all = QPushButton(self.guided)
+        self.btn_track_all = QPushButton(self.widget_3)
         self.btn_track_all.setObjectName(u"btn_track_all")
 
-        self.verticalLayout_6.addWidget(self.btn_track_all)
+        self.verticalLayout_9.addWidget(self.btn_track_all)
 
-        self.btn_land = QPushButton(self.guided)
+        self.btn_land = QPushButton(self.widget_3)
         self.btn_land.setObjectName(u"btn_land")
 
-        self.verticalLayout_6.addWidget(self.btn_land)
+        self.verticalLayout_9.addWidget(self.btn_land)
 
-        self.btn_rtl_2 = QPushButton(self.guided)
+        self.btn_rtl_2 = QPushButton(self.widget_3)
         self.btn_rtl_2.setObjectName(u"btn_rtl_2")
 
-        self.verticalLayout_6.addWidget(self.btn_rtl_2)
+        self.verticalLayout_9.addWidget(self.btn_rtl_2)
+
+
+        self.verticalLayout_6.addWidget(self.widget_3)
+
+        self.widget_2 = QWidget(self.guided)
+        self.widget_2.setObjectName(u"widget_2")
+        self.verticalLayout_8 = QVBoxLayout(self.widget_2)
+        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
+        self.btn_set_roi = QPushButton(self.widget_2)
+        self.btn_set_roi.setObjectName(u"btn_set_roi")
+
+        self.verticalLayout_8.addWidget(self.btn_set_roi)
+
+        self.btn_cancel_roi = QPushButton(self.widget_2)
+        self.btn_cancel_roi.setObjectName(u"btn_cancel_roi")
+
+        self.verticalLayout_8.addWidget(self.btn_cancel_roi)
+
+
+        self.verticalLayout_6.addWidget(self.widget_2)
 
         self.tabWidget.addTab(self.guided, "")
         self.Console = QWidget()
@@ -240,6 +264,8 @@ class Ui_HomePage(object):
         self.btn_track_all.setText(QCoreApplication.translate("HomePage", u"G\u00f6rd\u00fc\u011f\u00fcn\u00fc Takip Et", None))
         self.btn_land.setText(QCoreApplication.translate("HomePage", u"\u0130ni\u015f Yap", None))
         self.btn_rtl_2.setText(QCoreApplication.translate("HomePage", u"Eve D\u00f6n", None))
+        self.btn_set_roi.setText(QCoreApplication.translate("HomePage", u"ROI ayarla", None))
+        self.btn_cancel_roi.setText(QCoreApplication.translate("HomePage", u"ROI iptal", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.guided), QCoreApplication.translate("HomePage", u"Guided", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Console), QCoreApplication.translate("HomePage", u"Konsol", None))
     # retranslateUi

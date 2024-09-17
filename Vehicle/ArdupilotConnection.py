@@ -4,7 +4,7 @@ import time
 from pymavlink import mavutil
 import pymavlink.dialects.v20.all as dialect
 
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QThread, Signal, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QPushButton, QInputDialog
 
@@ -88,6 +88,7 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget, firebase):
             camerawidget.videothread.setHorizon(msg.roll)
         if msg.get_type() == 'SYS_STATUS':
             indicators.battery_label.setText(f"Battery: {msg.voltage_battery/1e3}V")
+            thread.parent.label_top_info_1.setText(f"Battery: {msg.battery_remaining}%      {msg.voltage_battery/1e3}V      {msg.current_battery}A")
         if msg.get_type() == 'HEARTBEAT':
             thread.last_heartbeat = time.time()
             flight_mode = mavutil.mode_string_v10(msg)
@@ -129,6 +130,7 @@ class ArdupilotConnectionThread(QThread):
         # Variables
         self.camera_angle = 60
         self.speed_limit = 10
+        self.home_position = [0,0]
 
         self.vehicleConnected_signal.connect(handleConnectedVehicle)
         self.updateData_signal.connect(updateData)
@@ -187,33 +189,79 @@ class ArdupilotConnectionThread(QThread):
             if ok and text:
                 self.connection_string = f'tcp:{text}:5760'
 
-    def goto_markers_pos(self, speed=10):
-        lat = int(float(self.mapwidget.map_page.markers_pos[0]) * 1e7)
-        lng = int(float(self.mapwidget.map_page.markers_pos[1]) * 1e7)
-        alt = self.connection.location(relative_alt=True).alt
+    def goto_markers_pos(self, speed=-1):
+        lat = int(float(self.mapwidget.map_page.markers_pos[0]))
+        lng = int(float(self.mapwidget.map_page.markers_pos[1]))
 
         self.connection.set_mode_apm('GUIDED')
 
+        self.move_to(lat, lng)
+
+    def move_to(self, lat, lng, speed=5):
+        lat = int(lat * 1e7)
+        lng = int(lng * 1e7)
+        alt = self.connection.location(relative_alt=True).alt
         # Send command to move to the specified latitude, longitude, and current altitude
         self.connection.mav.command_int_send(
             self.connection.target_system,
             self.connection.target_component,
-            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+            dialect.MAV_FRAME_GLOBAL_RELATIVE_ALT,
             # “frame” = 0 or 3 for alt-above-sea-level, 6 for alt-above-home or 11 for alt-above-terrain
-            mavutil.mavlink.MAV_CMD_DO_REPOSITION,
+            dialect.MAV_CMD_DO_REPOSITION,
             0,  # Current
             0,  # Autocontinue
-            speed, 0, 0, 0,  # Params 1-4 (unused)
+            speed,
+            0, 0, 0,  # Params 2-4 (unused)
             lat,
             lng,
             alt
         )
 
+    def set_roi(self, alt=0):
+        lat = int(float(self.mapwidget.map_page.markers_pos[0])*1e7)
+        lng = int(float(self.mapwidget.map_page.markers_pos[1])*1e7)
+        self.connection.mav.command_int_send(
+            self.connection.target_system,
+            self.connection.target_component,
+            dialect.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+            # “frame” = 0 or 3 for alt-above-sea-level, 6 for alt-above-home or 11 for alt-above-terrain
+            dialect.MAV_CMD_DO_SET_ROI_LOCATION,
+            0,  # Current
+            0,  # Autocontinue
+            0, 0, 0, 0,  # Params 2-4 (unused)
+            lat,
+            lng,
+            alt  # Altitude
+        )
+
+    def cancel_roi_mode(self):
+        # Cancel the ROI mode.
+        self.connection.mav.command_int_send(
+            self.connection.target_system,
+            self.connection.target_component,
+            0,
+            dialect.MAV_CMD_DO_SET_ROI_NONE,
+            0, 0,
+            0, 0, 0, 0,
+            0, 0, 0
+        )
+
     def land(self):
+        print("Landing")
         self.connection.set_mode_apm('QLAND')
 
     def rtl(self):
-        self.connection.set_mode_apm('QRTL')
+        def control_if_reached():
+            if abs(self.latitude - self.home_position[0]) > 0.0001 or abs(self.longitude - self.home_position[1]) > 0.0001:
+                QTimer.singleShot(100, control_if_reached)
+            else:
+                self.land()
+        print("Returning back to home")
+        self.move_to(self.home_position[0], self.home_position[1])
+        QTimer.singleShot(100, control_if_reached)
+
+
+
 
     def takeoff(self, target_altitude):
         self.connection.set_mode_apm('GUIDED')
@@ -226,6 +274,12 @@ class ArdupilotConnectionThread(QThread):
             0,
             0, 0, 0, 0,
             0, 0, target_altitude)
+
+        self.set_home_position(self.latitude, self.longitude)
+
+    def set_home_position(self, lat, lng):
+        self.home_position[0] = lat
+        self.home_position[1] = lng
 
     def start_mission(self):
         self.connection.set_mode_apm('GUIDED')
@@ -300,4 +354,6 @@ class ArdupilotConnectionThread(QThread):
                 int(item[0] * 1e7),
                 int(item[1] * 1e7),
                 altitude)
+
+        self.set_home_position(self.latitude, self.longitude)
         print("Mission uploaded successfully.")

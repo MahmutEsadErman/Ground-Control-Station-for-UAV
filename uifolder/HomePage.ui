@@ -210,38 +210,64 @@ QPushButton:disabled{
             </attribute>
             <layout class="QVBoxLayout" name="verticalLayout_6">
              <item>
-              <widget class="QPushButton" name="btn_takeoff">
-               <property name="text">
-                <string>Kalk</string>
-               </property>
+              <widget class="QWidget" name="widget_3" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_9">
+                <item>
+                 <widget class="QPushButton" name="btn_takeoff">
+                  <property name="text">
+                   <string>Kalk</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_move">
+                  <property name="text">
+                   <string>Noktaya Git</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_track_all">
+                  <property name="text">
+                   <string>Gördüğünü Takip Et</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_land">
+                  <property name="text">
+                   <string>İniş Yap</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_rtl_2">
+                  <property name="text">
+                   <string>Eve Dön</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="btn_move">
-               <property name="text">
-                <string>Noktaya Git</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_track_all">
-               <property name="text">
-                <string>Gördüğünü Takip Et</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_land">
-               <property name="text">
-                <string>İniş Yap</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="btn_rtl_2">
-               <property name="text">
-                <string>Eve Dön</string>
-               </property>
+              <widget class="QWidget" name="widget_2" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_8">
+                <item>
+                 <widget class="QPushButton" name="btn_set_roi">
+                  <property name="text">
+                   <string>ROI ayarla</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btn_cancel_roi">
+                  <property name="text">
+                   <string>ROI iptal</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
