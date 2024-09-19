@@ -15,8 +15,8 @@ from Database.users_db import FirebaseUser
 from Vehicle.Exploration import exploration
 
 # Some Definitions for testing purpose
-ALTITUDE = 50
-FOV = 63
+ALTITUDE = 15
+FOV = 110
 
 
 class MissionModes:
@@ -125,11 +125,9 @@ class ArdupilotConnectionThread(QThread):
         # Telemetry Data
         self.latitude = 0
         self.longitude = 0
-        self.altitude = 50
+        self.altitude = 15
 
         # Variables
-        self.camera_angle = 60
-        self.speed_limit = 10
         self.home_position = [0,0]
 
         self.vehicleConnected_signal.connect(handleConnectedVehicle)
@@ -190,8 +188,8 @@ class ArdupilotConnectionThread(QThread):
                 self.connection_string = f'tcp:{text}:5760'
 
     def goto_markers_pos(self, speed=-1):
-        lat = int(float(self.mapwidget.map_page.markers_pos[0]))
-        lng = int(float(self.mapwidget.map_page.markers_pos[1]))
+        lat = float(self.mapwidget.map_page.markers_pos[0])
+        lng = float(self.mapwidget.map_page.markers_pos[1])
 
         self.connection.set_mode_apm('GUIDED')
 
