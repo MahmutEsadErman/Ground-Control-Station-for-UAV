@@ -9,12 +9,15 @@ import time
 
 class AntennaTracker:
     def __init__(self):
-        self.DEBUG_MODE = True
+        self.DEBUG_MODE = False
+
         if not self.DEBUG_MODE:
             # Connect to the arduino
-            self.arduino = serial.Serial('COM4', 9600)
+            self.arduino = None
+            # self.arduino = serial.Serial('COM4', 9600)
 
         self.heading = 0
+        self.flag = 0
 
         self.vehicle_lat, self.vehicle_lon, self.vehicle_alt = 0, 0, 0
         self.antenna_lat, self.antenna_lon, self.antenna_alt = 41.2563, 28.7424, 0.0  # AntennaTracker'ın sabit koordinatları
@@ -62,8 +65,11 @@ class AntennaTracker:
     def set_default_heading(self, heading):
         self.default_heading = heading
 
+    def set_arduino(self, arduino):
+        self.arduino = arduino
+
     def send_servo_angles(self):
-        offset = 5
+        offset = 10
         delta = self.heading - self.default_heading
         print(delta)
 
@@ -79,9 +85,11 @@ class AntennaTracker:
             elif delta < self.angle_x:
                 changed_x = 110
                 print("clockwise")
-
+        self.flag = self.flag + 1
         if not self.DEBUG_MODE:
-            self.arduino.write(f"{int(changed_x)},{int(self.angle_y)}\n".encode())
+            if self.flag == 4:
+                self.arduino.write(f"{int(changed_x)},{int(self.angle_y)}\n".encode())
+                self.flag = 0
         print(f"Servolar: x = {self.angle_x}, y = {self.angle_y}")
 
         # test cases for calculate_servo_angles 41.2563 28.7424
@@ -129,6 +137,7 @@ def antenna_tracker(antenna, vehicle):
     try:
         # MAVLink bağlantısı oluşturuluyor (Pixhawk'ın bağlı olduğu seri portu girin)
         pixhawk = mavutil.mavlink_connection('COM5', baud=115200, autoreconnect=True)
+        arduino = serial.Serial('COM4', 9600)
         # İletişimi başlatmak için ilk mesajı bekleyin
         if pixhawk.wait_heartbeat():
             print("Pixhawk ile bağlantı kuruldu!")
@@ -142,13 +151,14 @@ def antenna_tracker(antenna, vehicle):
 
     heading = update_heading(pixhawk)
     antenna.set_default_heading(heading)
+    antenna.set_arduino(arduino)
 
     if connected:
         while connected:
             try:
                 heading = update_heading(pixhawk)
                 antenna.track(heading, vehicle.latitude, vehicle.longitude, vehicle.altitude)
-                time.sleep(0.05)
+                time.sleep(0.01)
             except Exception as e:
                 print(f"Error: {e}")
                 connected = False
@@ -157,12 +167,12 @@ def antenna_tracker(antenna, vehicle):
 # Test
 if __name__ == "__main__":
     class Vehicle:
-        latitude = 41.2622
-        longitude = 28.7526
+        latitude = 41.2619
+        longitude = 28.7339
         altitude = 0
     vehicle = Vehicle()
     antenna = AntennaTracker()
     threading.Thread(target=antenna_tracker, args=(antenna, vehicle)).start()
 
     while True:
-        time.sleep(0.1)
+        time.sleep(0.01)
