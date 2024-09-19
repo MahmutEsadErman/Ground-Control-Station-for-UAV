@@ -87,7 +87,7 @@ def updateData(thread, vehicle, mapwidget, indicators, camerawidget, firebase):
             indicators.setAttitude(math.degrees(msg.pitch), math.degrees(msg.roll))
             camerawidget.videothread.setHorizon(msg.roll)
         if msg.get_type() == 'SYS_STATUS':
-            indicators.battery_label.setText(f"Battery: {msg.voltage_battery/1e3}V")
+            indicators.battery_label.setText(f"Battery: {msg.voltage_battery / 1e3}V")
             thread.parent.label_top_info_1.setText(f"Battery: {msg.battery_remaining}%      {msg.voltage_battery/1e3}V      {msg.current_battery}A")
         if msg.get_type() == 'HEARTBEAT':
             thread.last_heartbeat = time.time()
@@ -295,7 +295,7 @@ class ArdupilotConnectionThread(QThread):
                 self.mapwidget.page().runJavaScript(f"putWaypoint({wp[0]}, {wp[1]});")
 
         elif mission_mode == MissionModes.WAYPOINTS:
-            self.upload_mission(waypoints,)
+            self.upload_mission(waypoints, )
 
     def clear_mission(self):
         self.connection.mav.mission_clear_all_send(
@@ -311,7 +311,7 @@ class ArdupilotConnectionThread(QThread):
         self.connection.mav.mission_count_send(
             self.connection.target_system,
             self.connection.target_component,
-            len(waypoints)+2
+            len(waypoints) + 2
         )
 
         # Upload home

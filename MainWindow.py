@@ -1,10 +1,12 @@
 import sys
+import threading
 
 from PySide6 import QtGui
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QVBoxLayout, QWidget, QInputDialog
 from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
 
+from AntennaTracker import AntennaTracker, antenna_tracker
 from TargetsPage import TargetsPage
 from Vehicle.ArdupilotConnection import ArdupilotConnectionThread
 from HomePage import HomePage
@@ -210,6 +212,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.connectionThread.takeoff(int(altitude))
 
     def run_antenna_tracker(self):
+        antenna = AntennaTracker()
+        threading.Thread(target=antenna_tracker, args=(antenna, self.connectionThread)).start()
         self.homepage.btn_antenna.setDisabled(True)
 
     def abort(self):
