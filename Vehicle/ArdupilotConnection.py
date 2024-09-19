@@ -129,6 +129,7 @@ class ArdupilotConnectionThread(QThread):
 
         # Variables
         self.home_position = [0,0]
+        self.camera_angle = 45
 
         self.vehicleConnected_signal.connect(handleConnectedVehicle)
         self.updateData_signal.connect(updateData)
@@ -284,10 +285,21 @@ class ArdupilotConnectionThread(QThread):
         self.connection.arducopter_arm()
         self.connection.set_mode('AUTO')
 
+        time.sleep(0.2)
+        speed = 5
+        self.connection.mav.command_long_send(
+            self.connection.target_system,
+            self.connection.target_component,
+            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED,
+            0,
+            0, speed, -1, 0,
+            0, 0, 0)
+
     def set_mission(self, mission_mode, waypoints, altitude):
+        print("Altitude: ", altitude)
         if mission_mode == MissionModes.EXPLORATION:
-            waypoints = exploration(self, waypoints[0], waypoints[1], ALTITUDE, FOV)
-            self.upload_mission(waypoints, int(altitude))
+            waypoints = exploration(self, waypoints[0], waypoints[1], altitude, FOV)
+            self.upload_mission(waypoints, altitude)
             # Put waypoints
             for wp in waypoints:
                 self.mapwidget.page().runJavaScript(f"putWaypoint({wp[0]}, {wp[1]});")
@@ -302,14 +314,14 @@ class ArdupilotConnectionThread(QThread):
             mission_type=dialect.MAV_MISSION_TYPE_MISSION
         )
 
-    def upload_mission(self, waypoints, altitude=30):
+    def upload_mission(self, waypoints, altitude=15, speed=5):
         self.clear_mission()
 
         # Verify mission count
         self.connection.mav.mission_count_send(
             self.connection.target_system,
             self.connection.target_component,
-            len(waypoints) + 2
+            len(waypoints) + 3
         )
 
         # Upload home
@@ -336,9 +348,20 @@ class ArdupilotConnectionThread(QThread):
             0,
             0,
             altitude)
+        
+        self.connection.mav.mission_item_int_send(
+            self.connection.target_system,
+            self.connection.target_component,
+            2,
+            dialect.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+            dialect.MAV_CMD_DO_VTOL_TRANSITION,
+            0,  # current
+            0,  # auto continue
+            dialect.MAV_VTOL_STATE_MC, 0, 0, 0,  # params 1-4
+            0,0,0)
 
         # Upload waypoints
-        for i, item in enumerate(waypoints, start=2):
+        for i, item in enumerate(waypoints, start=3):
             print(i, item)
             self.connection.mav.mission_item_int_send(
                 self.connection.target_system,

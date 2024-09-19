@@ -87,7 +87,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.homepage.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
         self.homepage.btn_takeoff.clicked.connect(self.takeoff)
         self.homepage.btn_land.clicked.connect(self.connectionThread.land)
-        self.homepage.btn_rtl.clicked.connect(self.connectionThread.rtl)
+        self.homepage.btn_rtl.clicked.connect(lambda: self.connectionThread.connection.set_mode_apm("QRTL"))
         self.homepage.btn_rtl_2.clicked.connect(self.connectionThread.rtl)
         self.homepage.btn_abort.clicked.connect(self.abort)
         self.homepage.btn_startMission.clicked.connect(self.connectionThread.start_mission)
@@ -205,7 +205,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.connectionThread.setBaudRate(int(self.combobox_baudrate.currentText()))
         self.connectionThread.setConnectionString(self.combobox_connectionstring.currentText())
         self.connectionThread.start()
-
     def takeoff(self):
         altitude, okPressed = QInputDialog.getText(self, "Enter Altitude", "Altitude:", text="10")
         if okPressed:

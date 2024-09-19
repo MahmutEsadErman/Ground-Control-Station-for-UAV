@@ -61,6 +61,7 @@ class HomePage(QWidget, Ui_HomePage):
 
     def set_mission(self):
         altitude, okPressed = QInputDialog.getText(self, "Enter Altitude", "Altitude:", text="10")
+        altitude = int(altitude)
         if okPressed:
             if self.modes_comboBox.currentText() == 'Waypoint Modu':
                 self.mapwidget.page().runJavaScript("setMission(1);")
