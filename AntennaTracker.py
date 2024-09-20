@@ -9,15 +9,11 @@ import time
 
 class AntennaTracker:
     def __init__(self):
-        self.DEBUG_MODE = False
-
-        if not self.DEBUG_MODE:
-            # Connect to the arduino
-            self.arduino = None
-            # self.arduino = serial.Serial('COM4', 9600)
+        self.arduino = None
 
         self.heading = 0
         self.flag = 0
+        self.memory_x = 0
 
         self.vehicle_lat, self.vehicle_lon, self.vehicle_alt = 0, 0, 0
         self.antenna_lat, self.antenna_lon, self.antenna_alt = 41.2563, 28.7424, 0.0  # AntennaTracker'ın sabit koordinatları
@@ -69,27 +65,52 @@ class AntennaTracker:
         self.arduino = arduino
 
     def send_servo_angles(self):
-        offset = 10
-        delta = self.heading - self.default_heading
-        print(delta)
+        offset = 20
+        target = (self.default_heading + self.angle_x + 360) % 360
+        delta = target - self.heading
+        print("defaut heading: " , self.default_heading)
+        print("target: " , target)
+        print("delta: " , delta)
 
         ## hala 360 şeysi düzgün çalışmıyor
         # calculation for the arduino 360 degree servo (180 anticlockwise - 0 clockwise - 90 stop) ( çarklı sistem olduğu için tam tersi)
-        if delta > (self.angle_x - offset) and delta < (self.angle_x + offset):
+        if delta > -offset and delta < offset:
             changed_x = 90
             print("stop")
         else:
-            if delta > self.angle_x:
-                changed_x = 70
-                print("anticlockwise")
-            elif delta < self.angle_x:
-                changed_x = 110
-                print("clockwise")
+            
+            if abs(delta) > 180: 
+                if delta > 0:
+                    changed_x = 60
+                    print("anticlockwise")
+                else:
+                    changed_x = 120
+                    print("clockwise")
+            else:
+                if delta < 0:
+                    changed_x = 60
+                    print("anticlockwise")
+                else:
+                    changed_x = 120
+                    print("clockwise")
+
         self.flag = self.flag + 1
-        if not self.DEBUG_MODE:
-            if self.flag == 4:
-                self.arduino.write(f"{int(changed_x)},{int(self.angle_y)}\n".encode())
-                self.flag = 0
+
+
+        if  self.memory_x != changed_x or self.flag == 20:
+            self.memory_x = changed_x
+            self.arduino.write(changed_x.to_bytes(1, 'little'))
+            self.arduino.write(int(self.angle_y).to_bytes(2, 'little'))
+
+        response = self.arduino.readline().decode('utf-8').strip()
+        print(f"[ARDUINO] {response}")
+
+        print("gönderdi")
+            #self.flag = 0
+            #time.sleep(0.4)
+            #if changed_x == 90:
+                #return 1
+
         print(f"Servolar: x = {self.angle_x}, y = {self.angle_y}")
 
         # test cases for calculate_servo_angles 41.2563 28.7424
@@ -128,6 +149,18 @@ def update_heading(pixhawk):
     else:
         print("VFR_HUD mesajı alınamadı. Eğer default konumu almadıysa program tekrar başlatılmalı!")
         return None
+    
+def get_gps_data(pixhawk, antenna):
+    # Sadece 'VFR_HUD' mesajlarını almak için bir filtre koyuyoruz
+    msg = pixhawk.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
+    if msg:
+        lat = msg.lat  # Pusula yönü
+        lon = msg.lon
+        print("lat:", lat, "lng:", lon)
+        antenna.set_antenna_gps(lat, lon, 0)
+    else:
+        print("Gps alınamadı")
+        return None
 
 
 def antenna_tracker(antenna, vehicle):
@@ -136,8 +169,12 @@ def antenna_tracker(antenna, vehicle):
 
     try:
         # MAVLink bağlantısı oluşturuluyor (Pixhawk'ın bağlı olduğu seri portu girin)
-        pixhawk = mavutil.mavlink_connection('COM5', baud=115200, autoreconnect=True)
-        arduino = serial.Serial('COM4', 9600)
+        pixhawk = mavutil.mavlink_connection('/dev/ttyACM0', baud=115200, autoreconnect=True)
+        try:
+            arduino = serial.Serial('/dev/ttyUSB0', 115200)
+        except Exception as e:
+            arduino = serial.Serial('/dev/ttyUSB1', 115200)
+
         # İletişimi başlatmak için ilk mesajı bekleyin
         if pixhawk.wait_heartbeat():
             print("Pixhawk ile bağlantı kuruldu!")
@@ -150,15 +187,21 @@ def antenna_tracker(antenna, vehicle):
         return
 
     heading = update_heading(pixhawk)
+    get_gps_data(pixhawk, antenna)
     antenna.set_default_heading(heading)
     antenna.set_arduino(arduino)
+
+    time.sleep(2)
 
     if connected:
         while connected:
             try:
                 heading = update_heading(pixhawk)
-                antenna.track(heading, vehicle.latitude, vehicle.longitude, vehicle.altitude)
-                time.sleep(0.01)
+                direction = antenna.track(heading, vehicle.latitude, vehicle.longitude, vehicle.altitude)
+                #if direction == 1:
+                 #   print("0000000000000000000000000000000000000000000000000")
+                  #  time.sleep(1)
+                #time.sleep(0.01)
             except Exception as e:
                 print(f"Error: {e}")
                 connected = False
@@ -167,8 +210,8 @@ def antenna_tracker(antenna, vehicle):
 # Test
 if __name__ == "__main__":
     class Vehicle:
-        latitude = 41.2619
-        longitude = 28.7339
+        latitude = 37.5841412
+        longitude = 36.8361289
         altitude = 0
     vehicle = Vehicle()
     antenna = AntennaTracker()

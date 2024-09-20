@@ -212,6 +212,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def run_antenna_tracker(self):
         antenna = AntennaTracker()
+        antenna.set_antenna_gps(-35.3635,149.1652, 0)
         threading.Thread(target=antenna_tracker, args=(antenna, self.connectionThread)).start()
         self.homepage.btn_antenna.setDisabled(True)
 
