@@ -205,14 +205,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.connectionThread.setBaudRate(int(self.combobox_baudrate.currentText()))
         self.connectionThread.setConnectionString(self.combobox_connectionstring.currentText())
         self.connectionThread.start()
+
     def takeoff(self):
         altitude, okPressed = QInputDialog.getText(self, "Enter Altitude", "Altitude:", text="10")
         if okPressed:
             self.connectionThread.takeoff(int(altitude))
 
     def run_antenna_tracker(self):
-        antenna = AntennaTracker()
-        antenna.set_antenna_gps(-35.3635,149.1652, 0)
+        antenna = AntennaTracker(-35.3635, 149.1652)
+        lat, lon = antenna.get_location()
+        # Add home marker
+        self.homepage.mapwidget.page().runJavaScript("""
+                        var homeMarker = L.marker(
+                                    %s,
+                                    {icon: homeIcon,},).addTo(map);
+                        """ % [lat, lon]
+                                       )
+
         threading.Thread(target=antenna_tracker, args=(antenna, self.connectionThread)).start()
         self.homepage.btn_antenna.setDisabled(True)
 

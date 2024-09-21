@@ -8,15 +8,17 @@ import time
 
 
 class AntennaTracker:
-    def __init__(self):
+    def __init__(self, latitude, longitude):
         self.arduino = None
 
         self.heading = 0
         self.flag = 0
         self.memory_x = 0
+        self.last_time = time.time()
+        self.delay_interval = 0.3
 
         self.vehicle_lat, self.vehicle_lon, self.vehicle_alt = 0, 0, 0
-        self.antenna_lat, self.antenna_lon, self.antenna_alt = 41.2563, 28.7424, 0.0  # AntennaTracker'ın sabit koordinatları
+        self.antenna_lat, self.antenna_lon, self.antenna_alt = latitude, longitude, 0.0  # AntennaTracker'ın sabit koordinatları
         self.angle_x, self.angle_y = 0, 0
 
         self.default_heading = self.heading
@@ -65,12 +67,14 @@ class AntennaTracker:
         self.arduino = arduino
 
     def send_servo_angles(self):
-        offset = 20
+        offset = 5
         target = (self.default_heading + self.angle_x + 360) % 360
         delta = target - self.heading
-        print("defaut heading: " , self.default_heading)
-        print("target: " , target)
-        print("delta: " , delta)
+        print("defaut heading: ", self.default_heading)
+        print("target: ", target)
+        print("delta: ", delta)
+
+        changed_y = 140 - (self.angle_y / 180) * 140
 
         ## hala 360 şeysi düzgün çalışmıyor
         # calculation for the arduino 360 degree servo (180 anticlockwise - 0 clockwise - 90 stop) ( çarklı sistem olduğu için tam tersi)
@@ -78,8 +82,8 @@ class AntennaTracker:
             changed_x = 90
             print("stop")
         else:
-            
-            if abs(delta) > 180: 
+
+            if abs(delta) > 180:
                 if delta > 0:
                     changed_x = 60
                     print("anticlockwise")
@@ -94,22 +98,16 @@ class AntennaTracker:
                     changed_x = 120
                     print("clockwise")
 
-        self.flag = self.flag + 1
+        # if  self.memory_x != changed_x :
+        #   self.memory_x = changed_x
+        # if time.time() - self.last_time > self.delay_interval:
 
-
-        if  self.memory_x != changed_x or self.flag == 20:
-            self.memory_x = changed_x
-            self.arduino.write(changed_x.to_bytes(1, 'little'))
-            self.arduino.write(int(self.angle_y).to_bytes(2, 'little'))
+        self.arduino.write(changed_x.to_bytes(1, 'little') + 'x'.encode())
+        self.arduino.write(int(changed_y).to_bytes(2, 'little') + 'y'.encode())
+        self.last_time = time.time()
 
         response = self.arduino.readline().decode('utf-8').strip()
         print(f"[ARDUINO] {response}")
-
-        print("gönderdi")
-            #self.flag = 0
-            #time.sleep(0.4)
-            #if changed_x == 90:
-                #return 1
 
         print(f"Servolar: x = {self.angle_x}, y = {self.angle_y}")
 
@@ -131,6 +129,9 @@ class AntennaTracker:
         self.vehicle_lat, self.vehicle_lon = float(vehicle_lat), float(vehicle_lon)
         return self.vehicle_lat, self.vehicle_lon, 0
 
+    def get_location(self):
+        return self.antenna_lat, self.antenna_lon
+
     def track(self, heading, vehicle_lat, vehicle_lon, vehicle_alt):
         self.set_heading(heading)
         self.set_vehicle_gps(vehicle_lat, vehicle_lon, vehicle_alt)
@@ -149,15 +150,16 @@ def update_heading(pixhawk):
     else:
         print("VFR_HUD mesajı alınamadı. Eğer default konumu almadıysa program tekrar başlatılmalı!")
         return None
-    
+
+
 def get_gps_data(pixhawk, antenna):
     # Sadece 'VFR_HUD' mesajlarını almak için bir filtre koyuyoruz
     msg = pixhawk.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
     if msg:
         lat = msg.lat  # Pusula yönü
         lon = msg.lon
-        print("lat:", lat, "lng:", lon)
-        antenna.set_antenna_gps(lat, lon, 0)
+        # antenna.set_antenna_gps(lat, lon, 0)
+        return lat, lon
     else:
         print("Gps alınamadı")
         return None
@@ -190,18 +192,22 @@ def antenna_tracker(antenna, vehicle):
     get_gps_data(pixhawk, antenna)
     antenna.set_default_heading(heading)
     antenna.set_arduino(arduino)
+    print("lat:", antenna.antenna_lat, "lng:", antenna.antenna_lon)
 
     time.sleep(2)
+
+    last_time = time.time()
+    delay_interval = 0.01
 
     if connected:
         while connected:
             try:
-                heading = update_heading(pixhawk)
-                direction = antenna.track(heading, vehicle.latitude, vehicle.longitude, vehicle.altitude)
-                #if direction == 1:
-                 #   print("0000000000000000000000000000000000000000000000000")
-                  #  time.sleep(1)
-                #time.sleep(0.01)
+                if time.time() - last_time > delay_interval:
+                    heading = update_heading(pixhawk)
+                    antenna.track(heading, vehicle.latitude, vehicle.longitude, vehicle.altitude)
+                    last_time = time.time()
+                    time.sleep(.05)
+
             except Exception as e:
                 print(f"Error: {e}")
                 connected = False
@@ -213,6 +219,8 @@ if __name__ == "__main__":
         latitude = 37.5841412
         longitude = 36.8361289
         altitude = 0
+
+
     vehicle = Vehicle()
     antenna = AntennaTracker()
     threading.Thread(target=antenna_tracker, args=(antenna, vehicle)).start()

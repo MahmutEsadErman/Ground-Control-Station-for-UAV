@@ -22,6 +22,7 @@ def image_to_base64(image_path, size=(100, 100)):
         img.save(buffered, format="JPEG")
         return base64.b64encode(buffered.getvalue()).decode()
 
+
 def icon_to_base64(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
@@ -30,6 +31,7 @@ def icon_to_base64(image_path):
 uav_icon_base64 = icon_to_base64('uifolder/assets/icons/uav.png')
 mobileuser_marker_base64 = icon_to_base64('uifolder/assets/icons/mobileuser.png')
 target_marker_base64 = icon_to_base64('uifolder/assets/icons/target.png')
+home_icon_base64 = icon_to_base64('uifolder/assets/icons/antenna.png')
 
 
 class MapWidget(QtWebEngineWidgets.QWebEngineView):
@@ -195,6 +197,11 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     iconUrl: 'data:image/png;base64,%s', 
                     iconSize: [40, 40],
                     });
+                
+                var homeIcon = L.icon({
+                    iconUrl: 'data:image/png;base64,%s', 
+                    iconSize: [40, 40],
+                    });
                     
                 // Adding First Marker
                 var mymarker = L.marker(
@@ -296,7 +303,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 map.on('click', moveMarkerByClick);
                 
                 // end custom code
-        ''' % (map_variable_name, uav_icon_base64, target_marker_base64, mobileuser_marker_base64)
+        ''' % (map_variable_name, uav_icon_base64, target_marker_base64, mobileuser_marker_base64, home_icon_base64)
 
 
 if __name__ == "__main__":
