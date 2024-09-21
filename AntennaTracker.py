@@ -67,14 +67,15 @@ class AntennaTracker:
         self.arduino = arduino
 
     def send_servo_angles(self):
-        offset = 5
+        offset = 3
         target = (self.default_heading + self.angle_x + 360) % 360
         delta = target - self.heading
         print("defaut heading: ", self.default_heading)
         print("target: ", target)
         print("delta: ", delta)
 
-        changed_y = 140 - (self.angle_y / 180) * 140
+        changed_y = int(140 - (self.angle_y / 180) * 140)
+        # changed_y = 90
 
         ## hala 360 şeysi düzgün çalışmıyor
         # calculation for the arduino 360 degree servo (180 anticlockwise - 0 clockwise - 90 stop) ( çarklı sistem olduğu için tam tersi)
@@ -102,9 +103,7 @@ class AntennaTracker:
         #   self.memory_x = changed_x
         # if time.time() - self.last_time > self.delay_interval:
 
-        self.arduino.write(changed_x.to_bytes(1, 'little') + 'x'.encode())
-        self.arduino.write(int(changed_y).to_bytes(2, 'little') + 'y'.encode())
-        self.last_time = time.time()
+        self.arduino.write(changed_x.to_bytes(1, 'little') + changed_y.to_bytes(1, 'little') + b'\n')
 
         response = self.arduino.readline().decode('utf-8').strip()
         print(f"[ARDUINO] {response}")
