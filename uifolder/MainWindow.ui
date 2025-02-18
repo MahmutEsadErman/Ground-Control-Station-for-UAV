@@ -550,7 +550,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>Nebula GCS</string>
+   <string>GCS</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QMainWindow {background: transparent; }
@@ -1223,7 +1223,7 @@ background-color: rgb(33, 37, 43);
 </string>
                      </property>
                      <property name="text">
-                      <string>Nebula UAV Ground Control Station</string>
+                      <string>UAV Ground Control Station</string>
                      </property>
                     </widget>
                    </item>
@@ -2231,7 +2231,7 @@ QPushButton:disabled {
                       <string notr="true">color: rgb(98, 103, 111);</string>
                      </property>
                      <property name="text">
-                      <string>Made by Nebula</string>
+                      <string>Made by YTU</string>
                      </property>
                     </widget>
                    </item>

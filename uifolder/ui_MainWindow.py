@@ -908,9 +908,9 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Nebula GCS", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"GCS", None))
         self.btn_toggle_menu.setText("")
-        self.label_title_bar_top.setText(QCoreApplication.translate("MainWindow", u"Nebula UAV Ground Control Station", None))
+        self.label_title_bar_top.setText(QCoreApplication.translate("MainWindow", u"UAV Ground Control Station", None))
         self.combobox_connectionstring.setItemText(0, QCoreApplication.translate("MainWindow", u"USB", None))
         self.combobox_connectionstring.setItemText(1, QCoreApplication.translate("MainWindow", u"Telemetri", None))
         self.combobox_connectionstring.setItemText(2, QCoreApplication.translate("MainWindow", u"SITL (UDP)", None))
@@ -963,7 +963,7 @@ class Ui_MainWindow(object):
         self.btn_targets_page.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Targets</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.btn_targets_page.setText("")
-        self.label_credits.setText(QCoreApplication.translate("MainWindow", u"Made by Nebula", None))
-        self.label_version.setText(QCoreApplication.translate("MainWindow", u"v0.4", None))
+        self.label_credits.setText(QCoreApplication.translate("MainWindow", u"Made by YTU", None))
+        self.label_version.setText(QCoreApplication.translate("MainWindow", u"v0.7", None))
     # retranslateUi
 
