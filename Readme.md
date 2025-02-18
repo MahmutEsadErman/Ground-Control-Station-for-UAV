@@ -86,10 +86,6 @@ This should launch the interactive GUI built with Qt for Python.
 - Check `FirebaseUserTest.py` for testing and setup.
 - Configure your Firebase credentials as needed following Firebase’s setup documentation.
 
-### **6. Additional Customizations**
-- The project is modular, so you can further develop or customize each component (e.g., adding new features to the HomePage or integrating additional sensors).
-- Refer to the source files (like `AntennaTracker.py`, `MediaPlayer.py`, etc.) for more detailed functionality and integration points.
-
 ---
 
 By following these steps, you’ll be able to set up, run, and explore the full capabilities of the Ground Control Station for UAVs. If you run into any issues or have ideas for improvements, feel free to reach out, open an issue, or even submit a pull request!
