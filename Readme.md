@@ -14,6 +14,11 @@ Overall this project is a practical tool for developers and UAV enthusiasts who 
 <img src="https://github.com/user-attachments/assets/a536204b-e453-4260-bd46-a8f679354a59" alt="Indicators Page" width="650" height="400/">
 <img src="https://github.com/user-attachments/assets/2c9f8193-8739-4645-82e1-674bee54728b" alt="Targets Page" width="650" height="400/">
 
+## **Project Videos**
+https://github.com/user-attachments/assets/10129875-baf7-479b-a96c-b51ba032d92c
+
+
+
 
 ## **Installation Guide**
 
