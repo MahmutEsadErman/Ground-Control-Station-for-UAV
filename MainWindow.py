@@ -6,7 +6,6 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMainWindow, QSizePolicy, QSizeGrip, QVBoxLayout, QWidget, QInputDialog
 from PySide6.QtCore import Qt, QEvent, QSize, QPropertyAnimation, QEasingCurve
 
-from AntennaTracker import AntennaTracker, antenna_tracker
 from TargetsPage import TargetsPage
 from Vehicle.ArdupilotConnection import ArdupilotConnectionThread
 from HomePage import HomePage
@@ -15,11 +14,11 @@ from uifolder import Ui_MainWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self, firebase):
+    def __init__(self):
         super().__init__()
         self.setupUi(self)
 
-        self.firebase = firebase
+
 
         # Frameless Windowimport os
         self.setWindowFlag(Qt.FramelessWindowHint)
@@ -87,12 +86,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.homepage.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
         self.homepage.btn_takeoff.clicked.connect(self.takeoff)
         self.homepage.btn_land.clicked.connect(self.connectionThread.land)
-        self.homepage.btn_rtl.clicked.connect(lambda: self.connectionThread.connection.set_mode_apm("QRTL"))
+        self.homepage.btn_rtl.clicked.connect(lambda: self.connectionThread.set_mode("RTL"))
         self.homepage.btn_rtl_2.clicked.connect(self.connectionThread.rtl)
         self.homepage.btn_abort.clicked.connect(self.abort)
         self.homepage.btn_startMission.clicked.connect(self.connectionThread.start_mission)
         self.homepage.btn_track_all.clicked.connect(self.track_all)
-        self.homepage.btn_antenna.clicked.connect(self.run_antenna_tracker)
 
         # Button to Allocate Windows
         self.indicatorspage.btn_AllocateWidget.clicked.connect(
@@ -211,19 +209,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if okPressed:
             self.connectionThread.takeoff(int(altitude))
 
-    def run_antenna_tracker(self):
-        antenna = AntennaTracker(-35.3635, 149.1652)
-        lat, lon = antenna.get_location()
-        # Add home marker
-        self.homepage.mapwidget.page().runJavaScript("""
-                        var homeMarker = L.marker(
-                                    %s,
-                                    {icon: homeIcon,},).addTo(map);
-                        """ % [lat, lon]
-                                       )
-
-        threading.Thread(target=antenna_tracker, args=(antenna, self.connectionThread)).start()
-        self.homepage.btn_antenna.setDisabled(True)
 
     def abort(self):
         self.homepage.cameraWidget.videothread.sendMessage("abort")

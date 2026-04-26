@@ -6,3 +6,15 @@ sudo kill -9 [PID]          # Ip kullanılıyor hatası için
 gz sim -v4 -r alti_runway.sdf
 sim_vehicle.py -v ArduPlane --model JSON --add-param-file=$HOME/ardupilot_gazebo/models/alti_transition_quad/alti_transition_quad.param
 
+# MAVROS'u açmak için:
+ros2 launch mavros apm.launch fcu_url:=udp://:14550@
+
+# Gazebodan Ros a verileri aktarmak için:
+ros2 run ros_gz_bridge parameter_bridge \
+"/world/iris_runway/pose/info@geometry_msgs/msg/PoseArray[gz.msgs.Pose_V" \
+"/world/iris_runway/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/image@sensor_msgs/msg/Image[gz.msgs.Image" \
+"/world/iris_runway/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo" \
+--ros-args \
+-r /world/iris_runway/pose/info:=/simulation_pose_info \
+-r /world/iris_runway/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/image:=/camera/image \
+-r /world/iris_runway/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/camera_info:=/camera/camera_info

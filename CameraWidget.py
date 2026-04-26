@@ -62,10 +62,10 @@ class CameraWidget(QWidget):
         self.connect_button.show()
 
     def connectStream(self):
-        ip, okPressed = QInputDialog.getText(self, "Enter IP Address", "IP Address:", text="192.168.1.1")
+        topic, okPressed = QInputDialog.getText(self, "Enter ROS Topic", "Topic Name:", text="/camera/image")
         if okPressed:
-                print("Connecting to video stream...")
-                self.videothread.setIp(ip)
+                print(f"Connecting to video stream on topic: {topic}...")
+                self.videothread.setTopic(topic)
                 self.videothread.start()
                 self.connect_button.hide()
                 self.disconnect_button.show()

@@ -33,6 +33,7 @@ class HomePage(QWidget, Ui_HomePage):
         self.btn_undo.clicked.connect(self.buttonFunctions)
         self.btn_clearAll.clicked.connect(self.buttonFunctions)
         self.btn_setMission.clicked.connect(self.set_mission)
+        self.btn_antenna.hide()
 
     def buttonFunctions(self):
         button = self.sender()

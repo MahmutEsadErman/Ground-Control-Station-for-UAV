@@ -1,7 +1,7 @@
 import io, sys
 
 from PySide6 import QtWebEngineWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QIcon
 from PySide6.QtWebEngineCore import QWebEnginePage
 from PySide6.QtWidgets import QApplication, QPushButton
@@ -62,6 +62,8 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
 
         # inject code
         html = html[:endi - 1] + self.custom_code(self.map_variable_name) + html[endi:]
+        # inject referrer policy for OSM tiles
+        html = html.replace("<head>", "<head>\n    <meta name=\"referrer\" content=\"strict-origin-when-cross-origin\"/>")
         data.seek(0)
         data.write(html.encode())
 
@@ -71,7 +73,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
 
         # To Display the Map
         self.resize(800, 600)
-        self.setHtml(data.getvalue().decode())
+        self.setHtml(data.getvalue().decode(), QUrl("http://localhost/"))
 
         # Add buttons
         self.btn_AllocateWidget = QPushButton(icon=QIcon("uifolder/assets/icons/16x16/cil-arrow-top.png"), parent=self)

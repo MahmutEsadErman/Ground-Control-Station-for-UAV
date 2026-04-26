@@ -3,9 +3,8 @@
 This repository implements a ground control station (GCS) for unmanned aerial vehicles (UAVs) using Python. It leverages Qt for Python (via PySide6) to create an interactive graphical user interface and uses pymavlink library to interface with UAVs. The project also integrates several libraries to provide a rich set of functionalities: 
 - **Media and Video Handling:** Utilizes python-vlc (and requires VLC 64-bit installed) along with OpenCV to manage camera feeds and media playback.
 - **Mapping and Visualization:** Employs folium for mapping capabilities enabling real-time map displays that can be crucial for UAV tracking.
-- **Firebase Integration:** Stores the data taken from UAV to the database and integrates communication between mobile app.
+
 - **Modular Design:** The repository is organized into multiple modules (e.g. HomePage MapWidget IndicatorsPage TargetsPage) that handle different aspects of the control station ensuring a clean and maintainable codebase.
-- **Antenna Tracker:** Manages the antenna to follow the UAV, enhancing communication reliability.
 
 Overall this project is a practical tool for developers and UAV enthusiasts who want to experiment with or deploy a Python-based ground control station offering both the control mechanisms and visualization tools necessary for effective UAV operation.
 
@@ -54,8 +53,10 @@ venv\Scripts\activate
 ### **4. Install Python Dependencies**
 Install the required Python packages using pip:
 ```bash
-pip install python-vlc pyside6 opencv-python folium firebase-admin pymavlink serial
+pip install python-vlc pyside6 opencv-python folium pymavlink serial 
 ```
+*Not: `rclpy` ve `cv_bridge` kütüphaneleri ROS 2 sistemi içerisinden otomatik olarak gelir, pip ile kurulmasına gerek yoktur.*
+
 *Note: If you encounter any issues, ensure your pip is up-to-date by running `pip install --upgrade pip`.*
 
 ---
@@ -86,10 +87,7 @@ This should launch the interactive GUI built with Qt for Python.
 - Ensure that your VLC installation is 64-bit and properly configured.
 - Use the provided UI elements (such as in `CameraWidget.py`) to view or control media streams.
 
-### **5. Firebase Integration**
-- For backend support or user authentication, Firebase is integrated.
-- Check `FirebaseUserTest.py` for testing and setup.
-- Configure your Firebase credentials as needed following Firebase’s setup documentation.
+
 
 ---
 

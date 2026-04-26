@@ -1,21 +1,23 @@
 import math
 import time
 
-from pymavlink import mavutil
-import pymavlink.dialects.v20.all as dialect
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
 
 from PySide6.QtCore import QThread, Signal, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QPushButton, QInputDialog
 
+from sensor_msgs.msg import NavSatFix, Imu, BatteryState
+from mavros_msgs.msg import State, VfrHud, GlobalPositionTarget, Waypoint
+from mavros_msgs.srv import CommandBool, SetMode, CommandTOL, WaypointPush, WaypointClear, CommandLong, CommandInt
+
 from CameraWidget import CameraWidget
 from IndicatorsPage import IndicatorsPage
 from MapWidget import MapWidget
-from Database.users_db import FirebaseUser
 from Vehicle.Exploration import exploration
 
-# Some Definitions for testing purpose
-ALTITUDE = 15
 FOV = 110
 
 
@@ -24,256 +26,252 @@ class MissionModes:
     WAYPOINTS = 1
 
 
-def handleConnectedVehicle(connection, mapwidget, connectbutton):
-    msg = connection.recv_match(type='GLOBAL_POSITION_INT', blocking=True)
-    position = [msg.lat / 1e7, msg.lon / 1e7]
-    # Set connect button disable
-    connectbutton.setText('Connected')
-    connectbutton.setIcon(QIcon('../uifolder/assets/icons/24x24/cil-link.png'))
-    connectbutton.setDisabled(True)
+def euler_from_quaternion(q):
+    x, y, z, w = q.x, q.y, q.z, q.w
+    t0 = +2.0 * (w * x + y * z)
+    t1 = +1.0 - 2.0 * (x * x + y * y)
+    roll = math.atan2(t0, t1)
 
-    # Fly to UAV's position
-    mapwidget.page().runJavaScript(f'console.log("uav position: {position}")')
-    mapwidget.page().runJavaScript(f"{mapwidget.map_variable_name}.flyTo({position})")
+    t2 = +2.0 * (w * y - z * x)
+    t2 = +1.0 if t2 > +1.0 else t2
+    t2 = -1.0 if t2 < -1.0 else t2
+    pitch = math.asin(t2)
 
-    # Add UAV marker
-    mapwidget.page().runJavaScript("""
-                    var uavMarker = L.marker(
-                                %s,
-                                {icon: uavIcon,},).addTo(map);
-                    """ % position
-                                   )
-
-
-def updateData(thread, vehicle, mapwidget, indicators, camerawidget, firebase):
-    type_list = ['ATTITUDE', 'GLOBAL_POSITION_INT', 'VFR_HUD', 'SYS_STATUS', 'HEARTBEAT']
-
-    # Read messages from the vehicle
-    msg = vehicle.recv_match(type=type_list)
-    if msg is not None:
-        # Update indicators
-        if msg.get_type() == 'GLOBAL_POSITION_INT':
-            position = [msg.lat / 1e7, msg.lon / 1e7]
-            heading = msg.hdg / 100
-            altitude = msg.relative_alt / 1000.0
-
-            # Update UAV Data
-            thread.latitude = position[0]
-            thread.longitude = position[1]
-            thread.altitude = altitude
-
-            # Update indicators
-            indicators.setAltitude(altitude)
-            indicators.xpos_label.setText(f"X: {position[0]}")
-            indicators.ypos_label.setText(f"Y: {position[1]}")
-            indicators.setHeading(heading)
-            # Update UAV marker
-            mapwidget.page().runJavaScript(f"uavMarker.setLatLng({str(position)});")  # to set position of UAV marker
-            mapwidget.page().runJavaScript(
-                f"uavMarker.setRotationAngle({heading - 45});")  # to set rotation of UAV
-
-            # Update Firebase UAV Data
-            firebase.marker_latitude = position[0]
-            firebase.marker_longitude = position[1]
-            firebase.marker_compass = heading
-
-            camerawidget.videothread.lat = position[0]
-            camerawidget.videothread.lon = position[1]
-            camerawidget.videothread.heading = heading
-        if msg.get_type() == 'VFR_HUD':
-            indicators.setSpeed(msg.airspeed)
-            indicators.setVerticalSpeed(msg.climb)
-        if msg.get_type() == 'ATTITUDE':
-            indicators.setAttitude(math.degrees(msg.pitch), math.degrees(msg.roll))
-            camerawidget.videothread.setHorizon(msg.roll)
-        if msg.get_type() == 'SYS_STATUS':
-            indicators.battery_label.setText(f"Battery: {msg.voltage_battery / 1e3}V")
-            thread.parent.label_top_info_1.setText(f"Battery: {msg.battery_remaining}%      {msg.voltage_battery/1e3}V      {msg.current_battery}A")
-        if msg.get_type() == 'HEARTBEAT':
-            thread.last_heartbeat = time.time()
-            flight_mode = mavutil.mode_string_v10(msg)
-            indicators.flight_mode_label.setText(f"Flight Mode: {flight_mode}")
-
-
-def connectionLost(connectbutton, mapwidget):
-    connectbutton.setText('Connect')
-    connectbutton.setIcon(QIcon('../uifolder/assets/icons/24x24/cil-link-broken.png'))
-    connectbutton.setDisabled(False)
-    # Add UAV marker
-    mapwidget.page().runJavaScript("""
-                    map.removeLayer(uavMarker);
-                    """
-                                   )
+    t3 = +2.0 * (w * z + x * y)
+    t4 = +1.0 - 2.0 * (y * y + z * z)
+    yaw = math.atan2(t3, t4)
+    return roll, pitch, yaw
 
 
 class ArdupilotConnectionThread(QThread):
-    vehicleConnected_signal = Signal(mavutil.mavudp, MapWidget, QPushButton)
-    updateData_signal = Signal(QThread, mavutil.mavudp, MapWidget, IndicatorsPage, CameraWidget, FirebaseUser)
-    connectionLost_signal = Signal(QPushButton, MapWidget)
+    vehicleConnected_signal = Signal()
+    connectionLost_signal = Signal()
 
+    # GUI signals to ensure thread-safety
+    update_uav_marker_signal = Signal(float, float, float)
+    update_indicators_signal = Signal(float, float, float, float, float, float, float, float, str, float)
+    
     def __init__(self, parent=None):
         super().__init__()
         self.parent = parent
-        self.connection = None
-        self.connection_string = None
-        self.baudrate = None
         self.connectButton = parent.btn_connect
         self.mapwidget = parent.homepage.mapwidget
         self.indicators = parent.indicatorspage
-        self.firebase = parent.targetspage.firebase
+        self.camerawidget = parent.homepage.cameraWidget
 
         # Telemetry Data
-        self.latitude = 0
-        self.longitude = 0
-        self.altitude = 15
+        self.latitude = 0.0
+        self.longitude = 0.0
+        self.altitude = 15.0
+        self.heading = 0.0
+        self.speed = 0.0
+        self.vertical_speed = 0.0
+        self.pitch = 0.0
+        self.roll = 0.0
+        self.flight_mode = "UNKNOWN"
+        self.battery_volt = 0.0
 
-        # Variables
-        self.home_position = [0,0]
+        self.home_position = [0.0, 0.0]
         self.camera_angle = 45
 
-        self.vehicleConnected_signal.connect(handleConnectedVehicle)
-        self.updateData_signal.connect(updateData)
-        self.connectionLost_signal.connect(connectionLost)
+        self.node = None
+        self.connected_state = False
 
-    # This method is called when the thread is started
+        self.vehicleConnected_signal.connect(self.handleConnectedVehicle)
+        self.connectionLost_signal.connect(self.handleConnectionLost)
+        self.update_uav_marker_signal.connect(self.update_uav_marker)
+        self.update_indicators_signal.connect(self.update_indicators)
+
     def run(self):
-        timeout = 10  # seconds
-        connected = False  # Flag to monitor connection status
+        if not rclpy.ok():
+            rclpy.init()
+
+        self.node = rclpy.create_node('gcs_mavros_node')
+
+        # Subscribers
+        self.node.create_subscription(State, '/mavros/state', self.state_cb, qos_profile_sensor_data)
+        self.node.create_subscription(NavSatFix, '/mavros/global_position/global', self.global_pos_cb, qos_profile_sensor_data)
+        self.node.create_subscription(VfrHud, '/mavros/vfr_hud', self.vfr_hud_cb, qos_profile_sensor_data)
+        self.node.create_subscription(Imu, '/mavros/imu/data', self.imu_cb, qos_profile_sensor_data)
+        self.node.create_subscription(BatteryState, '/mavros/battery', self.battery_cb, qos_profile_sensor_data)
+
+        # Service Clients
+        self.arm_client = self.node.create_client(CommandBool, '/mavros/cmd/arming')
+        self.set_mode_client = self.node.create_client(SetMode, '/mavros/set_mode')
+        self.takeoff_client = self.node.create_client(CommandTOL, '/mavros/cmd/takeoff')
+        self.land_client = self.node.create_client(CommandTOL, '/mavros/cmd/land')
+        self.wp_push_client = self.node.create_client(WaypointPush, '/mavros/mission/push')
+        self.wp_clear_client = self.node.create_client(WaypointClear, '/mavros/mission/clear')
+        self.cmd_long_client = self.node.create_client(CommandLong, '/mavros/cmd/command')
+        self.cmd_int_client = self.node.create_client(CommandInt, '/mavros/cmd/command_int')
+
+        # Publishers
+        self.setpoint_global_pub = self.node.create_publisher(GlobalPositionTarget, '/mavros/setpoint_position/global', 10)
+
+        print("Waiting for MAVROS nodes...")
 
         try:
-            print(f"Connecting to vehicle on: {self.connection_string}")
-            self.connection = mavutil.mavlink_connection(self.connection_string, baud=self.baudrate, autoreconnect=True,
-                                                         timeout=timeout)
-            print("Waiting for heartbeat...")
-            if self.connection.wait_heartbeat(timeout=timeout):
-                print("Connected")
-                connected = True
-                self.vehicleConnected_signal.emit(self.connection, self.mapwidget, self.connectButton)
-            else:
-                print("Connection failed")
-                connected = False
+            rclpy.spin(self.node)
         except Exception as e:
-            print(f"Failed to connect: {e}")
-            connected = False
+            print(f"Exception in ROS 2 node thread: {e}")
+        finally:
+            self.node.destroy_node()
 
-        if connected:
-            while connected:
-                try:
-                    self.updateData_signal.emit(self, self.connection, self.mapwidget, self.indicators,
-                                                self.parent.homepage.cameraWidget, self.firebase)
-                    self.msleep(20)
-                except Exception as e:
-                    print(f"Error: {e}")
-                    connected = False
-            self.connectionLost_signal.emit(self.connectButton, self.mapwidget)
+    def state_cb(self, msg):
+        self.flight_mode = msg.mode
+        if msg.connected and not self.connected_state:
+            self.connected_state = True
+            self.vehicleConnected_signal.emit()
+        elif not msg.connected and self.connected_state:
+            self.connected_state = False
+            self.connectionLost_signal.emit()
+            
+        self.trigger_ui_update()
 
+    def global_pos_cb(self, msg):
+        self.latitude = msg.latitude
+        self.longitude = msg.longitude
+        self.altitude = msg.altitude
+
+        self.camerawidget.videothread.lat = self.latitude
+        self.camerawidget.videothread.lon = self.longitude
+        self.trigger_ui_update()
+
+    def vfr_hud_cb(self, msg):
+        self.speed = msg.airspeed
+        self.vertical_speed = msg.climb
+        self.heading = msg.heading
+        self.camerawidget.videothread.heading = self.heading
+        self.trigger_ui_update()
+
+    def imu_cb(self, msg):
+        roll, pitch, _ = euler_from_quaternion(msg.orientation)
+        self.roll = math.degrees(roll)
+        self.pitch = math.degrees(pitch)
+        self.camerawidget.videothread.setHorizon(self.roll)
+        self.trigger_ui_update()
+
+    def battery_cb(self, msg):
+        self.battery_volt = msg.voltage
+        self.trigger_ui_update()
+
+    def trigger_ui_update(self):
+        # Update markers
+        self.update_uav_marker_signal.emit(self.latitude, self.longitude, self.heading)
+        # Update indicators
+        self.update_indicators_signal.emit(
+            self.latitude, self.longitude, self.altitude, self.heading,
+            self.speed, self.vertical_speed, self.pitch, self.roll, self.flight_mode, self.battery_volt
+        )
+
+    def handleConnectedVehicle(self):
+        self.connectButton.setText('Connected')
+        self.connectButton.setIcon(QIcon('uifolder/assets/icons/24x24/cil-link.png'))
+        self.connectButton.setDisabled(True)
+
+        position = [self.latitude, self.longitude]
+        self.mapwidget.page().runJavaScript(f'console.log("uav position: {position}")')
+        self.mapwidget.page().runJavaScript(f"{self.mapwidget.map_variable_name}.flyTo({position})")
+        self.mapwidget.page().runJavaScript(f"var uavMarker = L.marker({position}, {{icon: uavIcon,}}).addTo(map);")
+
+    def handleConnectionLost(self):
+        self.connectButton.setText('Connect')
+        self.connectButton.setIcon(QIcon('uifolder/assets/icons/24x24/cil-link-broken.png'))
+        self.connectButton.setDisabled(False)
+        self.mapwidget.page().runJavaScript("map.removeLayer(uavMarker);")
+
+    def update_uav_marker(self, lat, lon, heading):
+        if self.connected_state:
+            position = [lat, lon]
+            self.mapwidget.page().runJavaScript(f"if (typeof uavMarker !== 'undefined') {{ uavMarker.setLatLng({str(position)}); uavMarker.setRotationAngle({heading - 45}); }}")
+
+    def update_indicators(self, lat, lon, alt, heading, spd, vspd, ptc, rll, mode, batt):
+        self.indicators.setAltitude(alt)
+        self.indicators.xpos_label.setText(f"X: {lat:.6f}")
+        self.indicators.ypos_label.setText(f"Y: {lon:.6f}")
+        self.indicators.setHeading(heading)
+        self.indicators.setSpeed(spd)
+        self.indicators.setVerticalSpeed(vspd)
+        self.indicators.setAttitude(ptc, rll)
+        self.indicators.flight_mode_label.setText(f"Flight Mode: {mode}")
+        self.indicators.battery_label.setText(f"Battery: {batt:.2f}V")
+        self.parent.label_top_info_1.setText(f"Battery: {batt:.2f}V")
+
+    # The parameters are no longer needed for MAVROS configuration,
+    # as connection parameters are given through launch files or ROS nodes.
+    # We leave dummy functions so the UI doesn't crash if they are still called.
     def setBaudRate(self, baud):
-        self.baudrate = baud  # 115200 on USB or 57600 on Radio/Telemetry
+        pass
 
     def setConnectionString(self, connectionstring):
-        if connectionstring == 'Telemetri':
-            self.connection_string = '/dev/ttyUSB0'
-        if connectionstring == 'USB':
-            self.connection_string = '/dev/ttyACM0'
-        elif connectionstring == 'SITL (UDP)':
-            self.connection_string = 'udp:127.0.0.1:14550'
-        elif connectionstring == 'SITL (TCP)':
-            self.connection_string = 'tcp:127.0.0.1:5760'
-        elif connectionstring == 'UDP':
-            text, ok = QInputDialog.getText(self.parent, "Input Dialog", "Enter an IP:")
-            if ok and text:
-                self.connection_string = f'udp:{text}:14550'
-        elif connectionstring == 'TCP':
-            text, ok = QInputDialog.getText(self.parent, "Input Dialog", "Enter an IP:")
-            if ok and text:
-                self.connection_string = f'tcp:{text}:5760'
+        pass
+
+    def set_mode(self, custom_mode):
+        req = SetMode.Request()
+        req.custom_mode = custom_mode
+        if self.set_mode_client.wait_for_service(timeout_sec=1.0):
+            self.set_mode_client.call_async(req)
+
+    def arm(self):
+        req = CommandBool.Request()
+        req.value = True
+        if self.arm_client.wait_for_service(timeout_sec=1.0):
+            self.arm_client.call_async(req)
 
     def goto_markers_pos(self, speed=-1):
-        lat = float(self.mapwidget.map_page.markers_pos[0])
-        lng = float(self.mapwidget.map_page.markers_pos[1])
+        if len(self.mapwidget.map_page.markers_pos) >= 2:
+            lat = float(self.mapwidget.map_page.markers_pos[0])
+            lng = float(self.mapwidget.map_page.markers_pos[1])
+            self.set_mode('GUIDED')
+            self.move_to(lat, lng)
 
-        self.connection.set_mode_apm('GUIDED')
-
-        self.move_to(lat, lng)
-
-    def move_to(self, lat, lng, speed=5):
-        lat = int(lat * 1e7)
-        lng = int(lng * 1e7)
-        alt = self.connection.location(relative_alt=True).alt
-        # Send command to move to the specified latitude, longitude, and current altitude
-        self.connection.mav.command_int_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            dialect.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-            # “frame” = 0 or 3 for alt-above-sea-level, 6 for alt-above-home or 11 for alt-above-terrain
-            dialect.MAV_CMD_DO_REPOSITION,
-            0,  # Current
-            0,  # Autocontinue
-            speed,
-            0, 0, 0,  # Params 2-4 (unused)
-            lat,
-            lng,
-            alt
-        )
+    def move_to(self, lat, lng, altitude=None):
+        if altitude is None:
+            altitude = self.altitude
+        msg = GlobalPositionTarget()
+        msg.coordinate_frame = GlobalPositionTarget.FRAME_GLOBAL_REL_ALT
+        msg.type_mask = 4088 # ignore everything except position
+        msg.latitude = lat
+        msg.longitude = lng
+        msg.altitude = altitude
+        if self.setpoint_global_pub:
+            self.setpoint_global_pub.publish(msg)
 
     def set_roi(self, alt=0):
-        lat = int(float(self.mapwidget.map_page.markers_pos[0])*1e7)
-        lng = int(float(self.mapwidget.map_page.markers_pos[1])*1e7)
-        self.connection.mav.command_int_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            dialect.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-            # “frame” = 0 or 3 for alt-above-sea-level, 6 for alt-above-home or 11 for alt-above-terrain
-            dialect.MAV_CMD_DO_SET_ROI_LOCATION,
-            0,  # Current
-            0,  # Autocontinue
-            0, 0, 0, 0,  # Params 2-4 (unused)
-            lat,
-            lng,
-            alt  # Altitude
-        )
+        if len(self.mapwidget.map_page.markers_pos) >= 2:
+            lat = float(self.mapwidget.map_page.markers_pos[0])
+            lng = float(self.mapwidget.map_page.markers_pos[1])
+            req = CommandInt.Request()
+            req.command = 195  # MAV_CMD_DO_SET_ROI_LOCATION
+            req.frame = 3      # MAV_FRAME_GLOBAL_RELATIVE_ALT
+            req.x = int(lat * 1e7)
+            req.y = int(lng * 1e7)
+            req.z = float(alt)
+            if self.cmd_int_client.wait_for_service(timeout_sec=1.0):
+                self.cmd_int_client.call_async(req)
 
     def cancel_roi_mode(self):
-        # Cancel the ROI mode.
-        self.connection.mav.command_int_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            0,
-            dialect.MAV_CMD_DO_SET_ROI_NONE,
-            0, 0,
-            0, 0, 0, 0,
-            0, 0, 0
-        )
+        req = CommandLong.Request()
+        req.command = 197 # MAV_CMD_DO_SET_ROI_NONE
+        if self.cmd_long_client.wait_for_service(timeout_sec=1.0):
+            self.cmd_long_client.call_async(req)
 
     def land(self):
         print("Landing")
-        self.connection.set_mode_apm('QLAND')
+        self.set_mode('LAND')
 
     def rtl(self):
-        def control_if_reached():
-            if abs(self.latitude - self.home_position[0]) > 0.0001 or abs(self.longitude - self.home_position[1]) > 0.0001:
-                QTimer.singleShot(100, control_if_reached)
-            else:
-                self.land()
         print("Returning back to home")
-        self.move_to(self.home_position[0], self.home_position[1])
-        QTimer.singleShot(100, control_if_reached)
-
-
-
+        self.set_mode('RTL')
 
     def takeoff(self, target_altitude):
-        self.connection.set_mode_apm('GUIDED')
-        self.connection.arducopter_arm()
-
-        self.connection.mav.command_long_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
-            0,
-            0, 0, 0, 0,
-            0, 0, target_altitude)
-
+        self.set_mode('GUIDED')
+        self.arm()
+        time.sleep(0.5)
+        req = CommandTOL.Request()
+        req.altitude = float(target_altitude)
+        if self.takeoff_client.wait_for_service(timeout_sec=1.0):
+            self.takeoff_client.call_async(req)
         self.set_home_position(self.latitude, self.longitude)
 
     def set_home_position(self, lat, lng):
@@ -281,19 +279,10 @@ class ArdupilotConnectionThread(QThread):
         self.home_position[1] = lng
 
     def start_mission(self):
-        self.connection.set_mode_apm('GUIDED')
-        self.connection.arducopter_arm()
-        self.connection.set_mode('AUTO')
-
-        time.sleep(0.2)
-        speed = 5
-        self.connection.mav.command_long_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED,
-            0,
-            0, speed, -1, 0,
-            0, 0, 0)
+        self.set_mode('GUIDED')
+        self.arm()
+        time.sleep(0.5)
+        self.set_mode('AUTO')
 
     def set_mission(self, mission_mode, waypoints, altitude):
         print("Altitude: ", altitude)
@@ -303,78 +292,55 @@ class ArdupilotConnectionThread(QThread):
             # Put waypoints
             for wp in waypoints:
                 self.mapwidget.page().runJavaScript(f"putWaypoint({wp[0]}, {wp[1]});")
-
         elif mission_mode == MissionModes.WAYPOINTS:
-            self.upload_mission(waypoints, )
+            self.upload_mission(waypoints, altitude)
 
     def clear_mission(self):
-        self.connection.mav.mission_clear_all_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            mission_type=dialect.MAV_MISSION_TYPE_MISSION
-        )
+        if self.wp_clear_client.wait_for_service(timeout_sec=1.0):
+            req = WaypointClear.Request()
+            self.wp_clear_client.call_async(req)
 
-    def upload_mission(self, waypoints, altitude=15, speed=5):
+    def upload_mission(self, waypoints, altitude=15.0):
         self.clear_mission()
+        time.sleep(0.5)
 
-        # Verify mission count
-        self.connection.mav.mission_count_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            len(waypoints) + 3
-        )
+        req = WaypointPush.Request()
 
-        # Upload home
-        self.connection.mav.mission_item_int_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            0,
-            dialect.MAV_FRAME_GLOBAL,
-            dialect.MAV_CMD_NAV_WAYPOINT,
-            0,  # current
-            0,  # auto continue
-            0, 0, 0, 0,  # params 1-4
-            0, 0, 0)
+        # Add Home Waypoint
+        wp_home = Waypoint()
+        wp_home.frame = Waypoint.FRAME_GLOBAL_REL_ALT
+        wp_home.command = 16 # MAV_CMD_NAV_WAYPOINT
+        wp_home.is_current = True
+        wp_home.autocontinue = True
+        wp_home.x_lat = self.latitude
+        wp_home.y_long = self.longitude
+        wp_home.z_alt = 0.0
+        req.waypoints.append(wp_home)
 
-        self.connection.mav.mission_item_int_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            1,
-            dialect.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-            dialect.MAV_CMD_NAV_TAKEOFF,
-            0,  # current
-            0,  # auto continue
-            0, 0, 0, 0,  # params 1-4
-            0,
-            0,
-            altitude)
-        
-        self.connection.mav.mission_item_int_send(
-            self.connection.target_system,
-            self.connection.target_component,
-            2,
-            dialect.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-            dialect.MAV_CMD_DO_VTOL_TRANSITION,
-            0,  # current
-            0,  # auto continue
-            dialect.MAV_VTOL_STATE_MC, 0, 0, 0,  # params 1-4
-            0,0,0)
+        # Add Takeoff
+        wp_takeoff = Waypoint()
+        wp_takeoff.frame = Waypoint.FRAME_GLOBAL_REL_ALT
+        wp_takeoff.command = 22 # MAV_CMD_NAV_TAKEOFF
+        wp_takeoff.is_current = False
+        wp_takeoff.autocontinue = True
+        wp_takeoff.x_lat = self.latitude
+        wp_takeoff.y_long = self.longitude
+        wp_takeoff.z_alt = float(altitude)
+        req.waypoints.append(wp_takeoff)
 
         # Upload waypoints
-        for i, item in enumerate(waypoints, start=3):
-            print(i, item)
-            self.connection.mav.mission_item_int_send(
-                self.connection.target_system,
-                self.connection.target_component,
-                i,
-                dialect.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-                dialect.MAV_CMD_NAV_WAYPOINT,
-                0,  # current
-                0,  # auto continue
-                0, 0, 0, 0,  # params 1-4
-                int(item[0] * 1e7),
-                int(item[1] * 1e7),
-                altitude)
+        for item in waypoints:
+            wp = Waypoint()
+            wp.frame = Waypoint.FRAME_GLOBAL_REL_ALT
+            wp.command = 16 # MAV_CMD_NAV_WAYPOINT
+            wp.is_current = False
+            wp.autocontinue = True
+            wp.x_lat = float(item[0])
+            wp.y_long = float(item[1])
+            wp.z_alt = float(altitude)
+            req.waypoints.append(wp)
 
-        self.set_home_position(self.latitude, self.longitude)
-        print("Mission uploaded successfully.")
+        if self.wp_push_client.wait_for_service(timeout_sec=1.0):
+            self.wp_push_client.call_async(req)
+            print("Mission uploaded successfully.")
+
