@@ -3,6 +3,8 @@ import time
 
 import rclpy
 from rclpy.node import Node
+from rclpy.context import Context
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.qos import qos_profile_sensor_data
 
 from PySide6.QtCore import QThread, Signal, QTimer
@@ -83,10 +85,10 @@ class ArdupilotConnectionThread(QThread):
         self.update_indicators_signal.connect(self.update_indicators)
 
     def run(self):
-        if not rclpy.ok():
-            rclpy.init()
+        self.context = Context()
+        rclpy.init(context=self.context)
 
-        self.node = rclpy.create_node('gcs_mavros_node')
+        self.node = rclpy.create_node('gcs_mavros_node', context=self.context)
 
         # Subscribers
         self.node.create_subscription(State, '/mavros/state', self.state_cb, qos_profile_sensor_data)
@@ -110,12 +112,19 @@ class ArdupilotConnectionThread(QThread):
 
         print("Waiting for MAVROS nodes...")
 
+        self.executor = SingleThreadedExecutor(context=self.context)
+        self.executor.add_node(self.node)
+
         try:
-            rclpy.spin(self.node)
+            self.executor.spin()
         except Exception as e:
             print(f"Exception in ROS 2 node thread: {e}")
         finally:
-            self.node.destroy_node()
+            self.executor.remove_node(self.node)
+            if self.node:
+                self.node.destroy_node()
+            if self.context:
+                rclpy.shutdown(context=self.context)
 
     def state_cb(self, msg):
         self.flight_mode = msg.mode

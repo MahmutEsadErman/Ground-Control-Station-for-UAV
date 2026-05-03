@@ -32,7 +32,7 @@ class CameraWidget(QWidget):
 
         self.disconnect_button = QPushButton("X", parent=self)
         self.disconnect_button.setCursor(Qt.PointingHandCursor)
-        self.disconnect_button.clicked.connect(self.disconnect)
+        self.disconnect_button.clicked.connect(self.disconnectStream)
         self.disconnect_button.resize(25, 25)
         self.disconnect_button.hide()
 
@@ -70,7 +70,7 @@ class CameraWidget(QWidget):
                 self.connect_button.hide()
                 self.disconnect_button.show()
 
-    def disconnect(self):
+    def disconnectStream(self):
         self.videothread.stop()
         self.videothread.exit()
 
