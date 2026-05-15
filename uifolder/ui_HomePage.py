@@ -190,15 +190,60 @@ class Ui_HomePage(object):
         self.widget_2.setObjectName(u"widget_2")
         self.verticalLayout_8 = QVBoxLayout(self.widget_2)
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
-        self.btn_set_roi = QPushButton(self.widget_2)
-        self.btn_set_roi.setObjectName(u"btn_set_roi")
 
-        self.verticalLayout_8.addWidget(self.btn_set_roi)
+        self.btn_start_record = QPushButton(self.widget_2)
+        self.btn_start_record.setObjectName(u"btn_start_record")
+        self.btn_start_record.setStyleSheet(u"QPushButton{\n"
+"\tborder-radius: 4px;\n"
+"\tbackground-color: qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.159204 rgba(14, 74, 89, 255), stop:1 rgba(77, 149, 47, 255));\n"
+"}\n"
+"QPushButton:hover{ \n"
+"\tbackground-color:qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.0646766 rgba(14, 74, 89, 200), stop:0.527363 rgba(77, 149, 47, 200))\n"
+"}\n"
+"QPushButton:pressed{\n"
+"  padding-left: 5px;\n"
+"\tpadding-top: 5px;\n"
+"}\n"
+"QPushButton:disabled{ \n"
+"\tbackground-color: rgb(52, 59, 72);\n"
+"}")
+        self.verticalLayout_8.addWidget(self.btn_start_record)
 
-        self.btn_cancel_roi = QPushButton(self.widget_2)
-        self.btn_cancel_roi.setObjectName(u"btn_cancel_roi")
+        self.btn_stop_record = QPushButton(self.widget_2)
+        self.btn_stop_record.setObjectName(u"btn_stop_record")
+        self.btn_stop_record.setStyleSheet(u"QPushButton{\n"
+"\tborder-radius: 4px;\n"
+"\tbackground-color: qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.159204 rgba(99, 18, 24, 255), stop:1 rgba(165, 29, 45, 252));\n"
+"}\n"
+"QPushButton:hover{ \n"
+"\tbackground-color:qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.0646766 rgba(89, 22, 27, 255), stop:0.527363 rgba(165, 29, 45, 252))\n"
+"}\n"
+"QPushButton:pressed{\n"
+"  padding-left: 5px;\n"
+"\tpadding-top: 5px;\n"
+"}\n"
+"QPushButton:disabled{ \n"
+"\tbackground-color: rgb(52, 59, 72);\n"
+"}")
+        self.verticalLayout_8.addWidget(self.btn_stop_record)
 
-        self.verticalLayout_8.addWidget(self.btn_cancel_roi)
+        self.btn_toggle_detection = QPushButton(self.widget_2)
+        self.btn_toggle_detection.setObjectName(u"btn_toggle_detection")
+        self.btn_toggle_detection.setCheckable(True)
+        self.btn_toggle_detection.setStyleSheet(u"QPushButton{\n"
+"\tborder-radius: 4px;\n"
+"\tbackground-color: qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.159204 rgba(44, 62, 80, 255), stop:1 rgba(52, 73, 94, 255));\n"
+"}\n"
+"QPushButton:hover{ \n"
+"\tbackground-color:qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.0646766 rgba(44, 62, 80, 200), stop:0.527363 rgba(52, 73, 94, 200))\n"
+"}\n"
+"QPushButton:checked{\n"
+"\tbackground-color: qlineargradient(spread:pad, x1:0.139, y1:0.862773, x2:1, y2:0.017, stop:0.159204 rgba(14, 74, 89, 255), stop:1 rgba(77, 149, 47, 255));\n"
+"}\n"
+"QPushButton:disabled{ \n"
+"\tbackground-color: rgb(52, 59, 72);\n"
+"}")
+        self.verticalLayout_8.addWidget(self.btn_toggle_detection)
 
 
         self.verticalLayout_6.addWidget(self.widget_2)
@@ -264,8 +309,9 @@ class Ui_HomePage(object):
         self.btn_track_all.setText(QCoreApplication.translate("HomePage", u"G\u00f6rd\u00fc\u011f\u00fcn\u00fc Takip Et", None))
         self.btn_land.setText(QCoreApplication.translate("HomePage", u"\u0130ni\u015f Yap", None))
         self.btn_rtl_2.setText(QCoreApplication.translate("HomePage", u"Eve D\u00f6n", None))
-        self.btn_set_roi.setText(QCoreApplication.translate("HomePage", u"ROI ayarla", None))
-        self.btn_cancel_roi.setText(QCoreApplication.translate("HomePage", u"ROI iptal", None))
+        self.btn_start_record.setText(QCoreApplication.translate("HomePage", u"Kayda Ba\u015fla", None))
+        self.btn_stop_record.setText(QCoreApplication.translate("HomePage", u"Kayd\u0131 Durdur", None))
+        self.btn_toggle_detection.setText(QCoreApplication.translate("HomePage", u"Canl\u0131 Tespit A\u00e7/Kapat", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.guided), QCoreApplication.translate("HomePage", u"Guided", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Console), QCoreApplication.translate("HomePage", u"Konsol", None))
     # retranslateUi

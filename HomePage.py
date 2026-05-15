@@ -7,8 +7,8 @@ from PySide6.QtCore import Qt, QTimer
 
 from CameraWidget import CameraWidget
 from MapWidget import MapWidget
-from Vehicle.ArdupilotConnection import MissionModes
 from uifolder import Ui_HomePage
+from Vehicle.ArdupilotConnection import MissionModes
 
 class HomePage(QWidget, Ui_HomePage):
     def __init__(self, parent=None):
@@ -43,14 +43,17 @@ class HomePage(QWidget, Ui_HomePage):
                 self.mapwidget.page().runJavaScript(f"map.on('click', moveMarkerByClick);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', drawRectangle);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', putWaypointEvent);")
+                self.mapwidget.page().runJavaScript(f"if(!map.hasLayer(mymarker)) mymarker.addTo(map);")
             if self.modes_comboBox.currentText() == "Alan Seçimi Modu":
                 self.mapwidget.page().runJavaScript(f"map.off('click', putWaypointEvent);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', moveMarkerByClick);")
                 self.mapwidget.page().runJavaScript(f"map.on('click', drawRectangle);")
+                self.mapwidget.page().runJavaScript(f"if(map.hasLayer(mymarker)) map.removeLayer(mymarker);")
             if self.modes_comboBox.currentText() == "Waypoint Modu":
                 self.mapwidget.page().runJavaScript(f"map.off('click', moveMarkerByClick);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', drawRectangle);")
                 self.mapwidget.page().runJavaScript(f"map.on('click', putWaypointEvent);")
+                self.mapwidget.page().runJavaScript(f"if(map.hasLayer(mymarker)) map.removeLayer(mymarker);")
         if button.objectName() == "btn_clearAll":
             self.mapwidget.page().runJavaScript(f"clearAll();")
         if button.objectName() == "btn_undo":

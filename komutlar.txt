@@ -18,3 +18,6 @@ ros2 run ros_gz_bridge parameter_bridge \
 -r /world/iris_runway/pose/info:=/simulation_pose_info \
 -r /world/iris_runway/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/image:=/camera/image \
 -r /world/iris_runway/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/camera_info:=/camera/camera_info
+
+
+ros2 run mavros mavros_node --ros-args -p fcu_url:=udp://:14550@

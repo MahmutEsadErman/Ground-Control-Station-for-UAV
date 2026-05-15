@@ -1,5 +1,3 @@
-import collections
-import math
 import time
 import json
 import base64
@@ -44,17 +42,8 @@ class VideoStreamThread(QThread):
         self.NewTargetDetectedSignal.connect(parent.parent.parent.targetspage.addTarget)
         self.UpdateTargetPositionSignal.connect(updateTargetPosition)
 
-        # Variables for Hud and Labels
-        self.hudcolor = (85, 170, 255)
-        self.thickness = 2
-        self.p1 = (int(self.parent.width() // 6), int(self.parent.height() // 2))
-        self.p2 = (int(self.parent.width() - self.parent.width() // 6), int(self.parent.height() // 2))
-        
         self.bridge = CvBridge()
         self.node = None
-        self.fps_filter = collections.deque(maxlen=10)
-        self.prev_frame_time = 0
-        self.font = cv2.FONT_HERSHEY_SIMPLEX
         self.topic = '/camera/image'
 
     def run(self):
@@ -99,7 +88,6 @@ class VideoStreamThread(QThread):
             return
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        raw_frame = np.copy(frame)
 
         # Convert frame to QImage
         ConvertToQtFormat = QImage(frame.data, frame.shape[1], frame.shape[0], QImage.Format_RGB888)
@@ -142,7 +130,4 @@ class VideoStreamThread(QThread):
         self.quit()
 
     def sendMessage(self, msg):
-        pass
-
-    def setImageBorders(self, detection):
         pass

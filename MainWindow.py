@@ -81,8 +81,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Buttons to give orders to vehicle
         self.btn_connect.clicked.connect(self.connectToVehicle)
-        self.homepage.btn_set_roi.clicked.connect(self.connectionThread.set_roi)
-        self.homepage.btn_cancel_roi.clicked.connect(self.connectionThread.cancel_roi_mode)
+        # Onboard System Control Buttons
+        self.homepage.btn_start_record.clicked.connect(self.connectionThread.start_record)
+        self.homepage.btn_stop_record.clicked.connect(self.connectionThread.stop_record)
+        self.homepage.btn_toggle_detection.clicked.connect(self.toggle_detection)
         self.homepage.btn_move.clicked.connect(self.connectionThread.goto_markers_pos)
         self.homepage.btn_takeoff.clicked.connect(self.takeoff)
         self.homepage.btn_land.clicked.connect(self.connectionThread.land)
@@ -91,6 +93,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.homepage.btn_abort.clicked.connect(self.abort)
         self.homepage.btn_startMission.clicked.connect(self.connectionThread.start_mission)
         self.homepage.btn_track_all.clicked.connect(self.track_all)
+
+        # Heartbeat display in console
+        self.connectionThread.heartbeat_signal.connect(self.display_heartbeat)
 
         # Button to Allocate Windows
         self.indicatorspage.btn_AllocateWidget.clicked.connect(
@@ -215,6 +220,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def track_all(self):
         self.homepage.cameraWidget.videothread.sendMessage("track -1")
+
+    def toggle_detection(self, checked):
+        self.connectionThread.toggle_detection(checked)
+
+    def display_heartbeat(self, heartbeat_text):
+        self.homepage.textBrowser.append(heartbeat_text)
 
     def AllocateWidget(self, parent, child):
         if child.isAttached:

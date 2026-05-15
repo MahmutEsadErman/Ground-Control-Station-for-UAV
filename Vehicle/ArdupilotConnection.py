@@ -7,6 +7,9 @@ from rclpy.context import Context
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.qos import qos_profile_sensor_data
 
+from std_msgs.msg import String
+from std_srvs.srv import Trigger, SetBool
+
 from PySide6.QtCore import QThread, Signal, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QPushButton, QInputDialog
@@ -14,6 +17,9 @@ from PySide6.QtWidgets import QPushButton, QInputDialog
 from sensor_msgs.msg import NavSatFix, Imu, BatteryState
 from mavros_msgs.msg import State, VfrHud, GlobalPositionTarget, Waypoint
 from mavros_msgs.srv import CommandBool, SetMode, CommandTOL, WaypointPush, WaypointClear, CommandLong, CommandInt
+
+import json
+from datetime import datetime
 
 from CameraWidget import CameraWidget
 from IndicatorsPage import IndicatorsPage
@@ -52,6 +58,7 @@ class ArdupilotConnectionThread(QThread):
     # GUI signals to ensure thread-safety
     update_uav_marker_signal = Signal(float, float, float)
     update_indicators_signal = Signal(float, float, float, float, float, float, float, float, str, float)
+    heartbeat_signal = Signal(str)
     
     def __init__(self, parent=None):
         super().__init__()
@@ -78,6 +85,11 @@ class ArdupilotConnectionThread(QThread):
 
         self.node = None
         self.connected_state = False
+
+        # Onboard system control clients (initialized in run())
+        self.start_record_client = None
+        self.stop_record_client = None
+        self.toggle_detection_client = None
 
         self.vehicleConnected_signal.connect(self.handleConnectedVehicle)
         self.connectionLost_signal.connect(self.handleConnectionLost)
@@ -109,6 +121,14 @@ class ArdupilotConnectionThread(QThread):
 
         # Publishers
         self.setpoint_global_pub = self.node.create_publisher(GlobalPositionTarget, '/mavros/setpoint_position/global', 10)
+
+        # Onboard System Control - Service Clients
+        self.start_record_client = self.node.create_client(Trigger, '/drone/start_record')
+        self.stop_record_client = self.node.create_client(Trigger, '/drone/stop_record')
+        self.toggle_detection_client = self.node.create_client(SetBool, '/drone/toggle_detection')
+
+        # Heartbeat Subscription
+        self.node.create_subscription(String, '/drone/heartbeat', self.heartbeat_cb, 10)
 
         print("Waiting for MAVROS nodes...")
 
@@ -157,7 +177,6 @@ class ArdupilotConnectionThread(QThread):
         roll, pitch, _ = euler_from_quaternion(msg.orientation)
         self.roll = math.degrees(roll)
         self.pitch = math.degrees(pitch)
-        self.camerawidget.videothread.setHorizon(self.roll)
         self.trigger_ui_update()
 
     def battery_cb(self, msg):
@@ -264,6 +283,73 @@ class ArdupilotConnectionThread(QThread):
         req.command = 197 # MAV_CMD_DO_SET_ROI_NONE
         if self.cmd_long_client.wait_for_service(timeout_sec=1.0):
             self.cmd_long_client.call_async(req)
+
+    # ── Onboard System Control Methods ──────────────────────────────
+    def start_record(self):
+        """Send start_record service call to remote Jetson Orin."""
+        if self.start_record_client is None:
+            self.heartbeat_signal.emit("[HATA] ROS 2 bağlantısı henüz kurulmadı.")
+            return
+        if self.start_record_client.wait_for_service(timeout_sec=2.0):
+            req = Trigger.Request()
+            future = self.start_record_client.call_async(req)
+            future.add_done_callback(self._record_response_cb)
+        else:
+            self.heartbeat_signal.emit(f"[HATA] /drone/start_record servisi bulunamadı.")
+
+    def stop_record(self):
+        """Send stop_record service call to remote Jetson Orin."""
+        if self.stop_record_client is None:
+            self.heartbeat_signal.emit("[HATA] ROS 2 bağlantısı henüz kurulmadı.")
+            return
+        if self.stop_record_client.wait_for_service(timeout_sec=2.0):
+            req = Trigger.Request()
+            future = self.stop_record_client.call_async(req)
+            future.add_done_callback(self._record_response_cb)
+        else:
+            self.heartbeat_signal.emit(f"[HATA] /drone/stop_record servisi bulunamadı.")
+
+    def toggle_detection(self, enable):
+        """Send toggle_detection service call to remote Jetson Orin."""
+        if self.toggle_detection_client is None:
+            self.heartbeat_signal.emit("[HATA] ROS 2 bağlantısı henüz kurulmadı.")
+            return
+        if self.toggle_detection_client.wait_for_service(timeout_sec=2.0):
+            req = SetBool.Request()
+            req.data = enable
+            future = self.toggle_detection_client.call_async(req)
+            future.add_done_callback(self._record_response_cb)
+        else:
+            self.heartbeat_signal.emit(f"[HATA] /drone/toggle_detection servisi bulunamadı.")
+
+    def _record_response_cb(self, future):
+        """Callback for service response - emit result to console."""
+        try:
+            result = future.result()
+            status = "✓" if result.success else "✗"
+            self.heartbeat_signal.emit(f"[SERVİS {status}] {result.message}")
+        except Exception as e:
+            self.heartbeat_signal.emit(f"[HATA] Servis çağrısı başarısız: {e}")
+
+    def heartbeat_cb(self, msg):
+        """Process heartbeat messages from the onboard system controller."""
+        try:
+            data = json.loads(msg.data)
+            ts = datetime.fromtimestamp(data.get('timestamp', 0)).strftime('%H:%M:%S')
+            status = data.get('status', 'N/A')
+            cpu_temp = data.get('cpu_temp_c', 0)
+            ram = data.get('ram_usage_percent', 0)
+            disk = data.get('disk_free_gb', 0)
+            recording = "●REC" if data.get('is_recording', False) else "○REC"
+            detecting = "●DET" if data.get('is_detecting', False) else "○DET"
+
+            heartbeat_text = (
+                f"[{ts}] {status} | CPU: {cpu_temp}°C | "
+                f"RAM: {ram}% | Disk: {disk}GB | {recording} | {detecting}"
+            )
+            self.heartbeat_signal.emit(heartbeat_text)
+        except Exception as e:
+            self.heartbeat_signal.emit(f"[HEARTBEAT HATA] {e}")
 
     def land(self):
         print("Landing")

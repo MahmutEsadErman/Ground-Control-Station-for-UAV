@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
 import cv2
 
@@ -8,7 +8,7 @@ class WebcamPublisher(Node):
     def __init__(self):
         super().__init__('webcam_publisher_node')
         # Create publisher for the camera/image topic
-        self.publisher_ = self.create_publisher(CompressedImage, 'camera/image', 10)
+        self.publisher_compressed_ = self.create_publisher(CompressedImage, '/camera/image/compressed', 10)
         # We will publish 30 times a second
         timer_period = 1.0 / 30.0  
         self.timer = self.create_timer(timer_period, self.timer_callback)
@@ -20,9 +20,9 @@ class WebcamPublisher(Node):
     def timer_callback(self):
         ret, frame = self.cap.read()
         if ret:
-            # Convert OpenCV image to ROS 2 CompressedImage message
-            msg = self.bridge.cv2_to_compressed_imgmsg(frame)
-            self.publisher_.publish(msg)
+            # Sıkıştırılmış mesaj oluştur ve yayınla
+            compressed_msg = self.bridge.cv2_to_compressed_imgmsg(frame)
+            self.publisher_compressed_.publish(compressed_msg)
         else:
             self.get_logger().warning('Failed to capture frame from webcam')
 
