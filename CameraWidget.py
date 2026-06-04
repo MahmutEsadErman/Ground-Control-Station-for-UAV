@@ -62,8 +62,25 @@ class CameraWidget(QWidget):
         self.connect_button.show()
 
     def connectStream(self):
-        topic, okPressed = QInputDialog.getText(self, "Enter ROS Topic", "Topic Name:", text="/camera/image")
-        if okPressed:
+        topic_list = ["/camera/image", "/camera/image/compressed"]
+        
+        try:
+            if hasattr(self, 'parent') and hasattr(self.parent, 'parent'):
+                mainwindow = self.parent.parent
+                if mainwindow and hasattr(mainwindow, 'connectionThread') and mainwindow.connectionThread.node:
+                    topics_and_types = mainwindow.connectionThread.node.get_topic_names_and_types()
+                    image_topics = []
+                    for name, types in topics_and_types:
+                        if 'sensor_msgs/msg/Image' in types or 'sensor_msgs/msg/CompressedImage' in types:
+                            image_topics.append(name)
+                    if image_topics:
+                        # Combine default topics with discovered topics, removing duplicates while preserving order
+                        topic_list = list(dict.fromkeys(topic_list + image_topics))
+        except Exception as e:
+            print(f"Could not fetch ROS topics dynamically: {e}")
+
+        topic, okPressed = QInputDialog.getItem(self, "Select ROS Topic", "Topic Name:", topic_list, 0, True)
+        if okPressed and topic:
                 print(f"Connecting to video stream on topic: {topic}...")
                 self.videothread.setTopic(topic)
                 self.videothread.start()

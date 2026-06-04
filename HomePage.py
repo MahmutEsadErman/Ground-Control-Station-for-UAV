@@ -35,6 +35,54 @@ class HomePage(QWidget, Ui_HomePage):
         self.btn_setMission.clicked.connect(self.set_mission)
         self.btn_antenna.hide()
 
+        # --- Follow Parameters & Control UI ---
+        from PySide6.QtWidgets import QGroupBox, QFormLayout, QSpinBox, QHBoxLayout, QLabel, QPushButton
+        self.follow_groupbox = QGroupBox("Drone Takip Parametreleri")
+        self.follow_layout = QFormLayout()
+        
+        # Follow Distance
+        self.spin_follow_distance = QSpinBox()
+        self.spin_follow_distance.setRange(1, 100)
+        self.spin_follow_distance.setValue(5)
+        self.spin_follow_distance.setSuffix(" m")
+        self.follow_layout.addRow("Takip Mesafesi:", self.spin_follow_distance)
+        
+        # Follow Height
+        self.spin_follow_height = QSpinBox()
+        self.spin_follow_height.setRange(1, 100)
+        self.spin_follow_height.setValue(3)
+        self.spin_follow_height.setSuffix(" m")
+        self.follow_layout.addRow("Takip Yüksekliği:", self.spin_follow_height)
+
+        # Timeout
+        self.spin_timeout = QSpinBox()
+        self.spin_timeout.setRange(1, 300)
+        self.spin_timeout.setValue(10)
+        self.spin_timeout.setSuffix(" sn")
+        self.follow_layout.addRow("Zaman Aşımı (Timeout):", self.spin_timeout)
+        
+        # Buttons
+        self.btn_set_follow_params = QPushButton("Parametreleri Güncelle")
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(self.btn_set_follow_params)
+        
+        self.follow_groupbox.setLayout(self.follow_layout)
+        self.verticalLayout_6.insertWidget(1, self.follow_groupbox)
+        self.verticalLayout_6.insertLayout(2, btn_layout)
+
+        # Connect new buttons
+        self.btn_set_follow_params.clicked.connect(self.update_follow_params)
+        # --------------------------------------
+
+    def update_follow_params(self):
+        dist = self.spin_follow_distance.value()
+        height = self.spin_follow_height.value()
+        timeout = self.spin_timeout.value()
+        print(f"Takip Parametreleri Güncellendi - Mesafe: {dist}m, Yükseklik: {height}m, Timeout: {timeout}sn")
+        # Ensure connectionThread exists and send params via ROS service
+        if hasattr(self.parent, 'connectionThread') and self.parent.connectionThread:
+            self.parent.connectionThread.set_follow_parameters(dist, height, timeout)
+
     def buttonFunctions(self):
         button = self.sender()
 

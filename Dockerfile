@@ -32,6 +32,7 @@ RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 ENV DISPLAY=$DISPLAY
 ENV LIBGL_ALWAYS_SOFTWARE=1
 ENV QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu"
+ENV ROS_DOMAIN_ID=42
 
 # ROS 2 kaynaklarını otomatik olarak source et ve ana uygulamayı başlat
 CMD ["/bin/bash", "-c", "source /opt/ros/humble/setup.bash && python3 main.py"]

@@ -107,7 +107,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     #########################################################################################################################
 
     def mousePressEvent(self, event):
-        self.dragPos = event.globalPosition().toPoint()
+        if event.button() == Qt.LeftButton:
+            self.dragOffset = event.globalPosition().toPoint() - self.pos()
 
     # To take events from child widgets
     def eventFilter(self, obj, event):
@@ -115,14 +116,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Maximize and restore when double click
             if event.type() == QEvent.MouseButtonDblClick:
                 self.maximize_restore()
-            # Drag move window
-            if event.type() == QEvent.MouseMove:
+            elif event.type() == QEvent.MouseButtonPress:
+                if event.button() == Qt.LeftButton:
+                    self.dragOffset = event.globalPosition().toPoint() - self.pos()
+                    # Try to use the native system move if supported (Wayland/X11)
+                    if self.window().windowHandle():
+                        self.window().windowHandle().startSystemMove()
+                    return True
+            # Drag move window (fallback for systems where startSystemMove is not supported)
+            elif event.type() == QEvent.MouseMove:
                 if event.buttons() == Qt.LeftButton:
                     self.setCursor(Qt.SizeAllCursor)
-                    self.move(self.pos() + event.globalPosition().toPoint() - self.dragPos)
-                    self.dragPos = event.globalPosition().toPoint()
+                    if hasattr(self, 'dragOffset'):
+                        self.move(event.globalPosition().toPoint() - self.dragOffset)
                     return True
-            if event.type() == QEvent.MouseButtonRelease:
+            elif event.type() == QEvent.MouseButtonRelease:
                 self.setCursor(Qt.ArrowCursor)
         return super().eventFilter(obj, event)
 

@@ -20,4 +20,9 @@ ros2 run ros_gz_bridge parameter_bridge \
 -r /world/iris_runway/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/camera_info:=/camera/camera_info
 
 
+# Bitirme projesi için:
 ros2 run mavros mavros_node --ros-args -p fcu_url:=udp://:14550@
+
+ros2 launch seekthermal_camera seekthermal_camera.launch.py
+
+ros2 launch realsense2_camera rs_launch.py

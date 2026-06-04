@@ -7,7 +7,7 @@ from rclpy.context import Context
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.qos import qos_profile_sensor_data
 
-from std_msgs.msg import String
+from std_msgs.msg import String, Float32MultiArray
 from std_srvs.srv import Trigger, SetBool
 
 from PySide6.QtCore import QThread, Signal, QTimer
@@ -126,6 +126,9 @@ class ArdupilotConnectionThread(QThread):
         self.start_record_client = self.node.create_client(Trigger, '/drone/start_record')
         self.stop_record_client = self.node.create_client(Trigger, '/drone/stop_record')
         self.toggle_detection_client = self.node.create_client(SetBool, '/drone/toggle_detection')
+
+        # Follow Parameters - Publishers
+        self.follow_params_pub = self.node.create_publisher(Float32MultiArray, '/drone/follow_params', 10)
 
         # Heartbeat Subscription
         self.node.create_subscription(String, '/drone/heartbeat', self.heartbeat_cb, 10)
@@ -322,6 +325,13 @@ class ArdupilotConnectionThread(QThread):
         else:
             self.heartbeat_signal.emit(f"[HATA] /drone/toggle_detection servisi bulunamadı.")
 
+    def set_follow_parameters(self, distance, height, timeout):
+        if hasattr(self, 'follow_params_pub') and self.follow_params_pub:
+            msg = Float32MultiArray()
+            msg.data = [float(distance), float(height), float(timeout)]
+            self.follow_params_pub.publish(msg)
+            self.heartbeat_signal.emit(f"[BİLGİ] Takip parametreleri gönderildi: Mesafe {distance}m, Yükseklik {height}m, Timeout: {timeout}sn")
+
     def _record_response_cb(self, future):
         """Callback for service response - emit result to console."""
         try:
@@ -342,10 +352,15 @@ class ArdupilotConnectionThread(QThread):
             disk = data.get('disk_free_gb', 0)
             recording = "●REC" if data.get('is_recording', False) else "○REC"
             detecting = "●DET" if data.get('is_detecting', False) else "○DET"
+            
+            timeout = data.get('follow_timeout', 0)
+            dist = data.get('follow_dist', 0)
+            height = data.get('follow_height', 0)
 
             heartbeat_text = (
                 f"[{ts}] {status} | CPU: {cpu_temp}°C | "
-                f"RAM: {ram}% | Disk: {disk}GB | {recording} | {detecting}"
+                f"RAM: {ram}% | Disk: {disk}GB | {recording} | {detecting} | "
+                f"Takip: {dist}m, {height}m (Timeout: {timeout}sn)"
             )
             self.heartbeat_signal.emit(heartbeat_text)
         except Exception as e:
@@ -388,14 +403,14 @@ class ArdupilotConnectionThread(QThread):
             for wp in waypoints:
                 self.mapwidget.page().runJavaScript(f"putWaypoint({wp[0]}, {wp[1]});")
         elif mission_mode == MissionModes.WAYPOINTS:
-            self.upload_mission(waypoints, altitude)
+            self.upload_mission(waypoints, altitude, is_patrol=True)
 
     def clear_mission(self):
         if self.wp_clear_client.wait_for_service(timeout_sec=1.0):
             req = WaypointClear.Request()
             self.wp_clear_client.call_async(req)
 
-    def upload_mission(self, waypoints, altitude=15.0):
+    def upload_mission(self, waypoints, altitude=5.0, is_patrol=False):
         self.clear_mission()
         time.sleep(0.5)
 
@@ -434,6 +449,30 @@ class ArdupilotConnectionThread(QThread):
             wp.y_long = float(item[1])
             wp.z_alt = float(altitude)
             req.waypoints.append(wp)
+
+        # If patrol mode is enabled, add reverse waypoints and a DO_JUMP command
+        if is_patrol and len(waypoints) > 1:
+            # Add reverse waypoints (excluding the last one which is already the end point, and the first one which we'll jump to)
+            for item in reversed(waypoints[1:-1]):
+                wp = Waypoint()
+                wp.frame = Waypoint.FRAME_GLOBAL_REL_ALT
+                wp.command = 16 # MAV_CMD_NAV_WAYPOINT
+                wp.is_current = False
+                wp.autocontinue = True
+                wp.x_lat = float(item[0])
+                wp.y_long = float(item[1])
+                wp.z_alt = float(altitude)
+                req.waypoints.append(wp)
+
+            # Add DO_JUMP command to jump back to the first waypoint (Sequence index 2)
+            wp_jump = Waypoint()
+            wp_jump.frame = Waypoint.FRAME_GLOBAL_REL_ALT
+            wp_jump.command = 177 # MAV_CMD_DO_JUMP
+            wp_jump.is_current = False
+            wp_jump.autocontinue = True
+            wp_jump.param1 = 2.0 # Sequence number to jump to (0=Home, 1=Takeoff, 2=First Waypoint)
+            wp_jump.param2 = -1.0 # Repeat count (-1 for infinite)
+            req.waypoints.append(wp_jump)
 
         if self.wp_push_client.wait_for_service(timeout_sec=1.0):
             self.wp_push_client.call_async(req)

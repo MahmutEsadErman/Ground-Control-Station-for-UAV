@@ -10,7 +10,7 @@ from rclpy.node import Node
 from rclpy.context import Context
 from rclpy.executors import SingleThreadedExecutor
 from sensor_msgs.msg import CompressedImage
-from std_msgs.msg import String
+from vision_msgs.msg import Detection2DArray
 from cv_bridge import CvBridge
 
 from PySide6.QtCore import QThread, Signal
@@ -58,7 +58,7 @@ class VideoStreamThread(QThread):
             10)
 
         self.detection_subscription = self.node.create_subscription(
-            String,
+            Detection2DArray,
             '/detections',
             self.detection_callback,
             10)
@@ -87,6 +87,8 @@ class VideoStreamThread(QThread):
             print(f"Failed to convert image: {e}")
             return
 
+        self.latest_frame = frame.copy()
+
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         # Convert frame to QImage
@@ -96,26 +98,42 @@ class VideoStreamThread(QThread):
 
     def detection_callback(self, msg):
         try:
-            data = json.loads(msg.data)
-            target_id = data.get("id", 0)
-            img_b64 = data.get("image", "")
-            location = data.get("location", [0.0, 0.0])
-            first_seen = data.get("first_seen", time.time())
+            for det in msg.detections:
+                target_id = int(det.id) if det.id else 0
+                location = [0.0, 0.0]
+                first_seen = time.time()
 
-            # Decode base64 image
-            img_bytes = base64.b64decode(img_b64)
-            np_arr = np.frombuffer(img_bytes, np.uint8)
-            frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                # Calculate bounding box
+                x = det.bbox.center.position.x
+                y = det.bbox.center.position.y
+                w = det.bbox.size_x
+                h = det.bbox.size_y
+                
+                x1 = max(0, int(x - w / 2))
+                y1 = max(0, int(y - h / 2))
+                x2 = int(x + w / 2)
+                y2 = int(y + h / 2)
 
-            if frame is not None:
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                ConvertToQtFormat = QImage(frame.data, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
-                qimage = ConvertToQtFormat.copy()  # Deep copy is required to keep data alive
+                frame = None
+                if hasattr(self, 'latest_frame') and self.latest_frame is not None:
+                    h_frame, w_frame, _ = self.latest_frame.shape
+                    x1 = min(x1, w_frame)
+                    x2 = min(x2, w_frame)
+                    y1 = min(y1, h_frame)
+                    y2 = min(y2, h_frame)
+                    
+                    if x2 > x1 and y2 > y1:
+                        frame = self.latest_frame[y1:y2, x1:x2].copy()
 
-                # Emit signal (start and end time are same initially)
-                self.NewTargetDetectedSignal.emit(qimage, location, [first_seen, first_seen], target_id)
-            else:
-                print("Failed to decode base64 image from detection topic")
+                if frame is not None:
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    ConvertToQtFormat = QImage(frame.data, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
+                    qimage = ConvertToQtFormat.copy()  # Deep copy is required to keep data alive
+
+                    # Emit signal (start and end time are same initially)
+                    self.NewTargetDetectedSignal.emit(qimage, location, [first_seen, first_seen], target_id)
+                else:
+                    print("Could not crop image from the latest frame.")
 
         except Exception as e:
             print(f"Error parsing detection msg: {e}")
