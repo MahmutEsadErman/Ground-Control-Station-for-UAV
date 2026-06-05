@@ -16,7 +16,7 @@ from PySide6.QtWidgets import QPushButton, QInputDialog
 
 from sensor_msgs.msg import NavSatFix, Imu, BatteryState
 from mavros_msgs.msg import State, VfrHud, GlobalPositionTarget, Waypoint
-from mavros_msgs.srv import CommandBool, SetMode, CommandTOL, WaypointPush, WaypointClear, CommandLong, CommandInt
+from mavros_msgs.srv import CommandBool, SetMode, CommandTOL, WaypointPush, WaypointClear, CommandLong, CommandInt, StreamRate
 
 import json
 from datetime import datetime
@@ -113,6 +113,7 @@ class ArdupilotConnectionThread(QThread):
         self.arm_client = self.node.create_client(CommandBool, '/mavros/cmd/arming')
         self.set_mode_client = self.node.create_client(SetMode, '/mavros/set_mode')
         self.takeoff_client = self.node.create_client(CommandTOL, '/mavros/cmd/takeoff')
+        self.set_stream_rate_client = self.node.create_client(StreamRate, '/mavros/set_stream_rate')
         self.land_client = self.node.create_client(CommandTOL, '/mavros/cmd/land')
         self.wp_push_client = self.node.create_client(WaypointPush, '/mavros/mission/push')
         self.wp_clear_client = self.node.create_client(WaypointClear, '/mavros/mission/clear')
@@ -200,6 +201,13 @@ class ArdupilotConnectionThread(QThread):
         self.connectButton.setIcon(QIcon('uifolder/assets/icons/24x24/cil-link.png'))
         self.connectButton.setDisabled(True)
 
+        # Gerekli telemetri verilerini ArduPilot'tan REQUEST_DATA_STREAM ile talep et
+        # MAVROS'un yerleşik set_stream_rate servisi kullanılarak yapılır.
+        self.request_data_stream(6, 2)   # STREAM_POSITION (Global Position, Local Position)
+        self.request_data_stream(10, 30) # STREAM_EXTRA1 (Attitude / Yönelim verileri vb.)
+        self.request_data_stream(11, 2)  # STREAM_EXTRA2 (VFR_HUD)
+        self.request_data_stream(2, 2)   # STREAM_EXTENDED_STATUS (SYS_STATUS, GPS_RAW_INT vb.)
+
         position = [self.latitude, self.longitude]
         self.mapwidget.page().runJavaScript(f'console.log("uav position: {position}")')
         self.mapwidget.page().runJavaScript(f"{self.mapwidget.map_variable_name}.flyTo({position})")
@@ -286,6 +294,18 @@ class ArdupilotConnectionThread(QThread):
         req.command = 197 # MAV_CMD_DO_SET_ROI_NONE
         if self.cmd_long_client.wait_for_service(timeout_sec=1.0):
             self.cmd_long_client.call_async(req)
+
+    def request_data_stream(self, stream_id, rate_hz):
+        """
+        ArduPilot'tan MAVROS set_stream_rate (REQUEST_DATA_STREAM) servisi ile veri talep eder.
+        Referans: https://ardupilot.org/dev/docs/mavlink-requesting-data.html
+        """
+        req = StreamRate.Request()
+        req.stream_id = stream_id
+        req.message_rate = int(rate_hz)
+        req.on_off = True
+        if self.set_stream_rate_client.wait_for_service(timeout_sec=1.0):
+            self.set_stream_rate_client.call_async(req)
 
     # ── Onboard System Control Methods ──────────────────────────────
     def start_record(self):
