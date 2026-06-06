@@ -131,6 +131,9 @@ class ArdupilotConnectionThread(QThread):
         # Follow Parameters - Publishers
         self.follow_params_pub = self.node.create_publisher(Float32MultiArray, '/drone/follow_params', 10)
 
+        # Area Boundaries - Publishers
+        self.area_boundaries_pub = self.node.create_publisher(Float32MultiArray, '/drone/area_boundaries', 10)
+
         # Heartbeat Subscription
         self.node.create_subscription(String, '/drone/heartbeat', self.heartbeat_cb, 10)
 
@@ -212,6 +215,7 @@ class ArdupilotConnectionThread(QThread):
         self.mapwidget.page().runJavaScript(f'console.log("uav position: {position}")')
         self.mapwidget.page().runJavaScript(f"{self.mapwidget.map_variable_name}.flyTo({position})")
         self.mapwidget.page().runJavaScript(f"var uavMarker = L.marker({position}, {{icon: uavIcon,}}).addTo(map);")
+        self.mapwidget.page().runJavaScript("if (typeof clearTrajectory !== 'undefined') { clearTrajectory(); }")
 
     def handleConnectionLost(self):
         self.connectButton.setText('Connect')
@@ -221,8 +225,7 @@ class ArdupilotConnectionThread(QThread):
 
     def update_uav_marker(self, lat, lon, heading):
         if self.connected_state:
-            position = [lat, lon]
-            self.mapwidget.page().runJavaScript(f"if (typeof uavMarker !== 'undefined') {{ uavMarker.setLatLng({str(position)}); uavMarker.setRotationAngle({heading - 45}); }}")
+            self.mapwidget.page().runJavaScript(f"if (typeof updateUavPosition !== 'undefined') {{ updateUavPosition({lat}, {lon}, {heading}); }}")
 
     def update_indicators(self, lat, lon, alt, heading, spd, vspd, ptc, rll, mode, batt):
         self.indicators.setAltitude(alt)
@@ -351,6 +354,17 @@ class ArdupilotConnectionThread(QThread):
             msg.data = [float(distance), float(height), float(timeout)]
             self.follow_params_pub.publish(msg)
             self.heartbeat_signal.emit(f"[BİLGİ] Takip parametreleri gönderildi: Mesafe {distance}m, Yükseklik {height}m, Timeout: {timeout}sn")
+
+    def publish_area_boundaries(self, boundaries):
+        if hasattr(self, 'area_boundaries_pub') and self.area_boundaries_pub:
+            msg = Float32MultiArray()
+            data = []
+            for point in boundaries:
+                data.append(float(point[0]))
+                data.append(float(point[1]))
+            msg.data = data
+            self.area_boundaries_pub.publish(msg)
+            self.heartbeat_signal.emit(f"[BİLGİ] Alan sınırları ROS 2 üzerinden yayınlandı: {data}")
 
     def _record_response_cb(self, future):
         """Callback for service response - emit result to console."""

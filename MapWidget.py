@@ -36,6 +36,7 @@ home_icon_base64 = icon_to_base64('uifolder/assets/icons/antenna.png')
 
 class MapWidget(QtWebEngineWidgets.QWebEngineView):
     mission = []
+    boundaries = []
 
     def __init__(self, center_coord, starting_zoom=13):
         super().__init__()
@@ -102,6 +103,13 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 for pair in pairs:
                     MapWidget.mission.append(list(map(float, pair.split(','))))
                 print("mission: ", MapWidget.mission)
+            elif msg[0] == 'b':
+                MapWidget.boundaries = []
+                if len(msg) > 1:
+                    pairs = msg[1:].split('&')
+                    for pair in pairs:
+                        MapWidget.boundaries.append(list(map(float, pair.split(','))))
+                print("boundaries: ", MapWidget.boundaries)
             else:
                 self.markers_pos = msg.split(',')
                 print(msg)
@@ -188,28 +196,73 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 var uavIcon = L.icon({
                     iconUrl: 'data:image/png;base64,%s', 
                     iconSize: [40, 40],
+                    iconAnchor: [20, 20]
                     });
                     
                 var targetIcon = L.icon({
                     iconUrl: 'data:image/png;base64,%s', 
                     iconSize: [40, 40],
+                    iconAnchor: [20, 20]
                     });
                     
                 var userIcon = L.icon({
                     iconUrl: 'data:image/png;base64,%s', 
                     iconSize: [40, 40],
+                    iconAnchor: [20, 20]
                     });
                 
                 var homeIcon = L.icon({
                     iconUrl: 'data:image/png;base64,%s', 
                     iconSize: [40, 40],
+                    iconAnchor: [20, 20]
                     });
+                    
+                var waypointIcon = L.icon({
+                    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon.png',
+                    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-icon-2x.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                });
                     
                 // Adding First Marker
                 var mymarker = L.marker(
                         [41.27442, 28.727317],
-                        {}
+                        {icon: waypointIcon}
                     ).addTo(map);
+                    
+                // UAV Trajectory Line
+                var uavTrajectory = L.polyline([], {color: 'blue', weight: 3}).addTo(map);
+                var maxTrajectoryPoints = 2000; // Performans için maksimum nokta sınırı
+                
+                function updateUavPosition(lat, lng, heading) {
+                    if (typeof uavMarker !== 'undefined') {
+                        uavMarker.setLatLng([lat, lng]);
+                        uavMarker.setRotationAngle(heading - 45);
+                        
+                        var latlngs = uavTrajectory.getLatLngs();
+                        if (latlngs.length === 0) {
+                            uavTrajectory.addLatLng([lat, lng]);
+                        } else {
+                            var lastPoint = latlngs[latlngs.length - 1];
+                            // Çok küçük titreşimleri ve hareketsiz anları kaydetmemek için 1 metre mesafe kontrolü
+                            if (lastPoint.distanceTo([lat, lng]) > 1.0) { 
+                                uavTrajectory.addLatLng([lat, lng]);
+                                // Eğer sınır aşılırsa en eski noktayı sil (kuyruk mantığı)
+                                if (latlngs.length > maxTrajectoryPoints) {
+                                    latlngs.shift(); 
+                                    uavTrajectory.setLatLngs(latlngs);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                function clearTrajectory() {
+                    uavTrajectory.setLatLngs([]);
+                }
                 
                 // Some Functions To Make Map Interactive
                 function moveMarkerByClick(e) {
@@ -222,6 +275,18 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         waypoints.pop().remove();
                     if(lines.length > 0)
                         lines.pop().remove();
+                        
+                    if(cornerMarkers.length > 0) {
+                        cornerMarkers.pop().remove();
+                        corners.pop();
+                        if (areaPolygon != 0) {
+                            map.removeLayer(areaPolygon);
+                            areaPolygon = 0;
+                        }
+                        if (corners.length >= 2) {
+                            areaPolygon = L.polygon(corners, {color: "#ff7800", weight: 2, fill: false}).addTo(map);
+                        }
+                    }
                 }
                 
                 // To plan a mission putting waypoints to the places that we want uav to go
@@ -235,7 +300,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 function putWaypoint(lat, lng) {
                     var marker = L.marker(
                         [lat, lng],
-                        {}
+                        {icon: waypointIcon}
                     ).addTo(map);
                     
                     // Add lines between last to waypoints
@@ -247,19 +312,40 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     waypoints.push(marker);
                 }
                 
-                var rect = 0;
-                var corners = 0;
+                var squareIcon = L.divIcon({
+                    className: 'custom-square-marker',
+                    html: '<div style="background-color: blue; width: 15px; height: 15px; border: 2px solid white;"></div>',
+                    iconSize: [15, 15],
+                    iconAnchor: [7, 7]
+                });
+                
+                var areaPolygon = 0;
+                var corners = [];
+                var cornerMarkers = [];
+                
                 function drawRectangle(e) {
-                    if (corners.length == 0) {
-                        corners.push(e.latlng);
-                    } else if (corners.length == 1){
-                        corners.push(e.latlng);
-                        rect = L.rectangle(corners, {color: "#ff7800", weight: 1}).addTo(map);
-                    } else {
-                        corners = [];
-                        corners.push(e.latlng);
-                        map.removeLayer(rect);
+                    corners.push(e.latlng);
+                    var marker = L.marker([e.latlng.lat, e.latlng.lng], {icon: squareIcon}).addTo(map);
+                    cornerMarkers.push(marker);
+                    
+                    if (areaPolygon != 0) {
+                        map.removeLayer(areaPolygon);
                     }
+                    
+                    if (corners.length >= 2) {
+                        areaPolygon = L.polygon(corners, {color: "#ff7800", weight: 2, fill: false}).addTo(map);
+                    }
+                }
+                
+                function sendBoundaries() {
+                    var msg = "b";
+                    for(let i = 0; i < corners.length; i++){
+                        msg += corners[i].lat.toFixed(4) + "," + corners[i].lng.toFixed(4) ;
+                        if (i < corners.length-1){
+                            msg += "&"
+                        }
+                    }
+                    console.log(msg);
                 }
                 
                 function setMission(mission_type) {
@@ -273,7 +359,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         }
                     }
                     else{ // exploration
-                        for(let i = 0; i < 2; i++){
+                        for(let i = 0; i < corners.length; i++){
                             msg += corners[i].lat.toFixed(4) + "," + corners[i].lng.toFixed(4) ;
                             if (i < corners.length-1){
                                 msg += "&"
@@ -296,8 +382,19 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         }
                         lines = [];
                     }
-                    if (rect != 0){
-                        map.removeLayer(rect);
+                    if (areaPolygon != 0){
+                        map.removeLayer(areaPolygon);
+                        areaPolygon = 0;
+                    }
+                    if (cornerMarkers && cornerMarkers.length > 0) {
+                        for(let i = 0; i < cornerMarkers.length; i++){
+                            cornerMarkers[i].remove();
+                        }
+                        cornerMarkers = [];
+                    }
+                    corners = [];
+                    if (typeof clearTrajectory !== 'undefined') {
+                        clearTrajectory();
                     }
                 }
                 

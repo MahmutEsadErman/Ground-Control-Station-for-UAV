@@ -2,7 +2,7 @@ import sys
 import time
 
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QInputDialog
+from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QInputDialog, QPushButton
 from PySide6.QtCore import Qt, QTimer
 
 from CameraWidget import CameraWidget
@@ -35,8 +35,13 @@ class HomePage(QWidget, Ui_HomePage):
         self.btn_setMission.clicked.connect(self.set_mission)
         self.btn_antenna.hide()
 
+        self.btn_send_boundaries = QPushButton("Alan sınırlarını gönder")
+        self.btn_send_boundaries.hide()
+        self.verticalLayout_4.addWidget(self.btn_send_boundaries)
+        self.btn_send_boundaries.clicked.connect(self.send_boundaries)
+
         # --- Follow Parameters & Control UI ---
-        from PySide6.QtWidgets import QGroupBox, QFormLayout, QSpinBox, QHBoxLayout, QLabel, QPushButton
+        from PySide6.QtWidgets import QGroupBox, QFormLayout, QSpinBox, QHBoxLayout, QLabel
         self.follow_groupbox = QGroupBox("Drone Takip Parametreleri")
         self.follow_layout = QFormLayout()
         
@@ -88,16 +93,19 @@ class HomePage(QWidget, Ui_HomePage):
 
         if button.objectName() == "btn_chooseMode":
             if self.modes_comboBox.currentText() == "İşaretçi Modu":
+                self.btn_send_boundaries.hide()
                 self.mapwidget.page().runJavaScript(f"map.on('click', moveMarkerByClick);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', drawRectangle);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', putWaypointEvent);")
                 self.mapwidget.page().runJavaScript(f"if(!map.hasLayer(mymarker)) mymarker.addTo(map);")
             if self.modes_comboBox.currentText() == "Alan Seçimi Modu":
+                self.btn_send_boundaries.show()
                 self.mapwidget.page().runJavaScript(f"map.off('click', putWaypointEvent);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', moveMarkerByClick);")
                 self.mapwidget.page().runJavaScript(f"map.on('click', drawRectangle);")
                 self.mapwidget.page().runJavaScript(f"if(map.hasLayer(mymarker)) map.removeLayer(mymarker);")
             if self.modes_comboBox.currentText() == "Waypoint Modu":
+                self.btn_send_boundaries.hide()
                 self.mapwidget.page().runJavaScript(f"map.off('click', moveMarkerByClick);")
                 self.mapwidget.page().runJavaScript(f"map.off('click', drawRectangle);")
                 self.mapwidget.page().runJavaScript(f"map.on('click', putWaypointEvent);")
@@ -110,6 +118,16 @@ class HomePage(QWidget, Ui_HomePage):
             print("Drawing Rectangle Mode")
             self.mapwidget.page().runJavaScript(f"map.off('click', putWaypoint);")
             self.mapwidget.page().runJavaScript(f"map.on('click', drawRectangle);")
+
+    def send_boundaries(self):
+        self.mapwidget.page().runJavaScript("sendBoundaries();")
+        QTimer().singleShot(500, lambda: self._publish_boundaries())
+
+    def _publish_boundaries(self):
+        if hasattr(self.parent, 'connectionThread') and self.parent.connectionThread:
+            self.parent.connectionThread.publish_area_boundaries(self.mapwidget.boundaries)
+        else:
+            print("connectionThread not available to publish boundaries.")
 
     def set_mission(self):
         altitude, okPressed = QInputDialog.getText(self, "Enter Altitude", "Altitude:", text="10")

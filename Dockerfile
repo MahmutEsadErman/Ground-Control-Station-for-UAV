@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     libxcb-cursor0 \
     libgl1-mesa-glx \
     vlc \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 # ROS 2 için gerekli MAVROS ve cv_bridge paketlerini yükle
@@ -15,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     ros-humble-mavros-extras && \
     wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh && \
     chmod a+x ./install_geographiclib_datasets.sh && \
-    sudo ./install_geographiclib_datasets.sh && \
+    ./install_geographiclib_datasets.sh && \
     rm -rf /var/lib/apt/lists/*
 
 # Yer Kontrol İstasyonu için gerekli Python bağımlılıklarını kur
@@ -29,10 +30,10 @@ COPY . .
 # X11 yönlendirmesi için gerekli environment ayarları
 ENV QT_X11_NO_MITSHM=1
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
-ENV DISPLAY=$DISPLAY
+
+# Yazılımsal işleme (Software Rendering) ayarları
 ENV LIBGL_ALWAYS_SOFTWARE=1
 ENV QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu"
-ENV ROS_DOMAIN_ID=42
 
 # ROS 2 kaynaklarını otomatik olarak source et ve ana uygulamayı başlat
 CMD ["/bin/bash", "-c", "source /opt/ros/humble/setup.bash && python3 main.py"]
