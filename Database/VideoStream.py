@@ -20,7 +20,7 @@ from PySide6.QtWidgets import QWidget
 class VideoStreamThread(QThread):
     ImageUpdate = Signal(QImage, str)
     NewTargetDetectedSignal = Signal(QImage, list, list, int)
-    UpdateTargetPositionSignal = Signal(int, list)
+    UpdateTargetSignal = Signal(int, list, QImage)
 
     def __init__(self, parent=None, ip=None, port=None):
         super().__init__()
@@ -34,7 +34,7 @@ class VideoStreamThread(QThread):
         self.heading = 0
 
         self.NewTargetDetectedSignal.connect(parent.parent.parent.targetspage.addTarget)
-        self.UpdateTargetPositionSignal.connect(parent.parent.parent.targetspage.updateTargetPosition)
+        self.UpdateTargetSignal.connect(parent.parent.parent.targetspage.updateTarget)
 
         self.bridge = CvBridge()
         self.node = None
@@ -92,15 +92,12 @@ class VideoStreamThread(QThread):
         self.ImageUpdate.emit(image, "ROS2 Image")
 
     def detection_callback(self, msg):
-        print(f"--- detection_callback triggered ---")
         try:
             try:
                 payload = json.loads(msg.data)
-                print("JSON parsed successfully.")
             except json.JSONDecodeError:
                 import ast
                 payload = ast.literal_eval(msg.data)
-                print("JSON parsed via ast.literal_eval.")
                 
             target_id = payload.get("id", 0)
             print(f"Target ID: {target_id}")
@@ -111,35 +108,35 @@ class VideoStreamThread(QThread):
                 
             first_seen = payload.get("first_seen", time.time())
             
+            img_b64 = payload.get("image", "")
+            qimage = QImage()
+            if img_b64:
+                # Clean and pad base64 string
+                img_b64 = img_b64.strip()
+                if "base64," in img_b64:
+                    img_b64 = img_b64.split("base64,")[1]
+                pad = 4 - (len(img_b64) % 4)
+                if pad < 4:
+                    img_b64 += "=" * pad
+                    
+                img_bytes = base64.b64decode(img_b64)
+                np_arr = np.frombuffer(img_bytes, np.uint8)
+                frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                if frame is not None:
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    ConvertToQtFormat = QImage(frame.data, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
+                    qimage = ConvertToQtFormat.copy()
+                else:
+                    print("Warning: cv2.imdecode returned None for detection image")
+
             if target_id not in self.known_targets:
                 self.known_targets.add(target_id)
-                img_b64 = payload.get("image", "")
-                if img_b64:
-                    # Clean and pad base64 string
-                    img_b64 = img_b64.strip()
-                    if "base64," in img_b64:
-                        img_b64 = img_b64.split("base64,")[1]
-                    pad = 4 - (len(img_b64) % 4)
-                    if pad < 4:
-                        img_b64 += "=" * pad
-                        
-                    img_bytes = base64.b64decode(img_b64)
-                    np_arr = np.frombuffer(img_bytes, np.uint8)
-                    frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-                    if frame is not None:
-                        print("Image decoded successfully. Emitting NewTargetDetectedSignal...")
-                        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                        ConvertToQtFormat = QImage(frame.data, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
-                        qimage = ConvertToQtFormat.copy()
-                        
-                        self.NewTargetDetectedSignal.emit(qimage, location, [first_seen, first_seen], target_id)
-                        print("NewTargetDetectedSignal emitted.")
-                    else:
-                        print("Warning: cv2.imdecode returned None for detection image")
+                if not qimage.isNull():
+                    self.NewTargetDetectedSignal.emit(qimage, location, [first_seen, first_seen], target_id)
             else:
-                # Target already exists, just update its position on the map
-                print(f"Target {target_id} already known. Emitting UpdateTargetPositionSignal...")
-                self.UpdateTargetPositionSignal.emit(target_id, location)
+                # Target already exists, emit update signal with new image
+                print(f"Target {target_id} already known. Emitting UpdateTargetSignal...")
+                self.UpdateTargetSignal.emit(target_id, location, qimage)
 
         except Exception as e:
             print(f"Error parsing JSON detection msg: {e}")

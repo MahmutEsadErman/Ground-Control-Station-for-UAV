@@ -80,10 +80,33 @@ class TargetsPage(QWidget, Ui_TargetsPage):
     def setLeavingTime(self, no, time):
         self.targets[no]["time_interval"][1] = time
 
-    def updateTargetPosition(self, no, position):
-        print(f"--- updateTargetPosition triggered for target {no} at position {position} ---")
+    def updateTarget(self, no, position, image):
+        print(f"--- updateTarget triggered for target {no} at position {position} ---")
         self.parent.homepage.mapwidget.page().runJavaScript(f"target_marker{no}.setLatLng({str(position)});")
         self.setLeavingTime(no, time.time())
+        
+        if not image.isNull():
+            # Update the image in the dictionary
+            self.targets[no]["image"] = image
+            
+            # Update the container label image
+            container = self.findChild(QWidget, f"target{no}")
+            if container:
+                layout = container.layout()
+                if layout and layout.count() > 0:
+                    image_label = layout.itemAt(0).widget()
+                    if isinstance(image_label, QLabel):
+                        scaled_pixmap = QPixmap.fromImage(image).scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio, Qt.SmoothTransformation)
+                        image_label.setPixmap(scaled_pixmap)
+            
+            # Update the marker tooltip on the map
+            image_base64 = 'data:image/png;base64,' + qimage_to_base64(image)
+            self.parent.homepage.mapwidget.page().runJavaScript(f"""
+                        if (typeof target_marker{no} !== 'undefined') {{
+                            target_marker{no}.unbindTooltip();
+                            target_marker{no}.bindTooltip('<br>' + "<img src='{image_base64}'/>");
+                        }}
+                    """)
 
 
 
