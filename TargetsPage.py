@@ -1,3 +1,4 @@
+import time
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QGridLayout, \
     QPushButton, QSpacerItem, QSizePolicy
@@ -52,6 +53,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         # QTimer.singleShot(3000, lambda: self.addTarget(QImage("Database/data/deneme/1.jpg"), [1,1], [10, 100], 1))
 
     def addTarget(self, image, position, time, no):
+        print(f"--- addTarget triggered for target {no} at position {position} ---")
         # Create a new target
         self.number_of_targets += 1
         self.targets[no] = {"image": image, "location": position, "time_interval": time}
@@ -77,6 +79,11 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
     def setLeavingTime(self, no, time):
         self.targets[no]["time_interval"][1] = time
+
+    def updateTargetPosition(self, no, position):
+        print(f"--- updateTargetPosition triggered for target {no} at position {position} ---")
+        self.parent.homepage.mapwidget.page().runJavaScript(f"target_marker{no}.setLatLng({str(position)});")
+        self.setLeavingTime(no, time.time())
 
 
 
