@@ -275,6 +275,8 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         waypoints.pop().remove();
                     if(lines.length > 0)
                         lines.pop().remove();
+                    if(distanceLabels.length > 0)
+                        distanceLabels.pop().remove();
                         
                     if(cornerMarkers.length > 0) {
                         cornerMarkers.pop().remove();
@@ -287,12 +289,26 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                             areaPolygon = L.polygon(corners, {color: "#ff7800", weight: 2, fill: false}).addTo(map);
                         }
                     }
+                    
+                    // Undo for distance measure mode
+                    if (typeof distMeasurePoints !== 'undefined') {
+                        if (distMeasurePoints.length > 0) {
+                            distMeasurePoints.pop();
+                            distMeasureMarkers.pop().remove();
+                        } else if (distMeasureLines.length > 0) {
+                            distMeasureLines.pop().remove();
+                            distMeasureLabels.pop().remove();
+                            distMeasureMarkers.pop().remove();
+                            distMeasureMarkers.pop().remove();
+                        }
+                    }
                 }
                 
                 // To plan a mission putting waypoints to the places that we want uav to go
                 var waypointNumber = 0;
                 var waypoints = [];
                 var lines = [];
+                var distanceLabels = [];
                 function putWaypointEvent(e) {
                     putWaypoint(e.latlng.lat.toFixed(4), e.latlng.lng.toFixed(4))
                 }
@@ -305,11 +321,57 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     
                     // Add lines between last to waypoints
                     if(waypoints.length > 0){
-                        points = [waypoints[waypoints.length-1].getLatLng(), marker.getLatLng()];
-                        line = L.polyline(points, {color: 'red'}).addTo(map);
+                        var prevMarker = waypoints[waypoints.length-1];
+                        var currentLatLng = L.latLng(lat, lng);
+                        var points = [prevMarker.getLatLng(), currentLatLng];
+                        var line = L.polyline(points, {color: 'red'}).addTo(map);
                         lines.push(line);
+                        
+                        var distance = prevMarker.getLatLng().distanceTo(currentLatLng);
+                        var midLat = (prevMarker.getLatLng().lat + currentLatLng.lat) / 2;
+                        var midLng = (prevMarker.getLatLng().lng + currentLatLng.lng) / 2;
+                        
+                        var textIcon = L.divIcon({
+                            className: 'distance-label',
+                            html: '<div style="background-color: white; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid black; text-align: center; white-space: nowrap;">' + distance.toFixed(1) + ' m</div>',
+                            iconSize: null
+                        });
+                        var labelMarker = L.marker([midLat, midLng], {icon: textIcon}).addTo(map);
+                        distanceLabels.push(labelMarker);
                     }
                     waypoints.push(marker);
+                }
+                
+                // Distance Measure Mode Variables and Function
+                var distMeasurePoints = [];
+                var distMeasureLines = [];
+                var distMeasureLabels = [];
+                var distMeasureMarkers = [];
+
+                function distanceMeasureClick(e) {
+                    var marker = L.marker([e.latlng.lat, e.latlng.lng], {icon: waypointIcon}).addTo(map);
+                    distMeasureMarkers.push(marker);
+                    distMeasurePoints.push(e.latlng);
+                    
+                    if (distMeasurePoints.length === 2) {
+                        var points = [distMeasurePoints[0], distMeasurePoints[1]];
+                        var line = L.polyline(points, {color: 'green', weight: 4}).addTo(map);
+                        distMeasureLines.push(line);
+                        
+                        var distance = distMeasurePoints[0].distanceTo(distMeasurePoints[1]);
+                        var midLat = (distMeasurePoints[0].lat + distMeasurePoints[1].lat) / 2;
+                        var midLng = (distMeasurePoints[0].lng + distMeasurePoints[1].lng) / 2;
+                        
+                        var textIcon = L.divIcon({
+                            className: 'distance-label',
+                            html: '<div style="background-color: lightgreen; padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 2px solid darkgreen; text-align: center; white-space: nowrap;">' + distance.toFixed(1) + ' m</div>',
+                            iconSize: null
+                        });
+                        var labelMarker = L.marker([midLat, midLng], {icon: textIcon}).addTo(map);
+                        distMeasureLabels.push(labelMarker);
+                        
+                        distMeasurePoints = []; // Reset for next measurement pair
+                    }
                 }
                 
                 var squareIcon = L.divIcon({
@@ -382,6 +444,12 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         }
                         lines = [];
                     }
+                    if (distanceLabels.length > 0){
+                        for(let i = 0; i < distanceLabels.length; i++){
+                            distanceLabels[i].remove();
+                        }
+                        distanceLabels = [];
+                    }
                     if (areaPolygon != 0){
                         map.removeLayer(areaPolygon);
                         areaPolygon = 0;
@@ -396,6 +464,21 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     if (typeof clearTrajectory !== 'undefined') {
                         clearTrajectory();
                     }
+                    
+                    // Clear distance measure tools
+                    if (distMeasureMarkers.length > 0) {
+                        for(let i=0; i<distMeasureMarkers.length; i++) distMeasureMarkers[i].remove();
+                        distMeasureMarkers = [];
+                    }
+                    if (distMeasureLines.length > 0) {
+                        for(let i=0; i<distMeasureLines.length; i++) distMeasureLines[i].remove();
+                        distMeasureLines = [];
+                    }
+                    if (distMeasureLabels.length > 0) {
+                        for(let i=0; i<distMeasureLabels.length; i++) distMeasureLabels[i].remove();
+                        distMeasureLabels = [];
+                    }
+                    distMeasurePoints = [];
                 }
                 
                 // Initial mode for clicking on the map
