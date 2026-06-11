@@ -266,7 +266,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 
                 // Some Functions To Make Map Interactive
                 function moveMarkerByClick(e) {
-                    console.log(e.latlng.lat.toFixed(4) + "," +e.latlng.lng.toFixed(4));
+                    console.log(e.latlng.lat.toFixed(7) + "," +e.latlng.lng.toFixed(7));
                     mymarker.setLatLng([e.latlng.lat, e.latlng.lng])
                 }
                 
@@ -310,7 +310,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 var lines = [];
                 var distanceLabels = [];
                 function putWaypointEvent(e) {
-                    putWaypoint(e.latlng.lat.toFixed(4), e.latlng.lng.toFixed(4))
+                    putWaypoint(e.latlng.lat.toFixed(7), e.latlng.lng.toFixed(7))
                 }
                 
                 function putWaypoint(lat, lng) {
@@ -402,7 +402,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                 function sendBoundaries() {
                     var msg = "b";
                     for(let i = 0; i < corners.length; i++){
-                        msg += corners[i].lat.toFixed(4) + "," + corners[i].lng.toFixed(4) ;
+                        msg += corners[i].lat.toFixed(7) + "," + corners[i].lng.toFixed(7) ;
                         if (i < corners.length-1){
                             msg += "&"
                         }
@@ -414,7 +414,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     var msg = "m";
                     if (mission_type){ // waypoints
                         for(let i = 0; i < waypoints.length; i++){
-                            msg += waypoints[i].getLatLng().lat.toFixed(4) + "," + waypoints[i].getLatLng().lng.toFixed(4) ;
+                            msg += waypoints[i].getLatLng().lat.toFixed(7) + "," + waypoints[i].getLatLng().lng.toFixed(7) ;
                             if (i < waypoints.length-1){
                                 msg += "&"
                             }
@@ -422,7 +422,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     }
                     else{ // exploration
                         for(let i = 0; i < corners.length; i++){
-                            msg += corners[i].lat.toFixed(4) + "," + corners[i].lng.toFixed(4) ;
+                            msg += corners[i].lat.toFixed(7) + "," + corners[i].lng.toFixed(7) ;
                             if (i < corners.length-1){
                                 msg += "&"
                             }
