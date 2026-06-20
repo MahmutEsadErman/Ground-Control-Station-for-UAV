@@ -270,36 +270,50 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     mymarker.setLatLng([e.latlng.lat, e.latlng.lng])
                 }
                 
+                var actionHistory = []; // To keep track of the sequence of actions
+                
                 function undoWaypoint() {
-                    if(waypoints.length >0)
-                        waypoints.pop().remove();
-                    if(lines.length > 0)
-                        lines.pop().remove();
-                    if(distanceLabels.length > 0)
-                        distanceLabels.pop().remove();
-                        
-                    if(cornerMarkers.length > 0) {
-                        cornerMarkers.pop().remove();
-                        corners.pop();
-                        if (areaPolygon != 0) {
-                            map.removeLayer(areaPolygon);
-                            areaPolygon = 0;
+                    if (actionHistory.length === 0) return;
+                    
+                    var lastAction = actionHistory.pop();
+                    
+                    if (lastAction === "waypoint") {
+                        if(waypoints.length >0)
+                            waypoints.pop().remove();
+                        if(lines.length > 0)
+                            lines.pop().remove();
+                        if(distanceLabels.length > 0)
+                            distanceLabels.pop().remove();
+                    } 
+                    else if (lastAction === "corner") {
+                        if(cornerMarkers.length > 0) {
+                            cornerMarkers.pop().remove();
+                            corners.pop();
+                            if (areaPolygon != 0) {
+                                map.removeLayer(areaPolygon);
+                                areaPolygon = 0;
+                            }
+                            if (corners.length >= 2) {
+                                areaPolygon = L.polygon(corners, {color: "#ff7800", weight: 2, fill: false}).addTo(map);
+                            }
                         }
-                        if (corners.length >= 2) {
-                            areaPolygon = L.polygon(corners, {color: "#ff7800", weight: 2, fill: false}).addTo(map);
+                    } 
+                    else if (lastAction === "distance_point") {
+                        if (typeof distMeasurePoints !== 'undefined') {
+                            if (distMeasurePoints.length > 0) {
+                                distMeasurePoints.pop();
+                                distMeasureMarkers.pop().remove();
+                            }
                         }
                     }
-                    
-                    // Undo for distance measure mode
-                    if (typeof distMeasurePoints !== 'undefined') {
-                        if (distMeasurePoints.length > 0) {
-                            distMeasurePoints.pop();
-                            distMeasureMarkers.pop().remove();
-                        } else if (distMeasureLines.length > 0) {
-                            distMeasureLines.pop().remove();
-                            distMeasureLabels.pop().remove();
-                            distMeasureMarkers.pop().remove();
-                            distMeasureMarkers.pop().remove();
+                    else if (lastAction === "distance_line") {
+                        if (typeof distMeasureLines !== 'undefined') {
+                            if (distMeasureLines.length > 0) {
+                                distMeasureLines.pop().remove();
+                                distMeasureLabels.pop().remove();
+                                distMeasureMarkers.pop().remove();
+                                distMeasureMarkers.pop().remove();
+                            }
                         }
                     }
                 }
@@ -340,6 +354,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         distanceLabels.push(labelMarker);
                     }
                     waypoints.push(marker);
+                    actionHistory.push("waypoint");
                 }
                 
                 // Distance Measure Mode Variables and Function
@@ -352,6 +367,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     var marker = L.marker([e.latlng.lat, e.latlng.lng], {icon: waypointIcon}).addTo(map);
                     distMeasureMarkers.push(marker);
                     distMeasurePoints.push(e.latlng);
+                    actionHistory.push("distance_point");
                     
                     if (distMeasurePoints.length === 2) {
                         var points = [distMeasurePoints[0], distMeasurePoints[1]];
@@ -371,6 +387,11 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         distMeasureLabels.push(labelMarker);
                         
                         distMeasurePoints = []; // Reset for next measurement pair
+                        
+                        // We replace the two "distance_point" actions with one "distance_line" action
+                        actionHistory.pop();
+                        actionHistory.pop();
+                        actionHistory.push("distance_line");
                     }
                 }
                 
@@ -389,6 +410,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                     corners.push(e.latlng);
                     var marker = L.marker([e.latlng.lat, e.latlng.lng], {icon: squareIcon}).addTo(map);
                     cornerMarkers.push(marker);
+                    actionHistory.push("corner");
                     
                     if (areaPolygon != 0) {
                         map.removeLayer(areaPolygon);
@@ -479,6 +501,7 @@ class MapWidget(QtWebEngineWidgets.QWebEngineView):
                         distMeasureLabels = [];
                     }
                     distMeasurePoints = [];
+                    actionHistory = [];
                 }
                 
                 // Initial mode for clicking on the map

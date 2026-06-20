@@ -23,6 +23,7 @@ class TargetsPage(QWidget, Ui_TargetsPage):
         super().__init__()
         self.setupUi(self)
         self.parent = parent
+        self.latest_target_no = None
         # Set Layout
         self.setLayout(QVBoxLayout())
 
@@ -54,6 +55,19 @@ class TargetsPage(QWidget, Ui_TargetsPage):
 
     def addTarget(self, image, position, time, no):
         print(f"--- addTarget triggered for target {no} at position {position} ---")
+        
+        # Start deletion timer for the previous latest target
+        if hasattr(self, 'latest_target_no') and self.latest_target_no is not None and self.latest_target_no != no:
+            old_no = self.latest_target_no
+            if old_no in self.targets and "timer" not in self.targets[old_no]:
+                timer = QTimer(self)
+                timer.setSingleShot(True)
+                timer.timeout.connect(lambda n=old_no: self.removeTarget(n))
+                timer.start(2000)
+                self.targets[old_no]["timer"] = timer
+                
+        self.latest_target_no = no
+
         # Create a new target
         self.number_of_targets += 1
         self.targets[no] = {"image": image, "location": position, "time_interval": time}
@@ -80,8 +94,57 @@ class TargetsPage(QWidget, Ui_TargetsPage):
     def setLeavingTime(self, no, time):
         self.targets[no]["time_interval"][1] = time
 
+    def removeTarget(self, no):
+        print(f"--- removeTarget triggered for target {no} ---")
+        if no in self.targets:
+            # Remove from map
+            self.parent.homepage.mapwidget.page().runJavaScript(f"""
+                if (typeof target_marker{no} !== 'undefined') {{
+                    map.removeLayer(target_marker{no});
+                }}
+            """)
+            
+            # Remove from UI list
+            container = self.findChild(QWidget, f"target{no}")
+            if container:
+                self.targetsWidget.layout().removeWidget(container)
+                container.deleteLater()
+                
+            # Remove timer if exists
+            timer = self.targets[no].pop("timer", None)
+            if timer:
+                timer.stop()
+                timer.deleteLater()
+                
+            del self.targets[no]
+            
+            # Allow VideoStreamThread to detect this target ID again
+            if hasattr(self.parent, 'homepage') and hasattr(self.parent.homepage, 'cameraWidget'):
+                videothread = self.parent.homepage.cameraWidget.videothread
+                if no in videothread.known_targets:
+                    videothread.known_targets.remove(no)
+
     def updateTarget(self, no, position, image):
         print(f"--- updateTarget triggered for target {no} at position {position} ---")
+        
+        # If this target is updated, it becomes the latest target
+        if hasattr(self, 'latest_target_no') and self.latest_target_no is not None and self.latest_target_no != no:
+            old_no = self.latest_target_no
+            if old_no in self.targets and "timer" not in self.targets[old_no]:
+                timer = QTimer(self)
+                timer.setSingleShot(True)
+                timer.timeout.connect(lambda n=old_no: self.removeTarget(n))
+                timer.start(2000)
+                self.targets[old_no]["timer"] = timer
+                
+        self.latest_target_no = no
+        
+        # Cancel timer for the current target if it had one
+        if no in self.targets and "timer" in self.targets[no]:
+            self.targets[no]["timer"].stop()
+            self.targets[no]["timer"].deleteLater()
+            del self.targets[no]["timer"]
+
         self.parent.homepage.mapwidget.page().runJavaScript(f"target_marker{no}.setLatLng({str(position)});")
         self.setLeavingTime(no, time.time())
         
